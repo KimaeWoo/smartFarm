@@ -16,11 +16,11 @@ app.use(express.json());
 
 // MariaDB 연결 풀(Pool) 생성
 const pool = mariadb.createPool({
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_DATABASE,
+  host: "svc.sel4.cloudtype.app",
+  port: 32463,
+  user: "root",
+  password: "12345678",
+  database: "smartFarm",
   connectionLimit: 5
 });
 
