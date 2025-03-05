@@ -28,6 +28,19 @@ const pool = mariadb.createPool({
 pool.getConnection()
   .then(conn => {
     console.log('MariaDB 연결 성공!');
+    const query = 'SELECT * FROM users WHERE user_id = user@gmail.com';
+    pool.query(query, [user_id], (err, results) => {
+        if (err) {
+            console.error('[GET /check-userid] 쿼리 실행 실패:', err);
+            return res.status(500).json({ message: '서버 오류' });
+        }
+        if (results.length > 0) {
+            console.log(`[GET /check-userid] 이미 사용 중인 아이디: ${user_id}`);
+            return res.status(400).json({ message: '이미 사용 중인 아이디입니다.' });
+        }
+        console.log(`[GET /check-userid] 사용 가능한 아이디: ${user_id}`);
+        res.status(200).json({ message: '사용 가능한 아이디입니다.' });
+    });
     conn.release(); // 사용 후 연결 반환
   })
   .catch(err => console.error('MariaDB 연결 실패:', err));
