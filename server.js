@@ -39,6 +39,7 @@ app.get('/login', (req, res) => {
 
 // 아이디 중복 확인 API
 app.get('/check-userid', (req, res) => {
+  console.log('체크 ');
   const { user_id } = req.query;
   const query = 'SELECT * FROM users WHERE user_id = ?';
   pool.query(query, [user_id], (err, results) => {
