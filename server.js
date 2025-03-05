@@ -20,7 +20,7 @@ const pool = mariadb.createPool({
   port: 32463,
   user: "root",
   password: "12345678",
-  database: "smartFarm",
+  database: "smartfarm",
   connectionLimit: 5
 });
 
