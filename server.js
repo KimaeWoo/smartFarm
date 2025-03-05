@@ -14,8 +14,8 @@ app.use(cors()); // 모든 요청에 대해 CORS 허용
 // POST 요청을 처리하기 위해 express의 body-parser 사용
 app.use(express.json());
 
-// MariaDB 연결 풀(Pool) 생성
-const pool = mariadb.createPool({
+// MariaDB 연결 db 생성
+const db = mariadb.createPool({
   host: "svc.sel4.cloudtype.app",
   port: 31171,
   user: "root",
@@ -25,7 +25,7 @@ const pool = mariadb.createPool({
 });
 
 // 연결 확인
-pool.getConnection()
+db.getConnection()
   .then(conn => {
     console.log('MariaDB 연결 성공!');
     conn.release(); // 사용 후 연결 반환
@@ -42,7 +42,7 @@ app.get('/check-userid', (req, res) => {
   const { user_id } = req.query;
   console.log(`${user_id} 중복 확인`);
   const query = 'SELECT * FROM users WHERE user_id = ?';
-  pool.query(query, [user_id], (err, results) => {
+  db.query(query, [user_id], (err, results) => {
       if (err) {
           console.error('[GET /check-userid] 쿼리 실행 실패:', err);
           return res.status(500).json({ message: '서버 오류' });
@@ -60,7 +60,7 @@ app.get('/check-userid', (req, res) => {
 app.get('/check-username', (req, res) => {
   const { username } = req.query;
   const query = 'SELECT * FROM users WHERE username = ?';
-  pool.query(query, [username], (err, results) => {
+  db.query(query, [username], (err, results) => {
       if (err) {
           console.error('[GET /check-username] 쿼리 실행 실패:', err);
           return res.status(500).json({ message: '서버 오류' });
@@ -78,7 +78,7 @@ app.get('/check-username', (req, res) => {
 app.post('/signup', (req, res) => {
   const { user_id, password, username } = req.body;
   const insertUserQuery = 'INSERT INTO users (user_id, password, username) VALUES (?, ?, ?)';
-  pool.query(insertUserQuery, [user_id, password, username], (err) => {
+  db.query(insertUserQuery, [user_id, password, username], (err) => {
       if (err) {
           console.error('[POST /signup] 회원가입 실패:', err);
           return res.status(500).json({ message: '회원가입 실패' });
@@ -94,7 +94,7 @@ app.post('/login', (req, res) => {
 
   // 이메일로 사용자 검색
   const query = 'SELECT * FROM users WHERE user_id = ?';
-  pool.query(query, [user_id], (err, results) => {
+  db.query(query, [user_id], (err, results) => {
       if (err) {
           console.error('쿼리 실행 실패: ' + err.stack);
           res.status(500).json({ message: '서버 오류' });
@@ -132,7 +132,7 @@ app.post('/sensors', (req, res) => {
 
   // DB에 저장
   const query = `INSERT INTO sensors (user_id, farm_id, temperature, humidity, soil_moisture, co2, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)`;
-  pool.query(query, [user_id, farm_id, temperature, humidity, soil_moisture, co2, timestamp], (err, results) => {
+  db.query(query, [user_id, farm_id, temperature, humidity, soil_moisture, co2, timestamp], (err, results) => {
     if (err) {
       console.error('[POST /sensors] DB 오류:', err);
       return res.status(500).send('DB 오류 발생');
@@ -143,7 +143,7 @@ app.post('/sensors', (req, res) => {
 
     // 방금 삽입한 튜플 전체 가져오기
     const selectQuery = `SELECT * FROM sensors WHERE id = ?`;
-    pool.query(selectQuery, [insertedId], (err, rows) => {
+    db.query(selectQuery, [insertedId], (err, rows) => {
       if (err) {
         console.error('[POST /sensors] 데이터 조회 오류:', err);
         return res.status(500).send('데이터 조회 오류 발생');
@@ -194,7 +194,7 @@ function Controldevice(user_id, farm_id, temperature, humidity, soil_moisture) {
 
 function updateDevice(user_id, farm_id, fanStatus, waterStatus) {
   const query = `UPDATE devices SET fan = ?, water = ? WHERE user_id = ? AND farm_id = ?`;
-  pool.query(query, [fanStatus, waterStatus, user_id, farm_id], (err, results) => {
+  db.query(query, [fanStatus, waterStatus, user_id, farm_id], (err, results) => {
     if (err) {
       console.error('[updateDevice] DB 오류:', err);
     } else {
@@ -221,7 +221,7 @@ app.get('/sensors/status', (req, res) => {
     ORDER BY created_at DESC 
     LIMIT 1
   `;
-  pool.query(query, [userId, farmId], (err, results) => {
+  db.query(query, [userId, farmId], (err, results) => {
     if (err) {
       console.error('[GET /sensors/status] DB 오류:', err);
       return res.status(500).send('DB 오류 발생');
@@ -250,7 +250,7 @@ app.get('/devices/status', (req, res) => {
   FROM devices 
   WHERE user_id = ? AND farm_id = ?
   `
-  pool.query(query, [user_id, farm_id], (err, results) => {
+  db.query(query, [user_id, farm_id], (err, results) => {
     if (err) {
       console.error('[GET /devices/status] DB 오류:', err);
       return res.status(500).send('DB 오류 발생');
@@ -272,14 +272,14 @@ app.post('/devices/:deviceId/status', (req, res) => {
   // 해당 user_id와 farm_id에 대해 device 상태를 변경
   const query = `UPDATE devices SET ${device} = NOT ${device} WHERE user_id = ? AND farm_id = ?`;
 
-  pool.query(query, [user_id, farm_id], (err, results) => {
+  db.query(query, [user_id, farm_id], (err, results) => {
     if (err) {
       console.error('[POST /devices/:deviceId/status] DB 오류:', err);
       return res.status(500).send('DB 오류 발생');
     }
     // 상태 변경 후, 해당 user_id와 farm_id에 대한 장치 상태 조회
     const stateQuery = 'SELECT * FROM devices WHERE user_id = ? AND farm_id = ?';
-    pool.query(stateQuery, [user_id, farm_id], (err, results) => {
+    db.query(stateQuery, [user_id, farm_id], (err, results) => {
       if (err) {
         console.error('[POST /devices/:deviceId/status] 상태 조회 오류:', err);
         return res.status(500).send('상태 조회 오류 발생');
@@ -333,7 +333,7 @@ app.get('/sensors/data', (req, res) => {
       ORDER BY created_at ASC
   `;
 
-  pool.query(query, [userId, farmId, date], (err, results) => {
+  db.query(query, [userId, farmId, date], (err, results) => {
       if (err) {
           console.error('[GET /sensors/data] DB 오류:', err);
           return res.status(500).json({ error: 'DB 오류 발생' });
@@ -377,7 +377,7 @@ app.get('/sensors/average', (req, res) => {
     GROUP BY period
     ORDER BY period ASC`;
 
-  pool.query(query, [userId, farmId], (err, results) => {
+  db.query(query, [userId, farmId], (err, results) => {
     if (err) {
       console.error('[GET /sensors/average] DB 오류:', err);
       return res.status(500).send('DB 오류 발생');
@@ -391,7 +391,7 @@ app.get('/sensors/average', (req, res) => {
 app.get('/getName', (req,res) => {
   const userId = req.query.user_id;
   const query = `SELECT username from users where user_id = ?`;
-  pool.query(query, [userId], (err,results) => {
+  db.query(query, [userId], (err,results) => {
     if (err) {
       console.error('쿼리 에러:', err);
       res.json({ success: false});
@@ -412,7 +412,7 @@ app.get('/getName', (req,res) => {
 app.get('/getFarmName', (req,res) => {
   const userId = req.query.user_id;
   const query = `SELECT farm_name from farms where user_id = ?`;
-  pool.query(query, [userId], (err,results) => {
+  db.query(query, [userId], (err,results) => {
     if (err) {
       console.error('쿼리 에러:', err);
       res.json({ success: false});
@@ -436,7 +436,7 @@ app.get('/getFarms', (req, res) => {
    farm_id, farm_name, farm_location, farm_type, farm_active
    FROM farms 
    WHERE user_id = ?`;
-  pool.query(sql, [userId], (err, results) => {
+  db.query(sql, [userId], (err, results) => {
       if (err) {
           console.error('쿼리 에러:', err);
           res.json({ success: false });
@@ -468,7 +468,7 @@ app.post('/addFarm', (req, res) => {
   farms (user_id, farm_name, farm_location, farm_type) 
   VALUES (?, ?, ?, ?)
   `;
-  pool.query(addFarmQuery, [userId, farmName, farmLocation, farmType], (err, result) => {
+  db.query(addFarmQuery, [userId, farmName, farmLocation, farmType], (err, result) => {
     if (err) {
       console.error('[POST /addFarm] 쿼리 에러:', err);
       return res.status(500).json({ success: false, message: 'DB 오류 발생' });
@@ -482,7 +482,7 @@ app.post('/addFarm', (req, res) => {
       INSERT INTO devices (user_id, farm_id, led, fan, water, heater, cooler) 
       VALUES (?, ?, false, false, false, false, false)
     `;
-    pool.query(addDeviceQuery, [userId, farmId], (err, result) => {
+    db.query(addDeviceQuery, [userId, farmId], (err, result) => {
       if (err) {
         console.error('[POST /addFarm] devices 테이블 삽입 오류:', err);
         return res.status(500).json({ success: false, message: 'devices 추가 실패' });
@@ -504,7 +504,7 @@ app.post('/delFarm', (req, res) => {
 
   // 관련 장치 삭제
   const deleteDevicesQuery = `DELETE FROM devices WHERE farm_id IN (?)`;
-  pool.query(deleteDevicesQuery, [farmIds], (err, deviceResults) => {
+  db.query(deleteDevicesQuery, [farmIds], (err, deviceResults) => {
     if (err) {
       console.error('장치 삭제 오류:', err);
       return res.status(500).json({ error: '서버 오류' });
@@ -512,7 +512,7 @@ app.post('/delFarm', (req, res) => {
 
     // 관련 센서 삭제
     const deleteSensorsQuery = `DELETE FROM sensors WHERE farm_id IN (?)`;
-    pool.query(deleteSensorsQuery, [farmIds], (err, sensorResults) => {
+    db.query(deleteSensorsQuery, [farmIds], (err, sensorResults) => {
       if (err) {
         console.error('센서 삭제 오류:', err);
         return res.status(500).json({ error: '서버 오류' });
@@ -520,7 +520,7 @@ app.post('/delFarm', (req, res) => {
 
       // 농장 삭제
       const deleteFarmsQuery = `DELETE FROM farms WHERE farm_id IN (?)`;
-      pool.query(deleteFarmsQuery, [farmIds], (err, farmResults) => {
+      db.query(deleteFarmsQuery, [farmIds], (err, farmResults) => {
         if (err) {
           console.error('농장 삭제 오류:', err);
           return res.status(500).json({ error: '서버 오류' });
@@ -566,7 +566,7 @@ app.get('/realtime-data', (req, res) => {
 
   const params = [userId, farmId];
 
-  pool.query(query, params, (err, results) => {
+  db.query(query, params, (err, results) => {
     if (err) {
       console.error('데이터 조회 오류:', err);
       res.status(500).json({ error: '서버 오류' });
@@ -631,7 +631,7 @@ app.get('/history-data', (req, res) => {
       time_interval ASC;
   `;
 
-  pool.query(query, [user_id, farm_id, startOfDayUTC, endOfDayUTC], (err, results) => {
+  db.query(query, [user_id, farm_id, startOfDayUTC, endOfDayUTC], (err, results) => {
     if (err) {
       console.error('쿼리 실행 오류: ', err.stack);
       return res.status(500).json({ error: '데이터를 가져오는 데 실패했습니다.' });
