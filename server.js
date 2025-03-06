@@ -215,9 +215,10 @@ app.post('/delFarm', async (req, res) => {
   const deleteDevicesQuery = `DELETE FROM devices WHERE farm_id IN (?)`;
   const deleteSensorsQuery = `DELETE FROM sensors WHERE farm_id IN (?)`;
   const deleteFarmsQuery = `DELETE FROM farms WHERE farm_id IN (?)`;
-
+  let conn;
+  
   try {
-    const conn = await db.getConnection();
+    conn = await db.getConnection();
     await conn.query(deleteDevicesQuery, [farmIds]);
     await conn.query(deleteSensorsQuery, [farmIds]);
     const farmResults = await conn.query(deleteFarmsQuery, [farmIds]);
