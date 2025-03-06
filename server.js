@@ -53,7 +53,7 @@ app.get('/check-userid', async (req, res) => {
       return res.status(400).json('이미 사용 중인 아이디입니다.');
     }
     console.log(`[GET /check-userid] 사용 가능한 아이디: ${user_id}`);
-    return res.status(200).send();
+    return res.json();
   } catch (err) {
     console.error('[GET /check-userid] DB 오류:', err);
     return res.status(500).json();
@@ -76,7 +76,7 @@ app.post('/signup', async (req, res) => {
     return res.status(201).json();
   } catch (err) {
     console.error('[POST /signup] DB 오류:', err);
-    return res.status(500).send();
+    return res.status(500).json();
   } finally {
     conn.release();
   }
@@ -99,7 +99,7 @@ app.post('/login', async (req, res) => {
       // 비밀번호 비교
       if (user.password === password) {
         console.log(`[POST /login] 로그인 성공: ${user_id}`);
-        return res.send();
+        return res.json();
       } else {
         // 비밀번호가 틀린 경우
         console.log(`[POST /login] 로그인 실패: ${user_id} - 잘못된 비밀번호`);
