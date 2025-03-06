@@ -63,150 +63,124 @@ app.get('/check-userid', async (req, res) => {
 });
 
 // 닉네임 중복 확인 API
-app.get('/check-username', (req, res) => {
+app.get('/check-username', async (req, res) => {
   const { username } = req.query;
-  const query = 'SELECT * FROM users WHERE username = ?';
-  db.query(query, [username], (err, results) => {
-      if (err) {
-          console.error('[GET /check-username] 쿼리 실행 실패:', err);
-          return res.status(500).json({ message: '서버 오류' });
-      }
+  try {
+      const conn = await pool.getConnection();
+      const results = await conn.query('SELECT * FROM users WHERE username = ?', [username]);
+      conn.release();
+
       if (results.length > 0) {
-          console.log(`[GET /check-username] 이미 사용 중인 닉네임: ${username}`);
           return res.status(400).json({ message: '이미 사용 중인 닉네임입니다.' });
       }
-      console.log(`[GET /check-username] 사용 가능한 닉네임: ${username}`);
       res.status(200).json({ message: '사용 가능한 닉네임입니다.' });
-  });
+  } catch (err) {
+      console.error('[GET /check-username] 서버 오류:', err);
+      res.status(500).json({ message: '서버 오류' });
+  }
 });
 
 // 회원가입 API
-app.post('/signup', (req, res) => {
+app.post('/signup', async (req, res) => {
   const { user_id, password, username } = req.body;
-  const insertUserQuery = 'INSERT INTO users (user_id, password, username) VALUES (?, ?, ?)';
-  db.query(insertUserQuery, [user_id, password, username], (err) => {
-      if (err) {
-          console.error('[POST /signup] 회원가입 실패:', err);
-          return res.status(500).json({ message: '회원가입 실패' });
-      }
-      console.log(`[POST /signup] 회원가입 성공 - user_id: ${user_id}`);
+  try {
+      const conn = await pool.getConnection();
+      await conn.query('INSERT INTO users (user_id, password, username) VALUES (?, ?, ?)', [user_id, password, username]);
+      conn.release();
       res.status(201).json({ message: '회원가입 성공' });
-  });
+  } catch (err) {
+      console.error('[POST /signup] 회원가입 실패:', err);
+      res.status(500).json({ message: '회원가입 실패' });
+  }
 });
 
-// 로그인
-app.post('/login', (req, res) => {
+// 로그인 API
+app.post('/login', async (req, res) => {
   const { user_id, password } = req.body;
-
-  // 이메일로 사용자 검색
-  const query = 'SELECT * FROM users WHERE user_id = ?';
-  db.query(query, [user_id], (err, results) => {
-      if (err) {
-          console.error('쿼리 실행 실패: ' + err.stack);
-          res.status(500).json({ message: '서버 오류' });
-          return;
-      }
+  try {
+      const conn = await pool.getConnection();
+      const results = await conn.query('SELECT * FROM users WHERE user_id = ?', [user_id]);
+      conn.release();
 
       if (results.length === 0) {
-          // 이메일이 존재하지 않는 경우
-          res.status(401).json({ message: '존재하지 않는 이메일입니다.' });
-      } else {
-          const user = results[0];
-          // 비밀번호 비교
-          if (user.password === password) {
-              // 로그인 성공
-              console.log(`[POST /login] 로그인 성공: ${user_id}`);
-              res.status(200).json({ message: '로그인 성공', token: 'some-jwt-token' });
-          } else {
-              // 비밀번호가 틀린 경우
-              console.log(`[POST /login] 로그인 실패: ${user_id} - 잘못된 비밀번호`);
-              res.status(401).json({ message: '잘못된 비밀번호입니다.' });
-          }
+          return res.status(401).json({ message: '존재하지 않는 이메일입니다.' });
       }
-  });
+
+      const user = results[0];
+      if (user.password === password) {
+          res.status(200).json({ message: '로그인 성공', token: 'some-jwt-token' });
+      } else {
+          res.status(401).json({ message: '잘못된 비밀번호입니다.' });
+      }
+  } catch (err) {
+      console.error('[POST /login] 서버 오류:', err);
+      res.status(500).json({ message: '서버 오류' });
+  }
 });
 
-// 센서 데이터 저장
-const moment = require('moment-timezone');
-
-// 센서 데이터 저장
-app.post('/sensors', (req, res) => {
+// 센서 데이터 저장 API
+app.post('/sensors', async (req, res) => {
   const { user_id, farm_id, temperature, humidity, soil_moisture, co2, created_at } = req.body;
-
-  // created_at이 없으면 현재 시간을 한국 시간으로 설정
   const timestamp = created_at ? moment.tz(created_at, "Asia/Seoul").format('YYYY-MM-DD HH:mm:ss') : moment().tz("Asia/Seoul").format('YYYY-MM-DD HH:mm:ss');
+  
+  try {
+      const conn = await pool.getConnection();
+      const result = await conn.query('INSERT INTO sensors (user_id, farm_id, temperature, humidity, soil_moisture, co2, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+          [user_id, farm_id, temperature, humidity, soil_moisture, co2, timestamp]);
+      const insertedId = result.insertId;
 
-  // DB에 저장
-  const query = `INSERT INTO sensors (user_id, farm_id, temperature, humidity, soil_moisture, co2, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)`;
-  db.query(query, [user_id, farm_id, temperature, humidity, soil_moisture, co2, timestamp], (err, results) => {
-    if (err) {
-      console.error('[POST /sensors] DB 오류:', err);
-      return res.status(500).send('DB 오류 발생');
-    }
-
-    // 방금 삽입된 튜플의 id
-    const insertedId = results.insertId;
-
-    // 방금 삽입한 튜플 전체 가져오기
-    const selectQuery = `SELECT * FROM sensors WHERE id = ?`;
-    db.query(selectQuery, [insertedId], (err, rows) => {
-      if (err) {
-        console.error('[POST /sensors] 데이터 조회 오류:', err);
-        return res.status(500).send('데이터 조회 오류 발생');
-      }
+      const rows = await conn.query('SELECT * FROM sensors WHERE id = ?', [insertedId]);
+      conn.release();
 
       console.log('[POST /sensors] 삽입된 데이터:', rows[0]);
       res.status(200).json({ message: '센서 데이터 저장 및 조회 성공' });
-    });
 
-    // 저장된 센서 데이터를 기반으로 제어 여부를 체크하고 실행
-    Controldevice(user_id, farm_id, temperature, humidity, soil_moisture, co2);
-  });
+      await Controldevice(user_id, farm_id, temperature, humidity, soil_moisture, co2);
+  } catch (err) {
+      console.error('[POST /sensors] DB 오류:', err);
+      res.status(500).send('DB 오류 발생');
+  }
 });
 
-function Controldevice(user_id, farm_id, temperature, humidity, soil_moisture) {
-  let fanStatus = 0; 
-  let waterStatus = 0; 
+async function Controldevice(user_id, farm_id, temperature, humidity, soil_moisture) {
+  let fanStatus = 0;
+  let waterStatus = 0;
 
   if (temperature >= 22) {
-    fanStatus = 1;
-    console.log('환기팬 켬 (온도 22°C 이상)');
+      fanStatus = 1;
+      console.log('환기팬 켬 (온도 22°C 이상)');
   } else if (temperature <= 18) {
-    fanStatus = 0; 
-    console.log('환기팬 끔 (온도 18°C 이하)');
-  } else {
-    // 온도가 적절한 범위에 있을 때만 습도 조건 체크
-    if (humidity >= 70) {
-        fanStatus = 1;
-        console.log('환기팬 켬 (습도 70% 이상)');
-    } else if (humidity <= 60) {
-        fanStatus = 0;
-        console.log('환기팬 끔 (습도 60% 이하)');
-    }
+      fanStatus = 0;
+      console.log('환기팬 끔 (온도 18°C 이하)');
+  } else if (humidity >= 70) {
+      fanStatus = 1;
+      console.log('환기팬 켬 (습도 70% 이상)');
+  } else if (humidity <= 60) {
+      fanStatus = 0;
+      console.log('환기팬 끔 (습도 60% 이하)');
   }
 
-  // 토양 수분에 따른 물 공급 제어
   if (soil_moisture <= 50) {
-    waterStatus = 1; 
-    console.log('물 공급 (토양 수분 50% 이하)');
+      waterStatus = 1;
+      console.log('물 공급 (토양 수분 50% 이하)');
   } else if (soil_moisture >= 70) {
-    waterStatus = 0;  
-    console.log('물 공급 중지 (토양 수분 70% 이상)');
+      waterStatus = 0;
+      console.log('물 공급 중지 (토양 수분 70% 이상)');
   }
 
-  // 상태 제어를 위한 DB 업데이트
-  updateDevice(user_id, farm_id, fanStatus, waterStatus);
+  await updateDevice(user_id, farm_id, fanStatus, waterStatus);
 }
 
-function updateDevice(user_id, farm_id, fanStatus, waterStatus) {
-  const query = `UPDATE devices SET fan = ?, water = ? WHERE user_id = ? AND farm_id = ?`;
-  db.query(query, [fanStatus, waterStatus, user_id, farm_id], (err, results) => {
-    if (err) {
-      console.error('[updateDevice] DB 오류:', err);
-    } else {
+async function updateDevice(user_id, farm_id, fanStatus, waterStatus) {
+  try {
+      const conn = await pool.getConnection();
+      await conn.query('UPDATE devices SET fan = ?, water = ? WHERE user_id = ? AND farm_id = ?',
+          [fanStatus, waterStatus, user_id, farm_id]);
+      conn.release();
       console.log('상태 제어 업데이트 완료:', fanStatus, waterStatus);
-    }
-  });
+  } catch (err) {
+      console.error('[updateDevice] DB 오류:', err);
+  }
 }
 
 // 최근 센서 데이터 조회
