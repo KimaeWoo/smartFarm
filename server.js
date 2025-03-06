@@ -3,6 +3,7 @@ const express = require('express'); // 웹 서버를 만들기 위한 도구(Exp
 const mariadb = require('mariadb'); // MariaDB 연결 모듈
 const path = require('path');
 const cors = require('cors'); // CORS 불러오기
+const moment = require('moment-timezone');
 
 // 서버 만들기 + 실행할 포트 번호 설정
 const app = express(); // 서버를 만든다 (이 변수에 서버 기능을 저장)
@@ -52,11 +53,10 @@ app.get('/check-userid', async (req, res) => {
       return res.status(400).json({ message: '이미 사용 중인 아이디입니다.' });
     }
     console.log(`[GET /check-userid] 사용 가능한 아이디: ${user_id}`);
-    res.status(200).json({ message: '사용 가능한 아이디입니다.' });
-
+    return res.status(200).json({ message: '사용 가능한 아이디입니다.' });
   } catch (err) {
     console.error('[GET /check-userid] 쿼리 실행 실패:', err);
-    res.status(500).json({ message: '서버 오류' });
+    return res.status(500).json({ message: '서버 오류' });
   } finally {
     if (conn) conn.release(); // 연결 해제
   }
@@ -64,18 +64,16 @@ app.get('/check-userid', async (req, res) => {
 
 // 회원가입 API
 app.post('/signup', async (req, res) => {
-  console.log('signup test123');
   const { user_id, password, username } = req.body;
   const query = 'INSERT INTO users (user_id, password, username) VALUES (?, ?, ?)';
   let conn;
 
   try {
-    console.log('signup test');
     conn = await db.getConnection();
     const results = await conn.query(query, [user_id, password, username]);
     
     console.log(`[POST /signup] 회원가입 성공 - user_id: ${user_id}`);
-    res.status(201).json({ message: '회원가입 성공' });
+    return res.status(201).json({ message: '회원가입 성공' });
   } catch (err) {
     console.error('[POST /signup] 서버 오류:', err);
     return res.status(500).json({ message: '서버 오류' });
@@ -95,61 +93,60 @@ app.post('/login', async (req, res) => {
     const results = await conn.query(query, [user_id]);
 
     if (results.length === 0) {
-      res.status(401).json({ message: '존재하지 않는 이메일입니다.'});
+      return res.status(401).json({ message: '존재하지 않는 이메일입니다.'});
     } else {
       const user = results[0];
       // 비밀번호 비교
       if (user.password === password) {
         console.log(`[POST /login] 로그인 성공: ${user_id}`);
-        res.status(200).json({ message: '로그인 성공', token: 'some-jwt-token' });
+        return res.status(200).json({ message: '로그인 성공', token: 'some-jwt-token' });
       } else {
         // 비밀번호가 틀린 경우
         console.log(`[POST /login] 로그인 실패: ${user_id} - 잘못된 비밀번호`);
-        res.status(401).json({ message: '잘못된 비밀번호입니다.' });
+        return res.status(401).json({ message: '잘못된 비밀번호입니다.' });
       } 
     }
   } catch (err) {
-    console.error('[POST /login] 서버 오류류: ' + err.stack);
-    res.status(500).json({ message: '서버 오류' });
+    console.error('[POST /login] 서버 오류: ' + err.stack);
+    return res.status(500).json({ message: '서버 오류' });
   } finally {
     if (conn) conn.release();
   }
 });
 
-const moment = require('moment-timezone');
 // 센서 데이터 저장
-app.post('/sensors', (req, res) => {
+app.post('/sensors', async (req, res) => {
   const { user_id, farm_id, temperature, humidity, soil_moisture, co2, created_at } = req.body;
-
   // created_at이 없으면 현재 시간을 한국 시간으로 설정
   const timestamp = created_at ? moment.tz(created_at, "Asia/Seoul").format('YYYY-MM-DD HH:mm:ss') : moment().tz("Asia/Seoul").format('YYYY-MM-DD HH:mm:ss');
-
-  // DB에 저장
   const query = `INSERT INTO sensors (user_id, farm_id, temperature, humidity, soil_moisture, co2, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)`;
-  db.query(query, [user_id, farm_id, temperature, humidity, soil_moisture, co2, timestamp], (err, results) => {
-    if (err) {
-      console.error('[POST /sensors] DB 오류:', err);
-      return res.status(500).send('DB 오류 발생');
-    }
-
+  let conn;
+  try {
+    conn = await db.getConnection();
+    const results = conn.query(query, [user_id, farm_id, temperature, humidity, soil_moisture, co2, timestamp]);
+  
     // 방금 삽입된 튜플의 id
     const insertedId = results.insertId;
-
-    // 방금 삽입한 튜플 전체 가져오기
     const selectQuery = `SELECT * FROM sensors WHERE id = ?`;
-    db.query(selectQuery, [insertedId], (err, rows) => {
-      if (err) {
-        console.error('[POST /sensors] 데이터 조회 오류:', err);
-        return res.status(500).send('데이터 조회 오류 발생');
-      }
+
+    try {
+      const selectRsults = conn.query(selectedQuery, [insertedId]);
 
       console.log('[POST /sensors] 삽입된 데이터:', rows[0]);
       res.status(200).json({ message: '센서 데이터 저장 및 조회 성공' });
-    });
-
-    // 저장된 센서 데이터를 기반으로 제어 여부를 체크하고 실행
-    Controldevice(user_id, farm_id, temperature, humidity, soil_moisture, co2);
-  });
+    
+      // 저장된 센서 데이터를 기반으로 제어 여부를 체크하고 실행
+      //Controldevice(user_id, farm_id, temperature, humidity, soil_moisture, co2);
+    } catch (err) {
+      console.error('[POST /sensors] 데이터 조회 오류:', err);
+      return res.status(500).send('데이터 조회 오류 발생');
+    }
+  } catch (err) {
+    console.error('[POST /sensors] DB 오류:', err);
+    return res.status(500).send('DB 오류 발생');
+  } finally {
+    if (conn) conn.release();
+  }
 });
 
 function Controldevice(user_id, farm_id, temperature, humidity, soil_moisture) {
