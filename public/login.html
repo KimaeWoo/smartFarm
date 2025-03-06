@@ -316,30 +316,30 @@
             checkSignupEligibility();
         }
         
-        async function checkUsername() {
-            const username = document.getElementById("signup-name").value;
-            if (!username) {
-                document.getElementById("name-result").textContent = "닉네임을 입력하세요.";
-                document.getElementById("name-result").style.color = "red";
-                return;
-            }
-            const response = await fetch(`https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app/check-username?username=${username}`);
-            const data = await response.json();
+        //async function checkUsername() {
+        //    const username = document.getElementById("signup-name").value;
+        //    if (!username) {
+        //        document.getElementById("name-result").textContent = "닉네임을 입력하세요.";
+        //        document.getElementById("name-result").style.color = "red";
+        //        return;
+        //    }
+        //    const response = await fetch(`https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app/check-username?username=${username}`);
+        //    const data = await response.json();
 
-            if (response.ok) {
-                document.getElementById("name-result").textContent = "사용 가능한 닉네임입니다.";
-                document.getElementById("name-result").style.color = "lightgreen";
-                isUsernameChecked = true;
-            } else {
-                document.getElementById("name-result").textContent = "이미 사용 중인 닉네임입니다.";
-                document.getElementById("name-result").style.color = "red";
-                isUsernameChecked = false;
-            }
-            checkSignupEligibility();
-        }
+        //    if (response.ok) {
+        //        document.getElementById("name-result").textContent = "사용 가능한 닉네임입니다.";
+        //        document.getElementById("name-result").style.color = "lightgreen";
+        //        isUsernameChecked = true;
+        //    } else {
+        //        document.getElementById("name-result").textContent = "이미 사용 중인 닉네임입니다.";
+        //        document.getElementById("name-result").style.color = "red";
+        //        isUsernameChecked = false;
+        //    }
+        //    checkSignupEligibility();
+        //}
 
         function checkSignupEligibility() {
-            document.getElementById("signupBtn").disabled = !(isUserIdChecked && isUsernameChecked && isPasswordMatched);
+            document.getElementById("signupBtn").disabled = !(isUserIdChecked && isPasswordMatched);
         }
 
         // 로그인 요청
