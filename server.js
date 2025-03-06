@@ -50,13 +50,13 @@ app.get('/check-userid', async (req, res) => {
 
     if (results.length > 0) {
       console.log(`[GET /check-userid] 이미 사용 중인 아이디: ${user_id}`);
-      return res.status(400).send('이미 사용 중인 아이디입니다.');
+      return res.status(400).json('이미 사용 중인 아이디입니다.');
     }
     console.log(`[GET /check-userid] 사용 가능한 아이디: ${user_id}`);
     return res.send();
   } catch (err) {
     console.error('[GET /check-userid] DB 오류:', err);
-    return res.status(500).send();
+    return res.status(500).json();
   } finally {
     conn.release();
   }
