@@ -386,7 +386,7 @@
                 fetch(`https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app/getName?user_id=${userId}`)
                     .then(response => response.json())
                     .then(data => {
-                        if (data.success) {
+                        if (response.ok) {
                             const username = data.username;
                             document.getElementById('username').textContent = `${username}님`;
                         } else {
@@ -400,7 +400,7 @@
                 fetch(`https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app/getFarms?user_id=${userId}`)
                     .then(response => response.json())
                     .then(data => {
-                        if (!data.success) {
+                        if (!response.ok) {
                             console.error("농장 목록 불러오기 실패");
                             return;
                         }
@@ -482,7 +482,7 @@
                 })
                 .then(response => response.json())
                 .then(result => {
-                    if (result.success) {
+                    if (response.ok) {
                         alert("농장이 성공적으로 추가되었습니다.");
                         addFarmModal.style.display = "none";
                         fetchFarms();
@@ -504,7 +504,7 @@
                     return;
                 }
         
-                fetch("/delFarm", {
+                fetch("https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app/delFarm", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
@@ -513,7 +513,7 @@
                 })
                 .then(response => response.json())
                 .then(result => {
-                    if (result.success) {
+                    if (response.ok) {
                         alert("선택된 농장이 삭제되었습니다.");
                         selectedFarms = [];
                         fetchFarms();
