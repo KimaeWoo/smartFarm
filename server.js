@@ -37,23 +37,29 @@ app.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
-// 아이디 중복 확인 API
-app.get('/check-userid', (req, res) => {
+// 아이디 중복 확인 API (Promise 기반으로 수정)
+app.get('/check-userid', async (req, res) => {
   const { user_id } = req.query;
   console.log(`${user_id} 중복 확인`);
+
   const query = 'SELECT * FROM users WHERE user_id = ?';
-  db.query(query, [user_id], (err, results) => {
-      if (err) {
-          console.error('[GET /check-userid] 쿼리 실행 실패:', err);
-          return res.status(500).json({ message: '서버 오류' });
-      }
-      if (results.length > 0) {
-          console.log(`[GET /check-userid] 이미 사용 중인 아이디: ${user_id}`);
-          return res.status(400).json({ message: '이미 사용 중인 아이디입니다.' });
-      }
-      console.log(`[GET /check-userid] 사용 가능한 아이디: ${user_id}`);
-      res.status(200).json({ message: '사용 가능한 아이디입니다.' });
-  });
+
+  try {
+    const conn = await db.getConnection(); // DB 연결
+    const results = await conn.query(query, [user_id]); // 쿼리 실행
+    conn.release(); // 연결 반환
+
+    if (results.length > 0) {
+      console.log(`[GET /check-userid] 이미 사용 중인 아이디: ${user_id}`);
+      return res.status(400).json({ message: '이미 사용 중인 아이디입니다.' });
+    }
+    console.log(`[GET /check-userid] 사용 가능한 아이디: ${user_id}`);
+    res.status(200).json({ message: '사용 가능한 아이디입니다.' });
+
+  } catch (err) {
+    console.error('[GET /check-userid] 쿼리 실행 실패:', err);
+    res.status(500).json({ message: '서버 오류' });
+  }
 });
 
 // 닉네임 중복 확인 API
