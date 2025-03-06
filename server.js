@@ -55,7 +55,7 @@ app.get('/check-userid', async (req, res) => {
     console.log(`[GET /check-userid] 사용 가능한 아이디: ${user_id}`);
     return res.status(200).json({ message: '사용 가능한 아이디입니다.' });
   } catch (err) {
-    console.error('[GET /check-userid] 쿼리 실행 실패:', err);
+    console.error('[GET /check-userid] 쿼리 오류:', err);
     return res.status(500).json({ message: '서버 오류' });
   } finally {
     if (conn) conn.release(); // 연결 해제
@@ -75,7 +75,7 @@ app.post('/signup', async (req, res) => {
     console.log(`[POST /signup] 회원가입 성공 - user_id: ${user_id}`);
     return res.status(201).json({ message: '회원가입 성공' });
   } catch (err) {
-    console.error('[POST /signup] 서버 오류:', err);
+    console.error('[POST /signup] 쿼리 오류:', err);
     return res.status(500).json({ message: '서버 오류' });
   } finally {
     if (conn) conn.release();
@@ -107,11 +107,162 @@ app.post('/login', async (req, res) => {
       } 
     }
   } catch (err) {
-    console.error('[POST /login] 서버 오류: ' + err.stack);
+    console.error('[POST /login] 쿼리 오류: ' + err.stack);
     return res.status(500).json({ message: '서버 오류' });
   } finally {
     if (conn) conn.release();
   }
+});
+
+// 사용자 이름 불러오기
+app.get('/getName', (req,res) => {
+  const userId = req.query.user_id;
+  const query = `SELECT username from users where user_id = ?`;
+  let conn;
+
+  try {
+    conn = db.getConnection();
+    const results = conn.query(query, [userId]);
+
+    if (results.length > 0) {
+      console.log('[GET /getName] 사용자 이름:',results);
+      return res.json({ success: true, username: results[0].username });
+    } else {
+      console.log('[GET /getName] 사용자 정보를 찾을 수 없습니다.')
+      return res.json({ success: false, message: '사용자 정보를 찾을 수 없습니다.' });
+    }
+  } catch (err) {
+    console.error('[GET /getName] 쿼리 오류:', err);
+    return res.json({ success: false});
+  }
+});
+
+// 스마트팜 이름 불러오기
+app.get('/getFarmName', (req,res) => {
+  const userId = req.query.user_id;
+  const query = `SELECT farm_name from farms where user_id = ?`;
+  db.query(query, [userId], (err,results) => {
+    if (err) {
+      console.error('쿼리 에러:', err);
+      res.json({ success: false});
+    } else {
+      console.log('[GET /getFarmName] 스마트팜 이름 불러오기 성공: ',results);
+      if (results.length > 0) {
+        console.log('[GET /getFarmName] 스마트팜 이름:',results);
+        res.json({ success: true, farmname: results[0].farm_name });
+      } else {
+        console.log('[GET /getFarmName] 스마트팜 정보를 찾을 수 없습니다.')
+        res.json({ success: false, message: '사용자 정보를 찾을 수 없습니다.' });
+      }
+    }
+  });
+});
+
+// 농장 목록 불러오기
+app.get('/getFarms', (req, res) => {
+  const userId = req.query.user_id;
+  const sql = `SELECT 
+   farm_id, farm_name, farm_location, farm_type, farm_active
+   FROM farms 
+   WHERE user_id = ?`;
+  db.query(sql, [userId], (err, results) => {
+      if (err) {
+          console.error('쿼리 에러:', err);
+          res.json({ success: false });
+      } else {
+          console.log('[GET /getFarms]농장 목록 불러오기 성공:', results);  // 농장 목록 출력
+          res.json({ success: true, farms: results });
+      }
+  });
+});
+
+// 농장 추가하기
+app.post('/addFarm', (req, res) => {
+  const userId = req.body.user_id;
+  const farmName = req.body.name;
+  const farmLocation = req.body.location;
+  const farmType = req.body.cropType;
+  if (!userId) {
+    console.log('[POST /addFarm] user_id 누락 - 요청 거부');
+    return res.status(400).json({ success: false, message: 'user_id가 누락되었습니다.' });
+  }
+
+  if (!farmName || !farmLocation || !farmType) {
+    console.log('[POST /addFarm] 농장 정보 누락 - 요청 거부');
+    return res.status(400).json({ success: false, message: '모든 필드를 입력해주세요.' });
+  }
+
+  // farms 테이블에 농장 추가
+  const addFarmQuery = `INSERT INTO 
+  farms (user_id, farm_name, farm_location, farm_type) 
+  VALUES (?, ?, ?, ?)
+  `;
+  db.query(addFarmQuery, [userId, farmName, farmLocation, farmType], (err, result) => {
+    if (err) {
+      console.error('[POST /addFarm] 쿼리 에러:', err);
+      return res.status(500).json({ success: false, message: 'DB 오류 발생' });
+    }
+
+    const farmId = result.insertId; // 방금 추가된 farm_id
+    console.log('[POST /addFarm] 농장 추가 성공:', farmId);
+
+    // devices 테이블에 초기값 삽입 (user_id, farm_id, led, fan, water)
+    const addDeviceQuery = `
+      INSERT INTO devices (user_id, farm_id, led, fan, water, heater, cooler) 
+      VALUES (?, ?, false, false, false, false, false)
+    `;
+    db.query(addDeviceQuery, [userId, farmId], (err, result) => {
+      if (err) {
+        console.error('[POST /addFarm] devices 테이블 삽입 오류:', err);
+        return res.status(500).json({ success: false, message: 'devices 추가 실패' });
+      }
+
+      console.log('[POST /addFarm] devices 초기값 추가 성공:', result.insertId);
+      res.status(200).json({ success: true, farm_id: farmId });
+    });
+  });
+});
+
+// 농장 삭제
+app.post('/delFarm', (req, res) => {
+  const farmIds = req.body.farm_ids; // farm_ids 배열이 전달됨
+
+  if (!farmIds || farmIds.length === 0) {
+    return res.status(400).json({ error: '삭제할 농장 ID가 필요합니다.' });
+  }
+
+  // 관련 장치 삭제
+  const deleteDevicesQuery = `DELETE FROM devices WHERE farm_id IN (?)`;
+  db.query(deleteDevicesQuery, [farmIds], (err, deviceResults) => {
+    if (err) {
+      console.error('장치 삭제 오류:', err);
+      return res.status(500).json({ error: '서버 오류' });
+    }
+
+    // 관련 센서 삭제
+    const deleteSensorsQuery = `DELETE FROM sensors WHERE farm_id IN (?)`;
+    db.query(deleteSensorsQuery, [farmIds], (err, sensorResults) => {
+      if (err) {
+        console.error('센서 삭제 오류:', err);
+        return res.status(500).json({ error: '서버 오류' });
+      }
+
+      // 농장 삭제
+      const deleteFarmsQuery = `DELETE FROM farms WHERE farm_id IN (?)`;
+      db.query(deleteFarmsQuery, [farmIds], (err, farmResults) => {
+        if (err) {
+          console.error('농장 삭제 오류:', err);
+          return res.status(500).json({ error: '서버 오류' });
+        }
+        if (farmResults.affectedRows === 0) {
+          return res.status(400).json({ error: '해당 농장이 DB에 존재하지 않습니다.' });
+        }
+
+        console.log('[Post /delFarm] 삭제된 농장 id:', farmIds);
+        res.json({ success: true, message: '농장, 관련 장치 및 센서가 성공적으로 삭제되었습니다.' });
+      });
+    });
+  });
 });
 
 // 센서 데이터 저장
@@ -375,155 +526,6 @@ app.get('/sensors/average', (req, res) => {
     }
     console.log('[GET /sensors/average] 통계 데이터 조회 성공', results);
     res.json(results);
-  });
-});
-
-// 사용자 이름 불러오기
-app.get('/getName', (req,res) => {
-  const userId = req.query.user_id;
-  const query = `SELECT username from users where user_id = ?`;
-  db.query(query, [userId], (err,results) => {
-    if (err) {
-      console.error('쿼리 에러:', err);
-      res.json({ success: false});
-    } else {
-      console.log('[GET /getName] 사용자 이름 불러오기 성공: ',results);
-      if (results.length > 0) {
-        console.log('[GET /getName] 사용자 이름:',results);
-        res.json({ success: true, username: results[0].username });
-      } else {
-        console.log('[GET /getName] 사용자 정보를 찾을 수 없습니다.')
-        res.json({ success: false, message: '사용자 정보를 찾을 수 없습니다.' });
-      }
-    }
-  });
-});
-
-// 스마트팜 이름 불러오기
-app.get('/getFarmName', (req,res) => {
-  const userId = req.query.user_id;
-  const query = `SELECT farm_name from farms where user_id = ?`;
-  db.query(query, [userId], (err,results) => {
-    if (err) {
-      console.error('쿼리 에러:', err);
-      res.json({ success: false});
-    } else {
-      console.log('[GET /getFarmName] 스마트팜 이름 불러오기 성공: ',results);
-      if (results.length > 0) {
-        console.log('[GET /getFarmName] 스마트팜 이름:',results);
-        res.json({ success: true, farmname: results[0].farm_name });
-      } else {
-        console.log('[GET /getFarmName] 스마트팜 정보를 찾을 수 없습니다.')
-        res.json({ success: false, message: '사용자 정보를 찾을 수 없습니다.' });
-      }
-    }
-  });
-});
-
-// 농장 목록 불러오기
-app.get('/getFarms', (req, res) => {
-  const userId = req.query.user_id;
-  const sql = `SELECT 
-   farm_id, farm_name, farm_location, farm_type, farm_active
-   FROM farms 
-   WHERE user_id = ?`;
-  db.query(sql, [userId], (err, results) => {
-      if (err) {
-          console.error('쿼리 에러:', err);
-          res.json({ success: false });
-      } else {
-          console.log('[GET /getFarms]농장 목록 불러오기 성공:', results);  // 농장 목록 출력
-          res.json({ success: true, farms: results });
-      }
-  });
-});
-
-// 농장 추가하기
-app.post('/addFarm', (req, res) => {
-  const userId = req.body.user_id;
-  const farmName = req.body.name;
-  const farmLocation = req.body.location;
-  const farmType = req.body.cropType;
-  if (!userId) {
-    console.log('[POST /addFarm] user_id 누락 - 요청 거부');
-    return res.status(400).json({ success: false, message: 'user_id가 누락되었습니다.' });
-  }
-
-  if (!farmName || !farmLocation || !farmType) {
-    console.log('[POST /addFarm] 농장 정보 누락 - 요청 거부');
-    return res.status(400).json({ success: false, message: '모든 필드를 입력해주세요.' });
-  }
-
-  // farms 테이블에 농장 추가
-  const addFarmQuery = `INSERT INTO 
-  farms (user_id, farm_name, farm_location, farm_type) 
-  VALUES (?, ?, ?, ?)
-  `;
-  db.query(addFarmQuery, [userId, farmName, farmLocation, farmType], (err, result) => {
-    if (err) {
-      console.error('[POST /addFarm] 쿼리 에러:', err);
-      return res.status(500).json({ success: false, message: 'DB 오류 발생' });
-    }
-
-    const farmId = result.insertId; // 방금 추가된 farm_id
-    console.log('[POST /addFarm] 농장 추가 성공:', farmId);
-
-    // devices 테이블에 초기값 삽입 (user_id, farm_id, led, fan, water)
-    const addDeviceQuery = `
-      INSERT INTO devices (user_id, farm_id, led, fan, water, heater, cooler) 
-      VALUES (?, ?, false, false, false, false, false)
-    `;
-    db.query(addDeviceQuery, [userId, farmId], (err, result) => {
-      if (err) {
-        console.error('[POST /addFarm] devices 테이블 삽입 오류:', err);
-        return res.status(500).json({ success: false, message: 'devices 추가 실패' });
-      }
-
-      console.log('[POST /addFarm] devices 초기값 추가 성공:', result.insertId);
-      res.status(200).json({ success: true, farm_id: farmId });
-    });
-  });
-});
-
-// 농장 삭제
-app.post('/delFarm', (req, res) => {
-  const farmIds = req.body.farm_ids; // farm_ids 배열이 전달됨
-
-  if (!farmIds || farmIds.length === 0) {
-    return res.status(400).json({ error: '삭제할 농장 ID가 필요합니다.' });
-  }
-
-  // 관련 장치 삭제
-  const deleteDevicesQuery = `DELETE FROM devices WHERE farm_id IN (?)`;
-  db.query(deleteDevicesQuery, [farmIds], (err, deviceResults) => {
-    if (err) {
-      console.error('장치 삭제 오류:', err);
-      return res.status(500).json({ error: '서버 오류' });
-    }
-
-    // 관련 센서 삭제
-    const deleteSensorsQuery = `DELETE FROM sensors WHERE farm_id IN (?)`;
-    db.query(deleteSensorsQuery, [farmIds], (err, sensorResults) => {
-      if (err) {
-        console.error('센서 삭제 오류:', err);
-        return res.status(500).json({ error: '서버 오류' });
-      }
-
-      // 농장 삭제
-      const deleteFarmsQuery = `DELETE FROM farms WHERE farm_id IN (?)`;
-      db.query(deleteFarmsQuery, [farmIds], (err, farmResults) => {
-        if (err) {
-          console.error('농장 삭제 오류:', err);
-          return res.status(500).json({ error: '서버 오류' });
-        }
-        if (farmResults.affectedRows === 0) {
-          return res.status(400).json({ error: '해당 농장이 DB에 존재하지 않습니다.' });
-        }
-
-        console.log('[Post /delFarm] 삭제된 농장 id:', farmIds);
-        res.json({ success: true, message: '농장, 관련 장치 및 센서가 성공적으로 삭제되었습니다.' });
-      });
-    });
   });
 });
 
