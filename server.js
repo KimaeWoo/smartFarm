@@ -93,7 +93,7 @@ app.post('/login', async (req, res) => {
     const results = await conn.query(query, [user_id]);
 
     if (results.length === 0) {
-      return res.status(401).send('존재하지 않는 이메일입니다.');
+      return res.status(401).json('존재하지 않는 이메일입니다.');
     } else {
       const user = results[0];
       // 비밀번호 비교
@@ -103,12 +103,12 @@ app.post('/login', async (req, res) => {
       } else {
         // 비밀번호가 틀린 경우
         console.log(`[POST /login] 로그인 실패: ${user_id} - 잘못된 비밀번호`);
-        return res.status(401).send('잘못된 비밀번호입니다.');
+        return res.status(401).json('잘못된 비밀번호입니다.');
       } 
     }
   } catch (err) {
     console.error('[POST /login] DB 오류: ' + err.stack);
-    return res.status(500).send();
+    return res.status(500).json();
   } finally {
     conn.release();
   }
@@ -129,10 +129,10 @@ app.get('/getName', async (req,res) => {
       return res.json({ username: results[0].username });
     }
     console.log('[GET /getName] 사용자 정보를 찾을 수 없습니다.')
-    return res.status(404).send('사용자 정보를 찾을 수 없습니다.');
+    return res.status(404).json('사용자 정보를 찾을 수 없습니다.');
   } catch (err) {
     console.error('[GET /getName] DB 오류:', err);
-    return res.status(500).send();
+    return res.status(500).json();
   } finally {
     conn.release();
   }
@@ -153,10 +153,10 @@ app.get('/getFarmName', async (req,res) => {
       return res.json({ farmname: results[0].farm_name });
     }
     console.log('[GET /getFarmName] 스마트팜 정보를 찾을 수 없습니다.')
-    return res.status(404).send('사용자 정보를 찾을 수 없습니다.');
+    return res.status(404).json('사용자 정보를 찾을 수 없습니다.');
   } catch (err) {
     console.error('[GET /getFarmName] DB 오류:', err);
-    return res.status(500).send();
+    return res.status(500).json();
   } finally {
     conn.release();
   }
@@ -173,10 +173,10 @@ app.get('/getFarms', async(req, res) => {
     const results = await conn.query(query, [user_id]);
 
     console.log('[GET /getFarms] 농장 목록 불러오기 성공:', results);  // 농장 목록 출력
-    return res.send();
+    return res.json();
   } catch (err) {
     console.error('[GET /getFarms] DB 오류:', err);
-    return res.status(500).send();
+    return res.status(500).json();
   } finally {
     conn.release();
   }
@@ -200,11 +200,10 @@ app.post('/addFarm', async (req, res) => {
     
     const addDeviceResults = await conn.query(addDeviceQuery, [user_id, farm_id]);
     console.log('[POST /addFarm] devices 초기값 추가 성공:', addDeviceResults.insertId);
-
-    return res.send();
+    return res.json();
   } catch (err) {
     console.error('[POST /addFarm] DB 오류:', err);
-    return res.status(500).send();
+    return res.status(500).json();
   } finally {
     conn.release();
   }
@@ -224,14 +223,14 @@ app.post('/delFarm', async (req, res) => {
     const farmResults = await conn.query(deleteFarmsQuery, [farmIds]);
 
     if (farmResults.affectedRows === 0) {
-      return res.status(400).send('해당 농장이 DB에 존재하지 않습니다.');
+      return res.status(400).json('해당 농장이 DB에 존재하지 않습니다.');
     }
 
     console.log('[Post /delFarm] 삭제된 농장 id:', farmIds);
-    return res.send();
+    return res.json();
   } catch (err) {
     console.error('DB 오류:', err);
-    return res.status(500).send();
+    return res.status(500).json();
   } finally {
     conn.release();
   }
@@ -267,11 +266,11 @@ app.post('/sensors', async (req, res) => {
       
     } catch (err) {
       console.error('[POST /sensors] 데이터 조회 오류:', err);
-      return res.status(500).send();
+      return res.status(500).json();
     }
   } catch (err) {
     console.error('[POST /sensors] DB 오류:', err);
-    return res.status(500).send();
+    return res.status(500).json();
   } finally {
     conn.release();
   }
@@ -324,13 +323,13 @@ app.get('/sensors/status', async (req, res) => {
     const results = await conn.query(query, [user_id, farm_id]);
     if (results.length === 0) {
       console.log('[GET /sensors/status] 조회된 데이터 없음');
-      return res.status(404).send('해당 조건에 맞는 데이터가 없습니다.');
+      return res.status(404).json('해당 조건에 맞는 데이터가 없습니다.');
     }
     console.log('[GET /sensors/status] 조회된 데이터:', results[0]);
     return res.json(results[0]); 
   } catch (err) {
     console.error('[GET /sensors/status] DB 오류:', err);
-    return res.status(500).send();
+    return res.status(500).json();
   } finally {
     conn.release();
   }
@@ -350,7 +349,7 @@ app.get('/devices/status', async(req, res) => {
     return res.json(results[0]);
   } catch (err) {
     console.error('[GET /devices/status] DB 오류:', err);
-    return res.status(500).send();
+    return res.status(500).json();
   } finally {
     conn.release();
   }
@@ -367,10 +366,10 @@ app.post('/devices/:deviceId/status', async (req, res) => {
     const results = await conn.query(query, [user_id, farm_id]);
 
     console.log('[/devices/:deviceId/status] 제어장치 변경경:', results[0]);
-    return res.send();
+    return res.json();
   } catch (err) {
     console.error('[POST /devices/:deviceId/status] DB 오류:', err);
-    return res.status(500).send();
+    return res.status(500).json();
   } finally {
     conn.release();
   }
@@ -404,14 +403,14 @@ app.get('/realtime-data', async (req, res) => {
 
     if (results.length === 0) {
       console.log('[GET /real-time-data] 조회된 데이터가 없습니다.');
-      return res.status(404).send('데이터가 없습니다.');
+      return res.status(404).json('데이터가 없습니다.');
     }
 
     console.log(`[GET /real-time-data] 실시간 데이터: ${results.length}개 반환`, results);
     return res.json(results);
   } catch (err) {
     console.error('[GET /realtime-data] DB 오류:', err);
-    return res.status(500).send();
+    return res.status(500).json();
   } finally {
     conn.release();
   }
@@ -426,7 +425,7 @@ app.get('/history-data', async (req, res) => {
 
   // 날짜가 유효하지 않으면 오류 반환
   if (isNaN(formattedDate)) {
-    return res.status(400).send('유효한 날짜 형식이 아닙니다.');
+    return res.status(400).json('유효한 날짜 형식이 아닙니다.');
   }
 
   // 시작 시간을 계산하기 위해서 formattedDate의 복사본을 사용하여 시간을 설정 (UTC 기준)
@@ -466,14 +465,14 @@ app.get('/history-data', async (req, res) => {
   
     if (results.length === 0) {
       console.log('[GET /history-data] 조회된 데이터가 없습니다.');
-      return res.status(404).send('해당 날짜에 기록된 데이터가 없습니다.');
+      return res.status(404).json('해당 날짜에 기록된 데이터가 없습니다.');
     }
 
     console.log(`[GET /history-data] 기록 데이터: ${results.length}개 반환`, results);
     res.json(results);
   } catch (err) {
     console.error('[GET /history-data] DB 오류: ', err.stack);
-    return res.status(500).send();
+    return res.status(500).json();
   } finally {
     conn.release();
   }
