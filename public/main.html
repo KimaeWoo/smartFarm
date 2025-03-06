@@ -775,7 +775,7 @@
 
       // 농장 이름 불러오기
       function fetchFarmName() {
-        fetch(`/getFarmName?user_id=${userId}`)
+        fetch(`https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app/getFarmName?user_id=${userId}`)
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
@@ -790,7 +790,7 @@
 
       // 이름 불러오기
       function fetchName() {
-        fetch(`/getName?user_id=${userId}`)
+        fetch(`https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app/getName?user_id=${userId}`)
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
@@ -820,7 +820,7 @@
 
           // user_id와 farm_id가 존재할 경우에만 요청
           if (userId && farmId) {
-            const response = await fetch(`/sensors/status?user_id=${userId}&farm_id=${farmId}`);
+            const response = await fetch(`https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app/sensors/status?user_id=${userId}&farm_id=${farmId}`);
                 
             if (!response.ok) {
               throw new Error('네트워크 응답 오류');
@@ -878,7 +878,7 @@
       async function fetchDevicesStatus() {
         try {
           if (userId && farmId) {
-            const response = await fetch(`/devices/status?user_id=${userId}&farm_id=${farmId}`);
+            const response = await fetch(`https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app/devices/status?user_id=${userId}&farm_id=${farmId}`);
       
             if (!response.ok) {
               throw new Error('네트워크 응답 오류: ' + response.statusText);
@@ -905,7 +905,7 @@
       // 실시간 데이터 불러오기기
       async function fetchRealtimeData() {
         try {
-          const response = await fetch(`/realtime-data?user_id=${userId}&farm_id=${farmId}`, {
+          const response = await fetch(`https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app/realtime-data?user_id=${userId}&farm_id=${farmId}`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json'
@@ -1049,7 +1049,7 @@
       
         try {
           // 서버 API 호출
-          const response = await fetch(`/history-data?user_id=${userId}&farm_id=${farmId}&date=${formattedDate}`, {
+          const response = await fetch(`https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app/history-data?user_id=${userId}&farm_id=${farmId}&date=${formattedDate}`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
@@ -1482,7 +1482,7 @@
           const isChecked = document.getElementById(`${device}-switch`).checked;
 
           // 서버로 상태 변경 요청
-          await fetch(`/devices/${device}/status`, {
+          await fetch(`https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app/devices/${device}/status`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 

@@ -383,7 +383,7 @@
             }
         
             function fetchName() {
-                fetch(`/getName?user_id=${userId}`)
+                fetch(`https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app/getName?user_id=${userId}`)
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
@@ -397,7 +397,7 @@
             }
         
             function fetchFarms() {
-                fetch(`/getFarms?user_id=${userId}`)
+                fetch(`https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app/getFarms?user_id=${userId}`)
                     .then(response => response.json())
                     .then(data => {
                         if (!data.success) {
@@ -470,14 +470,14 @@
                     return;
                 }
         
-                fetch("/addFarm", {
+                fetch("https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app/addFarm", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         user_id: userId,
-                        name: farmName,
-                        location: farmLocation,
-                        cropType: farmType
+                        farm_name: farmName,
+                        farm_location: farmLocation,
+                        farm_type: farmType
                     })
                 })
                 .then(response => response.json())

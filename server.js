@@ -46,19 +46,19 @@ app.get('/check-userid', async (req, res) => {
 
   try {
     conn = await db.getConnection(); // DB 연결
-    const results = await conn.query(query, [user_id]); // 쿼리 실행
+    const results = await conn.query(query, [user_id]);
 
     if (results.length > 0) {
       console.log(`[GET /check-userid] 이미 사용 중인 아이디: ${user_id}`);
-      return res.status(400).json({ message: '이미 사용 중인 아이디입니다.' });
+      return res.status(400).send('이미 사용 중인 아이디입니다.');
     }
     console.log(`[GET /check-userid] 사용 가능한 아이디: ${user_id}`);
-    return res.status(200).json({ message: '사용 가능한 아이디입니다.' });
+    return res.send();
   } catch (err) {
-    console.error('[GET /check-userid] 쿼리 오류:', err);
-    return res.status(500).json({ message: '서버 오류' });
+    console.error('[GET /check-userid] DB 오류:', err);
+    return res.status(500).send();
   } finally {
-    if (conn) conn.release(); // 연결 해제
+    conn.release();
   }
 });
 
@@ -70,15 +70,15 @@ app.post('/signup', async (req, res) => {
 
   try {
     conn = await db.getConnection();
-    const results = await conn.query(query, [user_id, password, username]);
-    
+    await conn.query(query, [user_id, password, username]);
+
     console.log(`[POST /signup] 회원가입 성공 - user_id: ${user_id}`);
-    return res.status(201).json({ message: '회원가입 성공' });
+    return res.status(201).json();
   } catch (err) {
-    console.error('[POST /signup] 쿼리 오류:', err);
-    return res.status(500).json({ message: '서버 오류' });
+    console.error('[POST /signup] DB 오류:', err);
+    return res.status(500).send();
   } finally {
-    if (conn) conn.release();
+    conn.release();
   }
 });
 
@@ -93,217 +93,196 @@ app.post('/login', async (req, res) => {
     const results = await conn.query(query, [user_id]);
 
     if (results.length === 0) {
-      return res.status(401).json({ message: '존재하지 않는 이메일입니다.'});
+      return res.status(401).send('존재하지 않는 이메일입니다.');
     } else {
       const user = results[0];
       // 비밀번호 비교
       if (user.password === password) {
         console.log(`[POST /login] 로그인 성공: ${user_id}`);
-        return res.status(200).json({ message: '로그인 성공', token: 'some-jwt-token' });
+        return res.send();
       } else {
         // 비밀번호가 틀린 경우
         console.log(`[POST /login] 로그인 실패: ${user_id} - 잘못된 비밀번호`);
-        return res.status(401).json({ message: '잘못된 비밀번호입니다.' });
+        return res.status(401).send('잘못된 비밀번호입니다.');
       } 
     }
   } catch (err) {
-    console.error('[POST /login] 쿼리 오류: ' + err.stack);
-    return res.status(500).json({ message: '서버 오류' });
+    console.error('[POST /login] DB 오류: ' + err.stack);
+    return res.status(500).send();
   } finally {
-    if (conn) conn.release();
+    conn.release();
   }
 });
 
 // 사용자 이름 불러오기
-app.get('/getName', (req,res) => {
-  const userId = req.query.user_id;
+app.get('/getName', async (req,res) => {
+  const user_id = req.query.user_id;
   const query = `SELECT username from users where user_id = ?`;
   let conn;
 
   try {
-    conn = db.getConnection();
-    const results = conn.query(query, [userId]);
+    conn = await db.getConnection();
+    const results = await conn.query(query, [user_id]);
 
     if (results.length > 0) {
-      console.log('[GET /getName] 사용자 이름:',results);
-      return res.json({ success: true, username: results[0].username });
-    } else {
-      console.log('[GET /getName] 사용자 정보를 찾을 수 없습니다.')
-      return res.json({ success: false, message: '사용자 정보를 찾을 수 없습니다.' });
+      console.log('[GET /getName] 사용자 이름:',results[0].username);
+      return res.json({ username: results[0].username });
     }
+    console.log('[GET /getName] 사용자 정보를 찾을 수 없습니다.')
+    return res.status(404).send('사용자 정보를 찾을 수 없습니다.');
   } catch (err) {
-    console.error('[GET /getName] 쿼리 오류:', err);
-    return res.json({ success: false});
+    console.error('[GET /getName] DB 오류:', err);
+    return res.status(500).send();
+  } finally {
+    conn.release();
   }
 });
 
 // 스마트팜 이름 불러오기
-app.get('/getFarmName', (req,res) => {
-  const userId = req.query.user_id;
+app.get('/getFarmName', async (req,res) => {
+  const user_id = req.query.user_id;
   const query = `SELECT farm_name from farms where user_id = ?`;
-  db.query(query, [userId], (err,results) => {
-    if (err) {
-      console.error('쿼리 에러:', err);
-      res.json({ success: false});
-    } else {
-      console.log('[GET /getFarmName] 스마트팜 이름 불러오기 성공: ',results);
-      if (results.length > 0) {
-        console.log('[GET /getFarmName] 스마트팜 이름:',results);
-        res.json({ success: true, farmname: results[0].farm_name });
-      } else {
-        console.log('[GET /getFarmName] 스마트팜 정보를 찾을 수 없습니다.')
-        res.json({ success: false, message: '사용자 정보를 찾을 수 없습니다.' });
-      }
+  let conn;
+
+  try {
+    conn = await db.getConnection();
+    const results = await conn.query(query, [user_id]);
+
+    if (results.length > 0) {
+      console.log('[GET /getFarmName] 스마트팜 이름:',results[0].farm_name);
+      return res.json({ farmname: results[0].farm_name });
     }
-  });
+    console.log('[GET /getFarmName] 스마트팜 정보를 찾을 수 없습니다.')
+    return res.status(404).send('사용자 정보를 찾을 수 없습니다.');
+  } catch (err) {
+    console.error('[GET /getFarmName] DB 오류:', err);
+    return res.status(500).send();
+  } finally {
+    conn.release();
+  }
 });
 
 // 농장 목록 불러오기
-app.get('/getFarms', (req, res) => {
-  const userId = req.query.user_id;
-  const sql = `SELECT 
-   farm_id, farm_name, farm_location, farm_type, farm_active
-   FROM farms 
-   WHERE user_id = ?`;
-  db.query(sql, [userId], (err, results) => {
-      if (err) {
-          console.error('쿼리 에러:', err);
-          res.json({ success: false });
-      } else {
-          console.log('[GET /getFarms]농장 목록 불러오기 성공:', results);  // 농장 목록 출력
-          res.json({ success: true, farms: results });
-      }
-  });
+app.get('/getFarms', async(req, res) => {
+  const user_id = req.query.user_id;
+  const query = `SELECT farm_id, farm_name, farm_location, farm_type, farm_active FROM farms WHERE user_id = ?`;
+  let conn;
+
+  try {
+    conn = await db.getConnection();
+    const results = await conn.query(query, [user_id]);
+
+    console.log('[GET /getFarms] 농장 목록 불러오기 성공:', results);  // 농장 목록 출력
+    return res.send();
+  } catch (err) {
+    console.error('[GET /getFarms] DB 오류:', err);
+    return res.status(500).send();
+  } finally {
+    conn.release();
+  }
 });
 
 // 농장 추가하기
-app.post('/addFarm', (req, res) => {
-  const userId = req.body.user_id;
-  const farmName = req.body.name;
-  const farmLocation = req.body.location;
-  const farmType = req.body.cropType;
-  if (!userId) {
-    console.log('[POST /addFarm] user_id 누락 - 요청 거부');
-    return res.status(400).json({ success: false, message: 'user_id가 누락되었습니다.' });
+app.post('/addFarm', async (req, res) => {
+  const { user_id, farm_name, farm_location, farm_type } = req.body;
+  const query = `INSERT INTO farms (user_id, farm_name, farm_location, farm_type) VALUES (?, ?, ?, ?)`;
+  let conn;
+
+  try {
+    conn = await db.getConnection();
+
+    const results = await conn.query(query, [user_id, farm_name, farm_location, farm_type]);
+    const farm_id = results.insertId;
+    console.log('[POST /addFarm] 농장 추가 성공:', farm_id);
+
+    // devices 테이블에 초기값 삽입
+    const addDeviceQuery = `INSERT INTO devices (user_id, farm_id, led, fan, water, heater, cooler) VALUES (?, ?, false, false, false, false, false)`;
+    
+    const addDeviceResults = await conn.query(addDeviceQuery, [user_id, farm_id]);
+    console.log('[POST /addFarm] devices 초기값 추가 성공:', addDeviceResults.insertId);
+
+    return res.send();
+  } catch (err) {
+    console.error('[POST /addFarm] DB 오류:', err);
+    return res.status(500).send();
+  } finally {
+    conn.release();
   }
-
-  if (!farmName || !farmLocation || !farmType) {
-    console.log('[POST /addFarm] 농장 정보 누락 - 요청 거부');
-    return res.status(400).json({ success: false, message: '모든 필드를 입력해주세요.' });
-  }
-
-  // farms 테이블에 농장 추가
-  const addFarmQuery = `INSERT INTO 
-  farms (user_id, farm_name, farm_location, farm_type) 
-  VALUES (?, ?, ?, ?)
-  `;
-  db.query(addFarmQuery, [userId, farmName, farmLocation, farmType], (err, result) => {
-    if (err) {
-      console.error('[POST /addFarm] 쿼리 에러:', err);
-      return res.status(500).json({ success: false, message: 'DB 오류 발생' });
-    }
-
-    const farmId = result.insertId; // 방금 추가된 farm_id
-    console.log('[POST /addFarm] 농장 추가 성공:', farmId);
-
-    // devices 테이블에 초기값 삽입 (user_id, farm_id, led, fan, water)
-    const addDeviceQuery = `
-      INSERT INTO devices (user_id, farm_id, led, fan, water, heater, cooler) 
-      VALUES (?, ?, false, false, false, false, false)
-    `;
-    db.query(addDeviceQuery, [userId, farmId], (err, result) => {
-      if (err) {
-        console.error('[POST /addFarm] devices 테이블 삽입 오류:', err);
-        return res.status(500).json({ success: false, message: 'devices 추가 실패' });
-      }
-
-      console.log('[POST /addFarm] devices 초기값 추가 성공:', result.insertId);
-      res.status(200).json({ success: true, farm_id: farmId });
-    });
-  });
 });
 
 // 농장 삭제
-app.post('/delFarm', (req, res) => {
+app.post('/delFarm', async (req, res) => {
   const farmIds = req.body.farm_ids; // farm_ids 배열이 전달됨
-
-  if (!farmIds || farmIds.length === 0) {
-    return res.status(400).json({ error: '삭제할 농장 ID가 필요합니다.' });
-  }
-
-  // 관련 장치 삭제
   const deleteDevicesQuery = `DELETE FROM devices WHERE farm_id IN (?)`;
-  db.query(deleteDevicesQuery, [farmIds], (err, deviceResults) => {
-    if (err) {
-      console.error('장치 삭제 오류:', err);
-      return res.status(500).json({ error: '서버 오류' });
+  const deleteSensorsQuery = `DELETE FROM sensors WHERE farm_id IN (?)`;
+  const deleteFarmsQuery = `DELETE FROM farms WHERE farm_id IN (?)`;
+
+  try {
+    const conn = await db.getConnection();
+    await conn.query(deleteDevicesQuery, [farmIds]);
+    await conn.query(deleteSensorsQuery, [farmIds]);
+    const farmResults = await conn.query(deleteFarmsQuery, [farmIds]);
+
+    if (farmResults.affectedRows === 0) {
+      return res.status(400).send('해당 농장이 DB에 존재하지 않습니다.');
     }
 
-    // 관련 센서 삭제
-    const deleteSensorsQuery = `DELETE FROM sensors WHERE farm_id IN (?)`;
-    db.query(deleteSensorsQuery, [farmIds], (err, sensorResults) => {
-      if (err) {
-        console.error('센서 삭제 오류:', err);
-        return res.status(500).json({ error: '서버 오류' });
-      }
-
-      // 농장 삭제
-      const deleteFarmsQuery = `DELETE FROM farms WHERE farm_id IN (?)`;
-      db.query(deleteFarmsQuery, [farmIds], (err, farmResults) => {
-        if (err) {
-          console.error('농장 삭제 오류:', err);
-          return res.status(500).json({ error: '서버 오류' });
-        }
-        if (farmResults.affectedRows === 0) {
-          return res.status(400).json({ error: '해당 농장이 DB에 존재하지 않습니다.' });
-        }
-
-        console.log('[Post /delFarm] 삭제된 농장 id:', farmIds);
-        res.json({ success: true, message: '농장, 관련 장치 및 센서가 성공적으로 삭제되었습니다.' });
-      });
-    });
-  });
+    console.log('[Post /delFarm] 삭제된 농장 id:', farmIds);
+    return res.send();
+  } catch (err) {
+    console.error('DB 오류:', err);
+    return res.status(500).send();
+  } finally {
+    conn.release();
+  }
 });
 
 // 센서 데이터 저장
 app.post('/sensors', async (req, res) => {
   const { user_id, farm_id, temperature, humidity, soil_moisture, co2, created_at } = req.body;
+  
   // created_at이 없으면 현재 시간을 한국 시간으로 설정
-  const timestamp = created_at ? moment.tz(created_at, "Asia/Seoul").format('YYYY-MM-DD HH:mm:ss') : moment().tz("Asia/Seoul").format('YYYY-MM-DD HH:mm:ss');
+  const timestamp = created_at 
+    ? moment.tz(created_at, "Asia/Seoul").format('YYYY-MM-DD HH:mm:ss') 
+    : moment().tz("Asia/Seoul").format('YYYY-MM-DD HH:mm:ss');
+  
   const query = `INSERT INTO sensors (user_id, farm_id, temperature, humidity, soil_moisture, co2, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+  const selectQuery = `SELECT * FROM sensors WHERE id = ?`;
   let conn;
+  
   try {
     conn = await db.getConnection();
-    const results = conn.query(query, [user_id, farm_id, temperature, humidity, soil_moisture, co2, timestamp]);
+    const results = await conn.query(query, [user_id, farm_id, temperature, humidity, soil_moisture, co2, timestamp]);
   
-    // 방금 삽입된 튜플의 id
+    // 방금 삽입된 튜플의 id 가져오기
     const insertedId = results.insertId;
-    const selectQuery = `SELECT * FROM sensors WHERE id = ?`;
 
     try {
-      const selectRsults = conn.query(selectedQuery, [insertedId]);
-
-      console.log('[POST /sensors] 삽입된 데이터:', rows[0]);
-      res.status(200).json({ message: '센서 데이터 저장 및 조회 성공' });
+      const selectResults = await conn.query(selectQuery, [insertedId]);
+      console.log('[POST /sensors] 삽입된 데이터:', selectResults[0]);
+      res.json();
     
-      // 저장된 센서 데이터를 기반으로 제어 여부를 체크하고 실행
+      // 저장된 센서 데이터를 기반으로 제어 여부 체크 및 실행
       //Controldevice(user_id, farm_id, temperature, humidity, soil_moisture, co2);
+      
     } catch (err) {
       console.error('[POST /sensors] 데이터 조회 오류:', err);
-      return res.status(500).send('데이터 조회 오류 발생');
+      return res.status(500).send();
     }
   } catch (err) {
     console.error('[POST /sensors] DB 오류:', err);
-    return res.status(500).send('DB 오류 발생');
+    return res.status(500).send();
   } finally {
-    if (conn) conn.release();
+    conn.release();
   }
 });
 
-function Controldevice(user_id, farm_id, temperature, humidity, soil_moisture) {
+// 장비 제어 함수
+function Controldevice(user_id, farm_id, temperature, humidity, soil_moisture, co2) {
   let fanStatus = 0; 
   let waterStatus = 0; 
 
+  // 온도에 따른 환기팬 제어
   if (temperature >= 22) {
     fanStatus = 1;
     console.log('환기팬 켬 (온도 22°C 이상)');
@@ -313,11 +292,11 @@ function Controldevice(user_id, farm_id, temperature, humidity, soil_moisture) {
   } else {
     // 온도가 적절한 범위에 있을 때만 습도 조건 체크
     if (humidity >= 70) {
-        fanStatus = 1;
-        console.log('환기팬 켬 (습도 70% 이상)');
+      fanStatus = 1;
+      console.log('환기팬 켬 (습도 70% 이상)');
     } else if (humidity <= 60) {
-        fanStatus = 0;
-        console.log('환기팬 끔 (습도 60% 이하)');
+      fanStatus = 0;
+      console.log('환기팬 끔 (습도 60% 이하)');
     }
   }
 
@@ -334,210 +313,72 @@ function Controldevice(user_id, farm_id, temperature, humidity, soil_moisture) {
   updateDevice(user_id, farm_id, fanStatus, waterStatus);
 }
 
-function updateDevice(user_id, farm_id, fanStatus, waterStatus) {
-  const query = `UPDATE devices SET fan = ?, water = ? WHERE user_id = ? AND farm_id = ?`;
-  db.query(query, [fanStatus, waterStatus, user_id, farm_id], (err, results) => {
-    if (err) {
-      console.error('[updateDevice] DB 오류:', err);
-    } else {
-      console.log('상태 제어 업데이트 완료:', fanStatus, waterStatus);
-    }
-  });
-}
-
 // 최근 센서 데이터 조회
-app.get('/sensors/status', (req, res) => {
-  // 요청에서 user_id와 farm_id를 추출
-  const userId = req.query.user_id;
-  const farmId = req.query.farm_id;
+app.get('/sensors/status', async (req, res) => {
+  const { user_id, farm_id } = req.query;
+  const query = `SELECT * FROM sensors WHERE user_id = ? AND farm_id = ? ORDER BY created_at DESC LIMIT 1`;
+  let conn;
 
-  if (!userId || !farmId) {
-    return res.status(400).send('user_id와 farm_id가 필요합니다.');
-  }
-
-  // 해당 user_id와 farm_id에 대한 최신 센서 데이터 가져오기
-  const query = `
-    SELECT * 
-    FROM sensors 
-    WHERE user_id = ? AND farm_id = ? 
-    ORDER BY created_at DESC 
-    LIMIT 1
-  `;
-  db.query(query, [userId, farmId], (err, results) => {
-    if (err) {
-      console.error('[GET /sensors/status] DB 오류:', err);
-      return res.status(500).send('DB 오류 발생');
-    }
-
+  try {
+    conn = await db.getConnection();
+    const results = await conn.query(query, [user_id, farm_id]);
     if (results.length === 0) {
       console.log('[GET /sensors/status] 조회된 데이터 없음');
       return res.status(404).send('해당 조건에 맞는 데이터가 없습니다.');
     }
-
     console.log('[GET /sensors/status] 조회된 데이터:', results[0]);
-    res.json(results[0]); // 해당 user_id와 farm_id의 최신 센서 데이터 반환
-  });
+    return res.json(results[0]); 
+  } catch (err) {
+    console.error('[GET /sensors/status] DB 오류:', err);
+    return res.status(500).send();
+  } finally {
+    conn.release();
+  }
 });
 
 // 제어장치 상태 가져오기
-app.get('/devices/status', (req, res) => {
+app.get('/devices/status', async(req, res) => {
   const { user_id, farm_id } = req.query;
+  const query = `SELECT * FROM devices WHERE user_id = ? AND farm_id = ?`
+  let conn;
 
-  if (!user_id || !farm_id) {
-    return res.status(400).send('user_id와 farm_id가 필요합니다.');
-  }
-  // 해당 user_id와 farm_id에 대한 제어장치 상태 가져오기
-  const query = `
-  SELECT *
-  FROM devices 
-  WHERE user_id = ? AND farm_id = ?
-  `
-  db.query(query, [user_id, farm_id], (err, results) => {
-    if (err) {
-      console.error('[GET /devices/status] DB 오류:', err);
-      return res.status(500).send('DB 오류 발생');
-    }
+  try {
+    conn = await db.getConnection();
+    const results = await conn.query(query, [user_id, farm_id]);
+
     console.log('[GET /devices/status] 조회된 상태:', results[0]);
-    res.json(results[0]);
-  });
+    return res.json(results[0]);
+  } catch (err) {
+    console.error('[GET /devices/status] DB 오류:', err);
+    return res.status(500).send();
+  } finally {
+    conn.release();
+  }
 });
 
 // 제어장치 상태 변경하기
-app.post('/devices/:deviceId/status', (req, res) => {
-  const { user_id, farm_id, device } = req.body; // user_id와 farm_id로 상태 변경
-
-  // user_id, farm_id, device가 없는 경우 에러 메시지 출력
-  if (!user_id || !farm_id || !device) {
-    console.log('[POST /devices/:deviceId/status] 요청 데이터 부족:', { user_id, farm_id, device });
-    return res.status(400).send('user_id, farm_id, device가 필요합니다.');
-  }
-  // 해당 user_id와 farm_id에 대해 device 상태를 변경
+app.post('/devices/:deviceId/status', async (req, res) => {
+  const { user_id, farm_id, device } = req.body;
   const query = `UPDATE devices SET ${device} = NOT ${device} WHERE user_id = ? AND farm_id = ?`;
+  let conn;
 
-  db.query(query, [user_id, farm_id], (err, results) => {
-    if (err) {
-      console.error('[POST /devices/:deviceId/status] DB 오류:', err);
-      return res.status(500).send('DB 오류 발생');
-    }
-    // 상태 변경 후, 해당 user_id와 farm_id에 대한 장치 상태 조회
-    const stateQuery = 'SELECT * FROM devices WHERE user_id = ? AND farm_id = ?';
-    db.query(stateQuery, [user_id, farm_id], (err, results) => {
-      if (err) {
-        console.error('[POST /devices/:deviceId/status] 상태 조회 오류:', err);
-        return res.status(500).send('상태 조회 오류 발생');
-      }
+  try {
+    conn = await db.getConnection();
+    const results = await conn.query(query, [user_id, farm_id]);
 
-      if (results.length > 0) {
-        // led, fan, water 값도 함께 로그에 출력
-        const deviceStatus = results[0];
-        let changedDevices = 'led';
-        if (device == 'led') changedDevices = 'led';
-        if (device == 'fan') changedDevices = 'fan';
-        if (device == 'water') changedDevices = 'water';
-        if (device == 'heater') changedDevices = 'heater';
-        if (device == 'cooler') changedDevices = 'cooler';
-
-        if (Object.keys(changedDevices).length > 0) {
-          console.log('[POST /devices/:deviceId/status] 변경된 장치 상태:', changedDevices);
-        } else {
-          console.log('변경된 장치 없음');
-        }
-      } else {
-        console.log(`[POST /devices/:deviceId/status] 해당 user_id=${user_id}와 farm_id=${farm_id}에 대한 장치 상태가 존재하지 않습니다.`);
-      }
-
-      // 상태 변경 후 클라이언트에 응답
-      res.sendStatus(200);
-    });
-  });
-});
-
-// 날짜별 센서 데이터
-app.get('/sensors/data', (req, res) => {
-  const { date, userId, farmId } = req.query;
-
-  // 필수 파라미터 검증
-  if (!date || !userId || !farmId) {
-      return res.status(400).json({ error: "date, userId, farmId가 필요합니다." });
+    console.log('[/devices/:deviceId/status] 제어장치 변경경:', results[0]);
+    return res.send();
+  } catch (err) {
+    console.error('[POST /devices/:deviceId/status] DB 오류:', err);
+    return res.status(500).send();
+  } finally {
+    conn.release();
   }
-
-  const query = `
-      SELECT 
-          temperature, 
-          humidity, 
-          soil_moisture, 
-          co2, 
-          CONVERT_TZ(created_at, '+00:00', '+09:00') AS created_at
-      FROM sensors 
-      WHERE user_id = ? 
-      AND farm_id = ? 
-      AND DATE(created_at) = ?
-      ORDER BY created_at ASC
-  `;
-
-  db.query(query, [userId, farmId, date], (err, results) => {
-      if (err) {
-          console.error('[GET /sensors/data] DB 오류:', err);
-          return res.status(500).json({ error: 'DB 오류 발생' });
-      }
-
-      console.log(`[GET /sensors/data] ${date} 데이터 조회 성공: ${results.length}개 반환`, results);
-
-      // 데이터를 그대로 응답
-      res.json(results);
-  });
-});
-
-// 통계 데이터 조회 API
-app.get('/sensors/average', (req, res) => {
-  const { type, userId, farmId } = req.query;
-
-  if (!userId || !farmId) {
-    return res.status(400).send('userId와 farmId가 필요합니다.');
-  }
-
-  let groupBy = '';
-  if (type === 'day') {
-    groupBy = 'DATE(created_at)';
-  } else if (type === 'week') {
-    groupBy = 'YEARWEEK(created_at)';
-  } else if (type === 'month') {
-    groupBy = 'DATE_FORMAT(created_at, "%Y-%m")';
-  } else {
-    return res.status(400).send('유효하지 않은 type 파라미터입니다.');
-  }
-
-  const query = `
-    SELECT 
-      ${groupBy} AS period, 
-      AVG(temperature) AS avg_temperature, 
-      AVG(humidity) AS avg_humidity, 
-      AVG(soil_moisture) AS avg_soil_moisture,
-      AVG(co2) AS avg_co2
-    FROM sensors
-    WHERE user_id = ? AND farm_id = ?
-    GROUP BY period
-    ORDER BY period ASC`;
-
-  db.query(query, [userId, farmId], (err, results) => {
-    if (err) {
-      console.error('[GET /sensors/average] DB 오류:', err);
-      return res.status(500).send('DB 오류 발생');
-    }
-    console.log('[GET /sensors/average] 통계 데이터 조회 성공', results);
-    res.json(results);
-  });
 });
 
 // 실시간 데이터 불러오기 (1시간 단위 평균)
-app.get('/realtime-data', (req, res) => {
-  const userId = req.query.user_id;
-  const farmId = req.query.farm_id;
-
-  if (!userId || !farmId) {
-    return res.status(400).json({ error: 'user_id와 farm_id가 필요합니다.' });
-  }
-
+app.get('/realtime-data', async (req, res) => {
+  const { user_id, farm_id } = req.query;
   const query = `
     SELECT 
       DATE_FORMAT(created_at, '%Y-%m-%d %H:00:00') AS time_interval,
@@ -556,42 +397,36 @@ app.get('/realtime-data', (req, res) => {
     ORDER BY 
       time_interval ASC;
   `;
+  let conn;
+  try {
+    conn = await db.getConnection();
+    const results = await conn.query(query, [user_id, farm_id]);
 
-  const params = [userId, farmId];
-
-  db.query(query, params, (err, results) => {
-    if (err) {
-      console.error('데이터 조회 오류:', err);
-      res.status(500).json({ error: '서버 오류' });
-      return;
-    }
-    // 만약 결과가 없다면
     if (results.length === 0) {
       console.log('[GET /real-time-data] 조회된 데이터가 없습니다.');
-      return res.status(404).json({ error: '데이터가 없습니다.' });
+      return res.status(404).send('데이터가 없습니다.');
     }
 
     console.log(`[GET /real-time-data] 실시간 데이터: ${results.length}개 반환`, results);
-    res.json(results);
-  });
+    return res.json(results);
+  } catch (err) {
+    console.error('[GET /realtime-data] DB 오류:', err);
+    return res.status(500).send();
+  } finally {
+    conn.release();
+  }
 });
 
 // 기록 데이터 API (날짜별 센서 데이터)
-app.get('/history-data', (req, res) => {
+app.get('/history-data', async (req, res) => {
   const { user_id, farm_id, date } = req.query;
-
-  if (!user_id || !farm_id || !date) {
-    return res.status(400).json({ error: 'user_id, farm_id, date는 필수 항목입니다.' });
-  }
-
-  console.log('date값:', date);
 
   // 날짜 파싱 (YYYY-MM-DD 형태)
   const formattedDate = new Date(date);
 
   // 날짜가 유효하지 않으면 오류 반환
   if (isNaN(formattedDate)) {
-    return res.status(400).json({ error: '유효한 날짜 형식이 아닙니다.' });
+    return res.status(400).send('유효한 날짜 형식이 아닙니다.');
   }
 
   // 시작 시간을 계산하기 위해서 formattedDate의 복사본을 사용하여 시간을 설정 (UTC 기준)
@@ -602,7 +437,7 @@ app.get('/history-data', (req, res) => {
   const endOfDayUTC = new Date(formattedDate);
   endOfDayUTC.setHours(23, 59, 59, 999);
 
-  console.log('시작 시간(UTC):', startOfDayUTC, '끝 시간(UTC):', endOfDayUTC);
+  console.log('[GET /history-data] 시작 시간(UTC):', startOfDayUTC, '끝 시간(UTC):', endOfDayUTC);
 
   // 1시간 단위로 데이터를 그룹화하여 평균값 계산
   const query = `
@@ -623,25 +458,27 @@ app.get('/history-data', (req, res) => {
     ORDER BY 
       time_interval ASC;
   `;
+  let conn;
 
-  db.query(query, [user_id, farm_id, startOfDayUTC, endOfDayUTC], (err, results) => {
-    if (err) {
-      console.error('쿼리 실행 오류: ', err.stack);
-      return res.status(500).json({ error: '데이터를 가져오는 데 실패했습니다.' });
-    }
-
-    // 만약 결과가 없다면
+  try {
+    conn = db.getConnection();
+    const results = (await conn).query(query, [user_id, farm_id, startOfDayUTC, endOfDayUTC]);
+  
     if (results.length === 0) {
       console.log('[GET /history-data] 조회된 데이터가 없습니다.');
-      return res.status(404).json({ error: '해당 날짜에 기록된 데이터가 없습니다.' });
+      return res.status(404).send('해당 날짜에 기록된 데이터가 없습니다.');
     }
 
     console.log(`[GET /history-data] 기록 데이터: ${results.length}개 반환`, results);
     res.json(results);
-  });
+  } catch (err) {
+    console.error('[GET /history-data] DB 오류: ', err.stack);
+    return res.status(500).send();
+  } finally {
+    conn.release();
+  }
 });
 
-// 서버 시작 시 초기 상태값 삽입 (테이블에 데이터가 없을 경우)
 app.listen(PORT, '0.0.0.0', () => {
   console.log('서버가 실행 중입니다.');
 });
@@ -669,4 +506,81 @@ app.listen(PORT, '0.0.0.0', () => {
 //   } finally {
 //     if (conn) conn.release();
 //   }
+// });
+
+// 날짜별 센서 데이터
+// app.get('/sensors/data', (req, res) => {
+//   const { date, userId, farmId } = req.query;
+
+//   // 필수 파라미터 검증
+//   if (!date || !userId || !farmId) {
+//       return res.status(400).json({ error: "date, userId, farmId가 필요합니다." });
+//   }
+
+//   const query = `
+//       SELECT 
+//           temperature, 
+//           humidity, 
+//           soil_moisture, 
+//           co2, 
+//           CONVERT_TZ(created_at, '+00:00', '+09:00') AS created_at
+//       FROM sensors 
+//       WHERE user_id = ? 
+//       AND farm_id = ? 
+//       AND DATE(created_at) = ?
+//       ORDER BY created_at ASC
+//   `;
+
+//   db.query(query, [userId, farmId, date], (err, results) => {
+//       if (err) {
+//           console.error('[GET /sensors/data] DB 오류:', err);
+//           return res.status(500).json({ error: 'DB 오류 발생' });
+//       }
+
+//       console.log(`[GET /sensors/data] ${date} 데이터 조회 성공: ${results.length}개 반환`, results);
+
+//       // 데이터를 그대로 응답
+//       res.json(results);
+//   });
+// });
+
+// 통계 데이터 조회 API
+// app.get('/sensors/average', (req, res) => {
+//   const { type, userId, farmId } = req.query;
+
+//   if (!userId || !farmId) {
+//     return res.status(400).send('userId와 farmId가 필요합니다.');
+//   }
+
+//   let groupBy = '';
+//   if (type === 'day') {
+//     groupBy = 'DATE(created_at)';
+//   } else if (type === 'week') {
+//     groupBy = 'YEARWEEK(created_at)';
+//   } else if (type === 'month') {
+//     groupBy = 'DATE_FORMAT(created_at, "%Y-%m")';
+//   } else {
+//     return res.status(400).send('유효하지 않은 type 파라미터입니다.');
+//   }
+
+//   const query = `
+//     SELECT 
+//       ${groupBy} AS period, 
+//       AVG(temperature) AS avg_temperature, 
+//       AVG(humidity) AS avg_humidity, 
+//       AVG(soil_moisture) AS avg_soil_moisture,
+//       AVG(co2) AS avg_co2
+//     FROM sensors
+//     WHERE user_id = ? AND farm_id = ?
+//     GROUP BY period
+//     ORDER BY period ASC`;
+
+//   db.query(query, [userId, farmId], (err, results) => {
+//     if (err) {
+//       console.error('[GET /sensors/average] DB 오류:', err);
+//       return res.status(500).send('DB 오류 발생');
+//     }
+//     console.log('[GET /sensors/average] 통계 데이터 조회 성공', results);
+//     res.json(results);
+//   });
 // });
