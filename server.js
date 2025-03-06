@@ -216,7 +216,7 @@ app.post('/delFarm', async (req, res) => {
   const deleteSensorsQuery = `DELETE FROM sensors WHERE farm_id IN (?)`;
   const deleteFarmsQuery = `DELETE FROM farms WHERE farm_id IN (?)`;
   let conn;
-  
+
   try {
     conn = await db.getConnection();
     await conn.query(deleteDevicesQuery, [farmIds]);
@@ -461,8 +461,8 @@ app.get('/history-data', async (req, res) => {
   let conn;
 
   try {
-    conn = db.getConnection();
-    const results = (await conn).query(query, [user_id, farm_id, startOfDayUTC, endOfDayUTC]);
+    conn = await db.getConnection();
+    const results = await conn.query(query, [user_id, farm_id, startOfDayUTC, endOfDayUTC]);
   
     if (results.length === 0) {
       console.log('[GET /history-data] 조회된 데이터가 없습니다.');
