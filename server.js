@@ -364,9 +364,9 @@ app.post('/devices/:deviceId/status', async (req, res) => {
 
   try {
     conn = await db.getConnection();
-    const results = await conn.query(query, [user_id, farm_id]);
+    await conn.query(query, [user_id, farm_id]);
 
-    console.log('[/devices/:deviceId/status] 제어장치 변경:', results[0]);
+    console.log('[/devices/:deviceId/status] 제어장치 변경:', device);
     return res.json({ message: '제어장치 변경 성공' });
   } catch (err) {
     console.error('[POST /devices/:deviceId/status] DB 오류:', err);
