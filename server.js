@@ -41,9 +41,10 @@ app.get('/login', (req, res) => {
 app.get('/check-userid', async (req, res) => {
   const { user_id } = req.query;
   const query = 'SELECT * FROM users WHERE user_id = ?';
+  let conn;
 
   try {
-    const conn = await db.getConnection(); // DB 연결
+    conn = await db.getConnection(); // DB 연결
     const results = await conn.query(query, [user_id]); // 쿼리 실행
 
     if (results.length > 0) {
@@ -65,9 +66,10 @@ app.get('/check-userid', async (req, res) => {
 app.get('/check-username', async (req, res) => {
   const { username } = req.query;
   const query = 'SELECT * FROM users WHERE username = ?';
+  let conn;
 
   try {
-    const conn = await db.getConnection();
+    conn = await db.getConnection();
     const results = await conn.query(query, [username]);
 
     if (results.length > 0) {
@@ -89,9 +91,10 @@ app.get('/check-username', async (req, res) => {
 app.post('/signup', async (req, res) => {
   const { user_id, password, username } = req.body;
   const query = 'INSERT INTO users (user_id, password, username) VALUES (?, ?, ?)';
-  
+  let conn;
+
   try {
-    const conn = await db.getConnection();
+    conn = await db.getConnection();
     const results = await conn.query(query, [user_id, password, username]);
   
     console.log(`[POST /signup] 회원가입 성공 - user_id: ${user_id}`);
@@ -108,9 +111,10 @@ app.post('/signup', async (req, res) => {
 app.post('/login', async (req, res) => {
   const { user_id, password } = req.body;
   const query = 'SELECT * FROM users WHERE user_id = ?';
+  let conn;
 
   try {
-    const conn = await db.getConnection();
+    conn = await db.getConnection();
     const results = await conn.query(query, [user_id]);
 
     if (results.length === 0) {
