@@ -64,6 +64,7 @@ app.get('/check-userid', async (req, res) => {
 
 // 회원가입 API
 app.post('/signup', async (req, res) => {
+  console.log('signup test123');
   const { user_id, password, username } = req.body;
   const query = 'INSERT INTO users (user_id, password, username) VALUES (?, ?, ?)';
   let conn;
