@@ -372,8 +372,8 @@
             const logoutButton = document.getElementById("logout-btn");
             const delFarmBtn = document.getElementById("delFarmBtn");
             const cancelDeleteBtn = document.getElementById("cancelDeleteBtn");
-            let selectedFarms = []; // 선택된 농장 ID 목록
-            let isDeleteMode = false; // 삭제 모드 여부
+            let selectedFarms = [];
+            let isDeleteMode = false;
         
             const userId = sessionStorage.getItem("user_id");
             if (!userId) {
@@ -381,73 +381,65 @@
                 window.location.href = "login.html";
                 return;
             }
-            
-            // 이름 불러오기기
-            function fetchName() {
-                fetch(`https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app/getName?user_id=${userId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.username) {
-                            document.getElementById('username').textContent = `${username}님`;
-                        } else {
-                            console.error('사용자 이름을 불러오지 못했습니다:', data.message);
-                        }
-                    })
-                    .catch(error => console.error("사용자 이름 불러오기 실패:", error));
+        
+            async function fetchName() {
+                try {
+                    const response = await fetch(`https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app/getName?user_id=${userId}`);
+                    const data = await response.json();
+                    if (response.ok && data.username) {
+                        document.getElementById('username').textContent = `${data.username}님`;
+                    } else {
+                        console.error('사용자 이름을 불러오지 못했습니다:', data.message);
+                    }
+                } catch (error) {
+                    console.error("사용자 이름 불러오기 실패:", error);
+                }
             }
         
-            // 스마트팜 목록 불러오기
-            function fetchFarms() {
-                fetch(`https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app/getFarms?user_id=${userId}`)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error("농장 목록 불러오기 실패했습니다.");
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        farmGrid.innerHTML = ""; // 기존 농장 목록 초기화
-            
-                        data.farms.forEach(farm => {
-                            const farmCard = document.createElement("div");
-                            farmCard.classList.add("farm-card");
-            
-                            // 활성 상태 여부 (farm_active 값이 1이면 활성, 0이면 비활성)
-                            const isActive = farm.farm_active === 1;
-            
-                            farmCard.innerHTML = `
-                                <div class="farm-image">🌱</div>
-                                <div class="farm-info">
-                                    <div class="farm-name">${farm.farm_name}</div>
-                                    <div class="farm-location">${farm.farm_location}</div>
-                                    <div class="farm-status">
-                                        <div class="status-item">
-                                            <div class="status-dot ${isActive ? 'status-active' : 'status-inactive'}"></div>
-                                            ${isActive ? '활성' : '비활성'}
-                                        </div>
-                                        <div>${farm.farm_type}</div>
+            async function fetchFarms() {
+                try {
+                    const response = await fetch(`https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app/getFarms?user_id=${userId}`);
+                    if (!response.ok) throw new Error("농장 목록 불러오기 실패");
+                    const data = await response.json();
+                    farmGrid.innerHTML = "";
+                    
+                    data.farms.forEach(farm => {
+                        const farmCard = document.createElement("div");
+                        farmCard.classList.add("farm-card");
+                        const isActive = farm.farm_active === 1;
+                        
+                        farmCard.innerHTML = `
+                            <div class="farm-image">🌱</div>
+                            <div class="farm-info">
+                                <div class="farm-name">${farm.farm_name}</div>
+                                <div class="farm-location">${farm.farm_location}</div>
+                                <div class="farm-status">
+                                    <div class="status-item">
+                                        <div class="status-dot ${isActive ? 'status-active' : 'status-inactive'}"></div>
+                                        ${isActive ? '활성' : '비활성'}
                                     </div>
+                                    <div>${farm.farm_type}</div>
                                 </div>
-                            `;
-            
-                            // 농장 카드 클릭 시 동작
-                            farmCard.addEventListener("click", () => {
-                                if (isDeleteMode) {
-                                    // 삭제 모드에서는 카드 선택 시 빨간 테두리 추가/제거
-                                    farmCard.classList.toggle("selected");
-                                    updateSelectedFarms(farmCard, farm.farm_id);
-                                } else {
-                                    sessionStorage.setItem('farm_id', farm.farm_id);
-                                    alert(`${farm.farm_name} 농장을 선택했습니다.`);
-                                    window.location.href = 'main.html';
-                                }
-                            });
-            
-                            farmGrid.appendChild(farmCard);
+                            </div>
+                        `;
+                        
+                        farmCard.addEventListener("click", () => {
+                            if (isDeleteMode) {
+                                farmCard.classList.toggle("selected");
+                                updateSelectedFarms(farmCard, farm.farm_id);
+                            } else {
+                                sessionStorage.setItem('farm_id', farm.farm_id);
+                                alert(`${farm.farm_name} 농장을 선택했습니다.`);
+                                window.location.href = 'main.html';
+                            }
                         });
-                    })
-                    .catch(error => console.error("농장 목록 불러오기 실패:", error));
-            }            
+                        
+                        farmGrid.appendChild(farmCard);
+                    });
+                } catch (error) {
+                    console.error("농장 목록 불러오기 실패:", error);
+                }
+            }
         
             function updateSelectedFarms(farmCard, farmId) {
                 if (farmCard.classList.contains("selected")) {
@@ -455,102 +447,67 @@
                 } else {
                     selectedFarms = selectedFarms.filter(id => id !== farmId);
                 }
-        
-                // 삭제 버튼 활성화
                 delFarmBtn.disabled = selectedFarms.length === 0;
             }
-            
-            // 농장 추가
-            function addFarm(event) {
+        
+            async function addFarm(event) {
                 event.preventDefault();
-            
                 const farmName = document.getElementById("farmName").value;
                 const farmLocation = document.getElementById("farmLocation").value;
                 const farmType = document.getElementById("farmType").value;
-            
+        
                 if (!farmName || !farmLocation || !farmType) {
                     alert("모든 필드를 입력해주세요.");
                     return;
                 }
-            
-                // 입력 필드 초기화 (UI 반응 속도 개선)
+        
                 document.getElementById("farmName").value = '';
                 document.getElementById("farmLocation").value = '';
                 document.getElementById("farmType").value = '';
-            
-                fetch("https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app/addFarm", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        user_id: userId,
-                        farm_name: farmName,
-                        farm_location: farmLocation,
-                        farm_type: farmType
-                    })
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error("농장 추가에 실패했습니다.");
-                    }
-                    return response.json();
-                })
-                .then(result => {
+        
+                try {
+                    const response = await fetch("https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app/addFarm", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ user_id: userId, farm_name: farmName, farm_location: farmLocation, farm_type: farmType })
+                    });
+                    if (!response.ok) throw new Error("농장 추가 실패");
                     alert("농장이 성공적으로 추가되었습니다.");
-                    
-                    // 모달 닫기 (안전 처리)
-                    if (addFarmModal) {
-                        addFarmModal.style.display = "none";
-                    }
-            
-                    fetchFarms(); // 농장 목록 새로고침
-                })
-                .catch(error => console.error("농장 추가 실패:", error));
+                    addFarmModal.style.display = "none";
+                    fetchFarms();
+                } catch (error) {
+                    console.error("농장 추가 실패:", error);
+                }
             }
-            
-            // 농장 삭제 처리
-            function deleteFarms() {
+        
+            async function deleteFarms() {
                 if (selectedFarms.length === 0) {
                     alert("삭제할 농장을 선택해주세요.");
                     return;
                 }
-
-                fetch("https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app/delFarm", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ farm_ids: selectedFarms })
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error("농장 삭제에 실패했습니다.");
-                    }
-                    return response.json();
-                })
-                .then(result => {
+                try {
+                    const response = await fetch("https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app/delFarm", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ farm_ids: selectedFarms })
+                    });
+                    if (!response.ok) throw new Error("농장 삭제 실패");
                     alert("선택된 농장이 삭제되었습니다.");
                     selectedFarms = [];
-                    fetchFarms(); // 농장 목록 갱신
-                })
-                .catch(error => {
+                    fetchFarms();
+                } catch (error) {
                     console.error("농장 삭제 실패:", error);
-                    alert(error.message || "알 수 없는 오류가 발생했습니다.");
-                });
+                }
             }
         
-            // 삭제 모드 및 취소 처리
             cancelDeleteBtn.addEventListener("click", () => {
-                console.log('취소 버튼 클릭됨');
                 isDeleteMode = false;
                 delFarmBtn.textContent = "- 스마트팜 삭제";
-                // 선택된 농장 카드에서 빨간 테두리 제거
-                const selectedFarmCards = document.querySelectorAll(".farm-card.selected");
-                selectedFarmCards.forEach(card => {
-                    card.classList.remove("selected");
-                });
+                document.querySelectorAll(".farm-card.selected").forEach(card => card.classList.remove("selected"));
                 cancelDeleteBtn.style.display = "none";
-                selectedFarms = []; // 선택된 농장 초기화
+                selectedFarms = [];
             });
         
-            // 농장 삭제 버튼 클릭 시
             delFarmBtn.addEventListener("click", () => {
                 if (isDeleteMode) {
                     deleteFarms();
@@ -560,17 +517,13 @@
                 } else {
                     isDeleteMode = true;
                     delFarmBtn.textContent = "삭제 완료";
-                    cancelDeleteBtn.disabled = false; 
                     cancelDeleteBtn.style.display = "inline-block";
-                    selectedFarms = [];
                 }
             });
         
             addFarmBtn.addEventListener("click", () => addFarmModal.style.display = "flex");
             closeModalBtn.addEventListener("click", () => addFarmModal.style.display = "none");
             addFarmForm.addEventListener("submit", addFarm);
-        
-            // 로그아웃 처리
             logoutButton.addEventListener("click", () => {
                 sessionStorage.removeItem("user_id");
                 alert("로그아웃");
@@ -579,7 +532,7 @@
         
             fetchName();
             fetchFarms();
-        });        
+        });     
     </script>
 </body>
 </html>
