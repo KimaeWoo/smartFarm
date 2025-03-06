@@ -62,31 +62,6 @@ app.get('/check-userid', async (req, res) => {
   }
 });
 
-// 닉네임 중복 확인 API
-app.get('/check-username', async (req, res) => {
-  const { username } = req.query;
-  const query = 'SELECT * FROM users WHERE username = ?';
-  let conn;
-
-  try {
-    conn = await db.getConnection();
-    const results = await conn.query(query, [username]);
-
-    if (results.length > 0) {
-      console.log(`[GET /check-username] 이미 사용 중인 닉네임: ${username}`);
-      return res.status(400).json({ message: '이미 사용 중인 닉네임입니다.' });
-    }
-
-    console.log(`[GET /check-username] 사용 가능한 닉네임: ${username}`);
-    res.status(200).json({ message: '사용 가능한 닉네임입니다.' });
-  } catch (err) {
-    console.error('[GET /check-username] 쿼리 실행 실패:', err);
-    return res.status(500).json({ message: '서버 오류' });
-  } finally {
-    if (conn) conn.release();
-  }
-});
-
 // 회원가입 API
 app.post('/signup', async (req, res) => {
   const { user_id, password, username } = req.body;
@@ -94,9 +69,10 @@ app.post('/signup', async (req, res) => {
   let conn;
 
   try {
+    console.log('signup test');
     conn = await db.getConnection();
     const results = await conn.query(query, [user_id, password, username]);
-  
+    
     console.log(`[POST /signup] 회원가입 성공 - user_id: ${user_id}`);
     res.status(201).json({ message: '회원가입 성공' });
   } catch (err) {
@@ -669,3 +645,28 @@ app.get('/history-data', (req, res) => {
 app.listen(PORT, '0.0.0.0', () => {
   console.log('서버가 실행 중입니다.');
 });
+
+// 닉네임 중복 확인 API
+// app.get('/check-username', async (req, res) => {
+//   const { username } = req.query;
+//   const query = 'SELECT * FROM users WHERE username = ?';
+//   let conn;
+
+//   try {
+//     conn = await db.getConnection();
+//     const results = await conn.query(query, [username]);
+
+//     if (results.length > 0) {
+//       console.log(`[GET /check-username] 이미 사용 중인 닉네임: ${username}`);
+//       return res.status(400).json({ message: '이미 사용 중인 닉네임입니다.' });
+//     }
+
+//     console.log(`[GET /check-username] 사용 가능한 닉네임: ${username}`);
+//     res.status(200).json({ message: '사용 가능한 닉네임입니다.' });
+//   } catch (err) {
+//     console.error('[GET /check-username] 쿼리 실행 실패:', err);
+//     return res.status(500).json({ message: '서버 오류' });
+//   } finally {
+//     if (conn) conn.release();
+//   }
+// });
