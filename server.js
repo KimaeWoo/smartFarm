@@ -173,7 +173,7 @@ app.get('/getFarms', async(req, res) => {
     const results = await conn.query(query, [user_id]);
 
     console.log('[GET /getFarms] 농장 목록 불러오기 성공:', results);  // 농장 목록 출력
-    return res.json({ message: '농장 목록 불러오기 성공' });
+    return res.json({ farms: results, message: '농장 목록 불러오기 성공' });
   } catch (err) {
     console.error('[GET /getFarms] DB 오류:', err);
     return res.status(500).json({ message: 'DB 오류' });
