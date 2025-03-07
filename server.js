@@ -491,6 +491,8 @@ app.get('/api-key', (req, res) => {
 app.get('/get-sensor-data', async (req, res) => {
   const { user_id, farm_id, date } = req.query;
 
+  console.log('📌 요청 데이터:', { user_id, farm_id, date });
+
   const query = `
     SELECT 
       AVG(temperature) AS avg_temp,
@@ -503,6 +505,9 @@ app.get('/get-sensor-data', async (req, res) => {
 
   try {
     const [rows] = await db.execute(query, [user_id, farm_id, date]);
+
+    console.log('📌 조회된 데이터:', rows);
+    
     if (rows.length > 0) {
       res.json(rows[0]);
     } else {
