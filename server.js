@@ -482,73 +482,13 @@ app.get('/history-data', async (req, res) => {
   }
 });
 
-// .env 파일에서 API 키 가져오기
-const API_KEY = process.env.TOGETHER_AI_API_KEY;
 
-// 스마트팜 일지 작성 함수
-function generatePrompt(sensorData) {
-  return `
-      📅 스마트팜 운영 기록 (${sensorData.date})
-
-      1️⃣ **환경 요약**  
-      - 평균 온도: ${sensorData.avg_temp}℃ (어제보다 ${sensorData.temp_diff}℃ 변화)  
-      - 평균 습도: ${sensorData.avg_humidity}% (어제보다 ${sensorData.humidity_diff}% 변화)  
-      - 토양 수분: ${sensorData.soil_moisture}% (${sensorData.soil_status})  
-      - LED 사용 시간: ${sensorData.led_usage}시간 (평소보다 ${sensorData.led_diff}시간 변화)  
-
-      2️⃣ **이상 감지**  
-      ${sensorData.alerts}
-
-      3️⃣ **농작물 상태 분석**  
-      ${sensorData.crop_analysis}
-
-      4️⃣ **내일을 위한 제안**  
-      ${sensorData.recommendations}
-  `;
-}
-
-// Together AI API 호출 함수
-async function getFarmLog(sensorData) {
-  const prompt = generatePrompt(sensorData);
-
-  try {
-      const response = await axios.post(
-          'https://api.together.xyz/v1/chat/completions', 
-          {
-              model: 'mistral-7b-instruct',  // 모델을 지정해 주세요 (예: gpt-3.5-turbo)
-              messages: [
-                  {
-                      role: 'system', 
-                      content: '너는 스마트팜의 AI 관리자로서 일지를 작성해야 한다.'
-                  },
-                  {
-                      role: 'user', 
-                      content: prompt
-                  }
-              ],
-              temperature: 0.7
-          },
-          {
-              headers: {
-                  'Authorization': `Bearer ${API_KEY}`,
-                  'Content-Type': 'application/json'
-              }
-          }
-      );
-
-      return response.data.choices[0].message.content; // 생성된 일지 내용
-  } catch (error) {
-      console.error('API 호출 중 오류 발생:', error);
-      return '❌ 오류가 발생했습니다. 나중에 다시 시도해주세요.';
-  }
-}
-
-// 서버에서 센서 데이터를 가져오는 API 예시
+// 센서 데이터 가져오기 API
 app.get('/get-sensor-data', async (req, res) => {
   const { user_id, farm_id, date } = req.query;
 
   const query = `
-    SELECT
+    SELECT 
       AVG(temperature) AS avg_temp,
       AVG(humidity) AS avg_humidity,
       AVG(soil_moisture) AS avg_soil_moisture,
@@ -556,11 +496,11 @@ app.get('/get-sensor-data', async (req, res) => {
     FROM sensors
     WHERE user_id = ? AND farm_id = ? AND DATE(created_at) = ?
   `;
-  
+
   try {
-    const result = await db.execute(query, [user_id, farm_id, date]);
-    if (result.length > 0) {
-      res.json(result[0]);
+    const [rows] = await db.execute(query, [user_id, farm_id, date]);
+    if (rows.length > 0) {
+      res.json(rows[0]);
     } else {
       res.status(404).json({ error: '데이터를 찾을 수 없습니다.' });
     }
@@ -570,13 +510,13 @@ app.get('/get-sensor-data', async (req, res) => {
   }
 });
 
-// 서버에서 일지 데이터를 저장하는 API 예시
+// 일지 저장 
 app.post('/save-diary', async (req, res) => {
   const { user_id, farm_id, content } = req.body;
 
   const query = `
-    INSERT INTO diaries (user_id, farm_id, content)
-    VALUES (?, ?, ?)
+    INSERT INTO diaries (user_id, farm_id, content, created_at)
+    VALUES (?, ?, ?, NOW())
   `;
 
   try {
@@ -585,6 +525,26 @@ app.post('/save-diary', async (req, res) => {
   } catch (error) {
     console.error('일지 저장 오류:', error);
     res.status(500).json({ success: false, message: '일지 저장 실패' });
+  }
+});
+
+// 일지 목록 가져오기
+app.get('/get-diary-entries', async (req, res) => {
+  const { user_id, farm_id } = req.query;
+
+  const query = `
+    SELECT id, content, created_at
+    FROM diaries
+    WHERE user_id = ? AND farm_id = ?
+    ORDER BY created_at DESC
+  `;
+
+  try {
+    const [rows] = await db.execute(query, [user_id, farm_id]);
+    res.json(rows);
+  } catch (error) {
+    console.error('일지 목록 조회 오류:', error);
+    res.status(500).json({ error: '일지 목록을 가져오는 중 오류 발생' });
   }
 });
 
