@@ -491,7 +491,7 @@ app.get('/api-key', (req, res) => {
 app.get('/get-sensor-data', async (req, res) => {
   const { user_id, farm_id, date } = req.query;
 
-  console.log('📌 요청 데이터:', { user_id, farm_id, date });
+  console.log('요청 데이터:', { user_id, farm_id, date });
 
   const query = `
     SELECT 
@@ -508,7 +508,7 @@ app.get('/get-sensor-data', async (req, res) => {
     conn = await db.getConnection();
     const rows = await conn.query(query, [user_id, farm_id, date]);
 
-    console.log('📌 조회된 데이터:', rows);
+    console.log('조회된 데이터:', rows);
 
     if (rows.length > 0) {
       return res.json(rows[0]);

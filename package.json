@@ -16,7 +16,6 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "mariadb": "^3.4.0",
-    "moment-timezone": "^0.5.47",
-    "together-ai": "^0.13.0"
+    "moment-timezone": "^0.5.47"
   }
 }
