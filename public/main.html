@@ -1496,22 +1496,6 @@
         summaryChart.update();
       }
 
-      // 일지 목록 불러오기
-      async function loadDiaryEntries() {
-        const userId = sessionStorage.getItem("user_id");
-        const farmId = sessionStorage.getItem("farm_id");
-
-        try {
-          const response = await axios.get(`${API_BASE_URL}/get-diary-entries`, {
-            params: { user_id: userId, farm_id: farmId },
-          });
-
-          console.log("📖 일지 목록:", response.data);
-        } catch (error) {
-          console.error("❌ 일지 목록 조회 오류:", error);
-        }
-      }
-
       fetchFarmName() // 스마트팜 이름 가져오기
       fetchName(); // 사용자 이름 가져오기
       updateDateDisplay(); // 날짜 표시 업데이트
@@ -1616,6 +1600,10 @@
       }
     }
 
+    import Together from 'together-ai';
+
+    const together = new Together();
+
     // AI 일지 작성 함수
     async function getFarmLog(sensorData) {
       const prompt = `
@@ -1632,23 +1620,16 @@
           alert("API 키를 가져올 수 없습니다.");
           return;
         }
-        const response = await axios.post(
-          "https://api.together.xyz/v1/chat/completions",
-          {
-            model: "mistral-7b-instruct",
-            messages: [
-              { role: "system", content: "너는 스마트팜 AI 비서로서 일지를 작성해야 한다." },
-              { role: "user", content: prompt },
-            ],
-            temperature: 0.7,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${API_KEY}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        const response = await together.chat.completions.create({
+          model: "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free",
+          messages: [
+            { role: "system", content: "너는 스마트팜 AI 비서로서 일지를 작성해야 한다." },
+            { role: "user", content: prompt },
+          ],
+          temperature: 0.7,
+        });
+
+        console.log(response.choices[0].message.content);
 
         return response.data.choices[0].message.content;
       } catch (error) {
@@ -1685,6 +1666,24 @@
         alert("⚠️ 일지 저장 중 오류가 발생했습니다.");
       }
     }
+
+    // 일지 목록 불러오기
+    async function loadDiaryEntries() {
+      const userId = sessionStorage.getItem("user_id");
+      const farmId = sessionStorage.getItem("farm_id");
+
+      try {
+        const response = await axios.get(`${API_BASE_URL}/get-diary-entries`, {
+          params: { user_id: userId, farm_id: farmId },
+        });
+
+        console.log("📖 일지 목록:", response.data);
+      } catch (error) {
+        console.error("❌ 일지 목록 조회 오류:", error);
+      }
+    }
+
+    loadDiaryEntries()
     document.getElementById("generate-diary").addEventListener("click", generateAndSaveDiary);
   </script>
 </body>
