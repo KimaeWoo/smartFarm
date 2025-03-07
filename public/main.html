@@ -428,12 +428,10 @@
     }
 
     iframe {
-      position: absolute;
       width: 100%;
       height: 100%;
-      top: 0;
-      left: 0;
-      border: none;
+      transform: scale(0.8);  /* 크기 조절 (0.8배 축소) */
+      transform-origin: top left; /* 크기 축소 기준 */
     }
   </style>
 </head>
