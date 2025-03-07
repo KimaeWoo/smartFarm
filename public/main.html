@@ -192,14 +192,6 @@
       padding: 1.5rem;
     }
 
-    .card-content iframe {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
     .card-footer {
       padding: 1rem 1.5rem;
       border-top: 1px solid var(--border-color);
@@ -433,6 +425,21 @@
     .switch-container {
       display: flex;
       align-items: center;
+    }
+
+    .iframe-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      height: 100%;
+      overflow: hidden; /* 스크롤 방지 */
+    }
+    
+    .iframe-wrapper iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
     }
   </style>
 </head>
@@ -717,7 +724,9 @@
           <div class="card-title">스마트팜 CCTV 화면</div>
         </div>
         <div class="card-content">
-          <iframe src="https://toxic-messages-keyboard-exists.trycloudflare.com/monitor"></iframe>
+          <div class="iframe-wrapper">
+            <iframe src="https://toxic-messages-keyboard-exists.trycloudflare.com/monitor"></iframe>
+          </div>
         </div>
       </div>
     </div>
