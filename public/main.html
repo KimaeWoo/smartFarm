@@ -448,6 +448,7 @@
     <div class="tabs">
       <div class="tab active" data-tab="current">현재 상태</div>
       <div class="tab" data-tab="history">기록 데이터</div>
+      <div class="tab" data-tab="writeDiary">일지 작성</div>
     </div>
 
     <!-- 현재 상태 탭 -->
@@ -677,6 +678,56 @@
           <div class="chart-container">
             <canvas id="summary-chart"></canvas>
           </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 일지 작성 탭 콘텐츠 -->
+    <div class="tab-content" id="write-diary-tab">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">여행 일지 작성</div>
+        </div>
+        <div class="card-content">
+          <form id="diary-form">
+            <div class="form-group">
+              <label for="diary-date">날짜</label>
+              <input type="date" id="diary-date" name="diary-date" required />
+            </div>
+
+            <div class="form-group">
+              <label for="diary-mood">감정 상태</label>
+              <select id="diary-mood" name="diary-mood" required>
+                <option value="good">좋음</option>
+                <option value="bad">나쁨</option>
+                <option value="indifferent">무덤덤</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="diary-weather">날씨</label>
+              <select id="diary-weather" name="diary-weather" required>
+                <option value="sunny">맑음</option>
+                <option value="cloudy">흐림</option>
+                <option value="rain">비</option>
+                <option value="snow">눈</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="diary-entry">일지 내용</label>
+              <textarea id="diary-entry" name="diary-entry" rows="4" placeholder="오늘의 여행을 적어주세요..." required></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="diary-images">이미지 업로드</label>
+              <input type="file" id="diary-images" name="diary-images" multiple />
+            </div>
+
+            <div class="form-group">
+              <button type="submit" class="btn">저장</button>
+            </div>
+          </form>
         </div>
       </div>
     </div>

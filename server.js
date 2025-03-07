@@ -4,6 +4,9 @@ const mariadb = require('mariadb'); // MariaDB 연결 모듈
 const path = require('path');
 const cors = require('cors'); // CORS 불러오기
 const moment = require('moment-timezone');
+const axios = require('axios');
+// dotenv 패키지를 불러오기
+require('dotenv').config();
 
 // 서버 만들기 + 실행할 포트 번호 설정
 const app = express(); // 서버를 만든다 (이 변수에 서버 기능을 저장)
@@ -12,8 +15,8 @@ const PORT = 8000;     // 서버가 사용할 포트 번호
 // 'public' 폴더를 정적 파일 제공 폴더로 설정
 app.use(express.static('public'));
 app.use(cors()); // 모든 요청에 대해 CORS 허용
-// POST 요청을 처리하기 위해 express의 body-parser 사용
-app.use(express.json());
+// POST 요청을 처리하기 위해 express의 json() 사용
+app.use(express.json()); // body-parser가 필요하지 않음
 
 // MariaDB 연결 db 생성
 const db = mariadb.createPool({
@@ -477,6 +480,89 @@ app.get('/history-data', async (req, res) => {
   } finally {
     conn.release();
   }
+});
+
+// .env 파일에서 API 키 가져오기
+const API_KEY = process.env.TOGETHER_AI_API_KEY;
+
+// 스마트팜 일지 작성 함수
+function generatePrompt(sensorData) {
+  return `
+      📅 스마트팜 운영 기록 (${sensorData.date})
+
+      1️⃣ **환경 요약**  
+      - 평균 온도: ${sensorData.avg_temp}℃ (어제보다 ${sensorData.temp_diff}℃ 변화)  
+      - 평균 습도: ${sensorData.avg_humidity}% (어제보다 ${sensorData.humidity_diff}% 변화)  
+      - 토양 수분: ${sensorData.soil_moisture}% (${sensorData.soil_status})  
+      - LED 사용 시간: ${sensorData.led_usage}시간 (평소보다 ${sensorData.led_diff}시간 변화)  
+
+      2️⃣ **이상 감지**  
+      ${sensorData.alerts}
+
+      3️⃣ **농작물 상태 분석**  
+      ${sensorData.crop_analysis}
+
+      4️⃣ **내일을 위한 제안**  
+      ${sensorData.recommendations}
+  `;
+}
+
+// Together AI API 호출 함수
+async function getFarmLog(sensorData) {
+  const prompt = generatePrompt(sensorData);
+
+  try {
+      const response = await axios.post(
+          'https://api.together.xyz/v1/chat/completions', 
+          {
+              model: 'mistral-7b-instruct',  // 모델을 지정해 주세요 (예: gpt-3.5-turbo)
+              messages: [
+                  {
+                      role: 'system', 
+                      content: '너는 스마트팜의 AI 관리자로서 일지를 작성해야 한다.'
+                  },
+                  {
+                      role: 'user', 
+                      content: prompt
+                  }
+              ],
+              temperature: 0.7
+          },
+          {
+              headers: {
+                  'Authorization': `Bearer ${API_KEY}`,
+                  'Content-Type': 'application/json'
+              }
+          }
+      );
+
+      return response.data.choices[0].message.content;
+  } catch (error) {
+      console.error('API 호출 중 오류 발생:', error);
+      return '❌ 오류가 발생했습니다. 나중에 다시 시도해주세요.';
+  }
+}
+
+// 예시 센서 데이터
+const sensorDataExample = {
+  date: '2025-03-07',
+  avg_temp: 25.3, 
+  temp_diff: '+1.2',
+  avg_humidity: 60, 
+  humidity_diff: '-5',
+  soil_moisture: 40, 
+  soil_status: '적정 범위 유지',
+  led_usage: 8, 
+  led_diff: '+2',
+  alerts: '⚠️ 14시~16시 온도 급상승 (30℃ 초과) → 추가 환기 필요!',
+  crop_analysis: '✅ 토마토 잎이 건강함. ⚠️ 습도 저하로 곰팡이 위험 존재.',
+  recommendations: '🌡️ 온도 상승 가능 → 환기 시스템 자동 가동 필요.'
+};
+
+// 서버 요청 처리
+app.get('/generate-farm-log', async (req, res) => {
+  const farmLog = await getFarmLog(sensorDataExample);
+  res.json({ farmLog });
 });
 
 app.listen(PORT, '0.0.0.0', () => {
