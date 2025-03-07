@@ -1605,21 +1605,18 @@
 
     async function generateDiary() {
         try {
-            // 예시: user_id와 farm_id는 실제 값으로 교체해야 합니다.
-            const user_id = 'user123';
-            const farm_id = 'farm456';
             const date = new Date().toISOString().split('T')[0];  // 오늘 날짜 (YYYY-MM-DD)
 
             // 1. 자동 일지 작성 요청 (fetch 사용)
-            const response = await fetch('/save-diary', {
+            const response = await fetch(`${API_BASE_URL}/save-diary`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    user_id,
-                    farm_id,
-                    date,
+                    user_id: userId,
+                    farm_id: farmId,
+                    date: date,
                 }),
             });
 
@@ -1628,7 +1625,7 @@
             if (response.ok && data.success) {
                 alert('자동 일지가 성공적으로 작성되었습니다!');
                 // 일지 목록 갱신
-                getDiaryEntries(user_id, farm_id);
+                getDiaryEntries(userId, farmId);
             } else {
                 alert('일지 작성에 실패했습니다.');
             }
@@ -1639,9 +1636,9 @@
     }
 
     // 2. 일지 목록 가져오기 (fetch 사용)
-    async function getDiaryEntries(user_id, farm_id) {
+    async function getDiaryEntries(userId, farmId) {
         try {
-            const response = await fetch(`/get-diary-entries?user_id=${user_id}&farm_id=${farm_id}`);
+            const response = await fetch(`${API_BASE_URL}/get-diary-entries?user_id=${user_id}&farm_id=${farm_id}`);
             const diaryEntries = await response.json();
 
             const diaryListElement = document.getElementById('diaryEntries');
@@ -1667,8 +1664,8 @@
 
     // 초기 일지 목록 가져오기
     document.addEventListener('DOMContentLoaded', () => {
-        const user_id = 'user123';
-        const farm_id = 'farm456';
+        const user_id = 'userId';
+        const farm_id = 'farmId';
         getDiaryEntries(user_id, farm_id);
     });
   </script>
