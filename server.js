@@ -482,8 +482,12 @@ app.get('/history-data', async (req, res) => {
   }
 });
 
+// Together AI API Key
+app.get('/api-key', (req, res) => {
+  res.json({ apiKey: process.env.TOGETHER_AI_API_KEY });
+});
 
-// 센서 데이터 가져오기 API
+// 센서 데이터 가져오기
 app.get('/get-sensor-data', async (req, res) => {
   const { user_id, farm_id, date } = req.query;
 
