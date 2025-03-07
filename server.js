@@ -536,33 +536,56 @@ async function getFarmLog(sensorData) {
           }
       );
 
-      return response.data.choices[0].message.content;
+      return response.data.choices[0].message.content; // 생성된 일지 내용
   } catch (error) {
       console.error('API 호출 중 오류 발생:', error);
       return '❌ 오류가 발생했습니다. 나중에 다시 시도해주세요.';
   }
 }
 
-// 예시 센서 데이터
-const sensorDataExample = {
-  date: '2025-03-07',
-  avg_temp: 25.3, 
-  temp_diff: '+1.2',
-  avg_humidity: 60, 
-  humidity_diff: '-5',
-  soil_moisture: 40, 
-  soil_status: '적정 범위 유지',
-  led_usage: 8, 
-  led_diff: '+2',
-  alerts: '⚠️ 14시~16시 온도 급상승 (30℃ 초과) → 추가 환기 필요!',
-  crop_analysis: '✅ 토마토 잎이 건강함. ⚠️ 습도 저하로 곰팡이 위험 존재.',
-  recommendations: '🌡️ 온도 상승 가능 → 환기 시스템 자동 가동 필요.'
-};
+// 서버에서 센서 데이터를 가져오는 API 예시
+app.get('/get-sensor-data', async (req, res) => {
+  const { user_id, farm_id, date } = req.query;
 
-// 서버 요청 처리
-app.get('/generate-farm-log', async (req, res) => {
-  const farmLog = await getFarmLog(sensorDataExample);
-  res.json({ farmLog });
+  const query = `
+    SELECT
+      AVG(temperature) AS avg_temp,
+      AVG(humidity) AS avg_humidity,
+      AVG(soil_moisture) AS avg_soil_moisture,
+      AVG(co2) AS avg_co2
+    FROM sensors
+    WHERE user_id = ? AND farm_id = ? AND DATE(created_at) = ?
+  `;
+  
+  try {
+    const result = await db.execute(query, [user_id, farm_id, date]);
+    if (result.length > 0) {
+      res.json(result[0]);
+    } else {
+      res.status(404).json({ error: '데이터를 찾을 수 없습니다.' });
+    }
+  } catch (error) {
+    console.error('센서 데이터 조회 오류:', error);
+    res.status(500).json({ error: '센서 데이터를 가져오는 중 오류 발생' });
+  }
+});
+
+// 서버에서 일지 데이터를 저장하는 API 예시
+app.post('/save-diary', async (req, res) => {
+  const { user_id, farm_id, content } = req.body;
+
+  const query = `
+    INSERT INTO diaries (user_id, farm_id, content)
+    VALUES (?, ?, ?)
+  `;
+
+  try {
+    await db.execute(query, [user_id, farm_id, content]);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('일지 저장 오류:', error);
+    res.status(500).json({ success: false, message: '일지 저장 실패' });
+  }
 });
 
 app.listen(PORT, '0.0.0.0', () => {

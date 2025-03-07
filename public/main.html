@@ -1665,6 +1665,70 @@
         }
       }
     }  
+
+    // 1. 센서 데이터를 가져오기 (일지 작성)
+    async function fetchSensorData(userId, farmId) {
+      const today = new Date().toISOString().split('T')[0]; // 'YYYY-MM-DD'
+
+      try {
+        const response = await axios.get(`/get-sensor-data`, {
+          params: {
+            user_id: userId,
+            farm_id: farmId,
+            date: today
+          }
+        });
+        return response.data;
+      } catch (error) {
+        console.error('센서 데이터 가져오기 실패:', error);
+        return null;
+      }
+    }
+
+    // 2. 일지 작성 버튼 클릭 시 처리
+    document.getElementById('diary-form').addEventListener('submit', async (event) => {
+      event.preventDefault(); // 기본 폼 제출 동작 방지
+
+      // 2-1. 클라이언트에서 user_id와 farm_id 가져오기
+      const userId = sessionStorage.getItem('user_id');
+      const farmId = sessionStorage.getItem('farm_id');
+
+      if (!userId || !farmId) {
+        alert('사용자 정보가 없습니다. 로그인 후 다시 시도해주세요.');
+        return;
+      }
+
+      // 2-2. 센서 데이터 가져오기
+      const sensorData = await fetchSensorData(userId, farmId);
+
+      if (!sensorData) {
+        alert('오늘의 센서 데이터를 가져올 수 없습니다.');
+        return;
+      }
+
+      // 2-3. Together AI를 이용해 일지 내용 생성
+      const farmLog = await getFarmLog(sensorData);
+
+      // 2-4. 일지 데이터 저장
+      const diaryContent = {
+        user_id: userId,
+        farm_id: farmId,
+        content: farmLog // AI가 생성한 일지 내용을 저장
+      };
+
+      try {
+        const response = await axios.post('/save-diary', diaryContent);
+        if (response.data.success) {
+          alert('일지가 성공적으로 작성되었습니다!');
+          // 필요시 폼을 초기화하거나 다른 동작 추가
+        } else {
+          alert('일지 저장에 실패했습니다.');
+        }
+      } catch (error) {
+        console.error('일지 저장 오류:', error);
+        alert('일지 저장 중 오류가 발생했습니다.');
+      }
+    });
   </script>
 </body>
 </html>
