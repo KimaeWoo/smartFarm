@@ -426,6 +426,12 @@
       display: flex;
       align-items: center;
     }
+
+    iframe {
+      width: 100%;
+      height: 500px; /* 원하는 높이로 조정 */
+      border: none;
+  }
   </style>
 </head>
 <body>
@@ -448,6 +454,7 @@
     <div class="tabs">
       <div class="tab active" data-tab="current">현재 상태</div>
       <div class="tab" data-tab="history">기록 데이터</div>
+      <div class="tab" data-tab="cctv">CCTV 화면</div>
       <div class="tab" data-tab="writeDiary">일지 작성</div>
     </div>
 
@@ -697,6 +704,18 @@
             <h3>작성된 일지</h3>
             <ul id="diary-entries"></ul>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CCTV 화면면 탭 -->
+    <div class="tab-content" id="cctv-tab">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">스마트팜 CCTV 화면</div>
+        </div>
+        <div class="card-content">
+          <iframe src="http://14.54.126.218:8000/monitor"></iframe>
         </div>
       </div>
     </div>
