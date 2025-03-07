@@ -410,7 +410,7 @@ app.get('/realtime-data', async (req, res) => {
       return res.status(404).json({ message:'데이터가 없습니다.' });
     }
 
-    console.log(`[GET /real-time-data] 실시간 데이터: ${results.length}개 반환`, results);
+    console.log(`[GET /real-time-data] 실시간 데이터: ${results.length}개 반환`);
     return res.json(results);
   } catch (err) {
     console.error('[GET /realtime-data] DB 오류:', err);
@@ -472,7 +472,7 @@ app.get('/history-data', async (req, res) => {
       return res.status(404).json({ message:'해당 날짜에 기록된 데이터가 없습니다.' });
     }
 
-    console.log(`[GET /history-data] 기록 데이터: ${results.length}개 반환`, results);
+    console.log(`[GET /history-data] 기록 데이터: ${results.length}개 반환`);
     res.json(results);
   } catch (err) {
     console.error('[GET /history-data] DB 오류: ', err.stack);
