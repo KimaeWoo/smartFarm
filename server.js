@@ -502,9 +502,11 @@ app.get('/get-sensor-data', async (req, res) => {
     FROM sensors
     WHERE user_id = ? AND farm_id = ? AND DATE(created_at) = ?
   `;
+  let conn;
 
   try {
-    const [rows] = await db.execute(query, [user_id, farm_id, date]);
+    conn = await db.getConnection();
+    const [rows] = await conn.query(query, [user_id, farm_id, date]);
 
     console.log('📌 조회된 데이터:', rows);
 
@@ -527,9 +529,11 @@ app.post('/save-diary', async (req, res) => {
     INSERT INTO diaries (user_id, farm_id, content, created_at)
     VALUES (?, ?, ?, NOW())
   `;
+  let conn;
 
   try {
-    await db.execute(query, [user_id, farm_id, content]);
+    conn = db.getConnection();
+    await conn.query(query, [user_id, farm_id, content]);
     res.json({ success: true });
   } catch (error) {
     console.error('일지 저장 오류:', error);
