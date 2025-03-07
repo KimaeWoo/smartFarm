@@ -329,7 +329,7 @@ app.get('/sensors/status', async (req, res) => {
       console.log('[GET /sensors/status] 조회된 데이터 없음');
       return res.status(404).json({ message:'해당 조건에 맞는 데이터가 없습니다.' });
     }
-    console.log('[GET /sensors/status] 센서 조회 성공공');
+    console.log('[GET /sensors/status] 센서 조회 성공');
     return res.json(results[0]); 
   } catch (err) {
     console.error('[GET /sensors/status] DB 오류:', err);
@@ -547,7 +547,7 @@ async function getSensorData(user_id, farm_id, date) {
 // Together AI API를 호출하여 일지 내용 자동 생성
 async function getDiaryContentFromTogetherAI(sensorData) {
   try {
-    const response = await axios.post('https://api.together.ai/generate-text', {
+    const response = await axios.post('https://api.together.xyz/v1/chat/completions', {
       headers: {
         'Authorization': `Bearer ${process.env.TOGETHER_AI_API_KEY}`,
         'Content-Type': 'application/json',

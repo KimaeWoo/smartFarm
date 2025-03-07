@@ -705,13 +705,13 @@
           <div class="card-title">스마트팜 운영 일지</div>
         </div>
         <div class="card-content">
-          <!-- 자동 일지 작성 버튼 -->
-          <button id="saveDiaryButton" class="btn">일지 자동 작성</button>
-          
-          <!-- 일지 목록 -->
-          <div id="diary-list" class="diary-list">
-            <h3>작성된 일지</h3>
-            <ul id="diary-entries"></ul>
+          <div class="diary-actions">
+            <button id="generateDiaryBtn">자동 일지 작성</button>
+          </div>
+
+          <div class="diary-list">
+            <h2>최근 작성된 일지</h2>
+            <ul id="diaryEntries"></ul>
           </div>
         </div>
       </div>
@@ -1601,24 +1601,75 @@
       }
     }  
 
-    // 클라이언트에서 버튼 클릭 시
-    document.getElementById('saveDiaryButton').addEventListener('click', async () => {
-      const userId = '사용자 ID';
-      const farmId = '농장 ID';
-      const date = new Date().toISOString().split('T')[0]; // 오늘 날짜
+    document.getElementById('generateDiaryBtn').addEventListener('click', generateDiary);
 
-      const response = await fetch(`${API_BASE_URL}/save-diary`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: userId, farm_id: farmId, date: date })
-      });
+    async function generateDiary() {
+        try {
+            // 예시: user_id와 farm_id는 실제 값으로 교체해야 합니다.
+            const user_id = 'user123';
+            const farm_id = 'farm456';
+            const date = new Date().toISOString().split('T')[0];  // 오늘 날짜 (YYYY-MM-DD)
 
-      const result = await response.json();
-      if (result.success) {
-        alert('일지가 저장되었습니다!');
-      } else {
-        alert('일지 저장에 실패했습니다.');
-      }
+            // 1. 자동 일지 작성 요청 (fetch 사용)
+            const response = await fetch('/save-diary', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    user_id,
+                    farm_id,
+                    date,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                alert('자동 일지가 성공적으로 작성되었습니다!');
+                // 일지 목록 갱신
+                getDiaryEntries(user_id, farm_id);
+            } else {
+                alert('일지 작성에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('일지 작성 오류:', error);
+            alert('일지 작성에 오류가 발생했습니다.');
+        }
+    }
+
+    // 2. 일지 목록 가져오기 (fetch 사용)
+    async function getDiaryEntries(user_id, farm_id) {
+        try {
+            const response = await fetch(`/get-diary-entries?user_id=${user_id}&farm_id=${farm_id}`);
+            const diaryEntries = await response.json();
+
+            const diaryListElement = document.getElementById('diaryEntries');
+            diaryListElement.innerHTML = ''; // 기존 목록 비우기
+
+            if (diaryEntries.length === 0) {
+                diaryListElement.innerHTML = '<li>일지가 없습니다.</li>';
+            } else {
+                diaryEntries.forEach(entry => {
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = `
+                        <p>${entry.content}</p>
+                        <span class="created-at">${new Date(entry.created_at).toLocaleString()}</span>
+                    `;
+                    diaryListElement.appendChild(listItem);
+                });
+            }
+        } catch (error) {
+            console.error('일지 목록 가져오기 오류:', error);
+            alert('일지 목록을 가져오는 데 오류가 발생했습니다.');
+        }
+    }
+
+    // 초기 일지 목록 가져오기
+    document.addEventListener('DOMContentLoaded', () => {
+        const user_id = 'user123';
+        const farm_id = 'farm456';
+        getDiaryEntries(user_id, farm_id);
     });
   </script>
 </body>
