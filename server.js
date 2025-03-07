@@ -507,11 +507,11 @@ app.get('/get-sensor-data', async (req, res) => {
     const [rows] = await db.execute(query, [user_id, farm_id, date]);
 
     console.log('📌 조회된 데이터:', rows);
-    
+
     if (rows.length > 0) {
-      res.json(rows[0]);
+      return res.json(rows[0]);
     } else {
-      res.status(404).json({ error: '데이터를 찾을 수 없습니다.' });
+      return res.status(404).json({ error: '데이터를 찾을 수 없습니다.' });
     }
   } catch (error) {
     console.error('센서 데이터 조회 오류:', error);
