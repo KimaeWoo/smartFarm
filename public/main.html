@@ -1627,6 +1627,11 @@
       `;
 
       try {
+        const API_KEY = await getApiKey();
+        if (!API_KEY) {
+          alert("API 키를 가져올 수 없습니다.");
+          return;
+        }
         const response = await axios.post(
           "https://api.together.xyz/v1/chat/completions",
           {
@@ -1654,12 +1659,6 @@
 
     // AI 일지 자동 작성 및 저장 함수
     async function generateAndSaveDiary() {
-      const API_KEY = await getApiKey();
-      if (!API_KEY) {
-        alert("API 키를 가져올 수 없습니다.");
-        return;
-      }
-      
       const sensorData = await fetchSensorData(userId, farmId);
       if (!sensorData) {
         alert("센서 데이터를 가져올 수 없습니다.");
