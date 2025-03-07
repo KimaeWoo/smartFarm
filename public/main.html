@@ -1577,7 +1577,7 @@
       const farmId = '농장 ID';
       const date = new Date().toISOString().split('T')[0]; // 오늘 날짜
 
-      const response = await fetch('/save-diary', {
+      const response = await fetch(`${API_BASE_URL}/save-diary`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: userId, farm_id: farmId, date: date })
