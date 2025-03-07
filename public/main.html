@@ -1616,31 +1616,43 @@
       }
     }
 
-    import Together from "together-ai";
-
-    const together = new Together();
-    // 일지 작성성
+    // AI 일지 작성 함수
     async function getFarmLog(sensorData) {
       const prompt = `
-        📅 스마트팜 운영 기록 (${sensorData.date})
-        - 평균 온도: ${sensorData.avg_temp}℃ 
-        - 평균 습도: ${sensorData.avg_humidity}%
-        - 토양 수분: ${sensorData.avg_soil_moisture}%
-        - CO2 농도: ${sensorData.avg_co2}ppm
+          📅 스마트팜 운영 기록 (${sensorData.date})
+          - 평균 온도: ${sensorData.avg_temp}℃
+          - 평균 습도: ${sensorData.avg_humidity}%
+          - 토양 수분: ${sensorData.avg_soil_moisture}%
+          - CO2 농도: ${sensorData.avg_co2}ppm
       `;
 
       try {
-        const response = await together.chat.completions.create({
-          messages: [
-            { role: "system", content: "너는 스마트팜 AI 비서로서 일지를 작성해야 한다." },
-            { role: "user", content: prompt }
-          ],
-          model: "meta-llama/Llama-3.3-70B-Instruct-Turbo",  // 모델 이름이 다를 수 있음
-        });
+        const API_KEY = await getApiKey();
+        if (!API_KEY) {
+          alert("API 키를 가져올 수 없습니다.");
+          return;
+        }
+        const response = await axios.post(
+          "https://api.together.xyz/v1/chat/completions",
+          {
+            model: "mistral-7b-instruct",
+            messages: [
+              { role: "system", content: "너는 스마트팜 AI 비서로서 일지를 작성해야 한다." },
+              { role: "user", content: prompt },
+            ],
+            temperature: 0.7,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${API_KEY}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
-        return response.choices[0].message.content;
+        return response.data.choices[0].message.content;
       } catch (error) {
-        console.error("❌ AI 일지 생성 오류:", error);
+        console.error("❌ AI 일지 생성 오류:", error.response?.data || error);
         return "⚠️ AI 일지 생성 중 오류가 발생했습니다.";
       }
     }
