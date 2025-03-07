@@ -508,6 +508,8 @@ app.get('/get-sensor-data', async (req, res) => {
     conn = await db.getConnection();
     const rows = await conn.query(query, [user_id, farm_id, date]);
 
+    console.log('📌 조회된 데이터:', rows);
+    
     if (rows.length > 0) {
       return res.json(rows[0]);
     } else {
