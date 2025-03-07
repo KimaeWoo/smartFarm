@@ -508,7 +508,7 @@ app.get('/get-sensor-data', async (req, res) => {
     conn = await db.getConnection();
     const [rows] = await conn.query(query, [user_id, farm_id, date]);
 
-    console.log('📌 조회된 데이터:', rows);
+    console.log('📌 조회된 데이터:', rows, rows.length);
 
     if (rows.length > 0) {
       return res.json(rows[0]);
@@ -518,6 +518,8 @@ app.get('/get-sensor-data', async (req, res) => {
   } catch (error) {
     console.error('센서 데이터 조회 오류:', error);
     res.status(500).json({ error: '센서 데이터를 가져오는 중 오류 발생' });
+  } finally {
+    conn.release();
   }
 });
 
@@ -538,6 +540,8 @@ app.post('/save-diary', async (req, res) => {
   } catch (error) {
     console.error('일지 저장 오류:', error);
     res.status(500).json({ success: false, message: '일지 저장 실패' });
+  } finally {
+    conn.release();
   }
 });
 
@@ -551,13 +555,17 @@ app.get('/get-diary-entries', async (req, res) => {
     WHERE user_id = ? AND farm_id = ?
     ORDER BY created_at DESC
   `;
+  let conn;
 
   try {
-    const [rows] = await db.execute(query, [user_id, farm_id]);
+    conn = db.getConnection();
+    const [rows] = await conn.query(query, [user_id, farm_id]);
     res.json(rows);
   } catch (error) {
     console.error('일지 목록 조회 오류:', error);
     res.status(500).json({ error: '일지 목록을 가져오는 중 오류 발생' });
+  } finally {
+    conn.release();
   }
 });
 
