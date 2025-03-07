@@ -482,17 +482,40 @@ app.get('/history-data', async (req, res) => {
   }
 });
 
-// Together AI API Key
-app.get('/api-key', (req, res) => {
-  res.json({ apiKey: process.env.TOGETHER_AI_API_KEY });
+// 일지 저장 
+app.post('/save-diary', async (req, res) => {
+  const { user_id, farm_id, date } = req.body;
+
+  // 1. 센서 데이터를 가져온다
+  const sensorData = await getSensorData(user_id, farm_id, date);
+  if (!sensorData) {
+    return res.status(404).json({ success: false, message: '센서 데이터를 찾을 수 없습니다.' });
+  }
+
+  // 2. 센서 데이터를 기반으로 Together AI에 일지 작성 요청
+  const generatedContent = await getDiaryContentFromTogetherAI(sensorData);
+
+  // 3. 일지를 데이터베이스에 저장
+  const query = `
+    INSERT INTO diaries (user_id, farm_id, content, created_at)
+    VALUES (?, ?, ?, NOW())
+  `;
+  let conn;
+
+  try {
+    conn = await db.getConnection();
+    await conn.query(query, [user_id, farm_id, generatedContent]);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('일지 저장 오류:', error);
+    res.status(500).json({ success: false, message: '일지 저장 실패' });
+  } finally {
+    conn.release();
+  }
 });
 
 // 센서 데이터 가져오기
-app.get('/get-sensor-data', async (req, res) => {
-  const { user_id, farm_id, date } = req.query;
-
-  console.log('요청 데이터:', { user_id, farm_id, date });
-
+async function getSensorData(user_id, farm_id, date) {
   const query = `
     SELECT 
       AVG(temperature) AS avg_temp,
@@ -508,42 +531,41 @@ app.get('/get-sensor-data', async (req, res) => {
     conn = await db.getConnection();
     const rows = await conn.query(query, [user_id, farm_id, date]);
 
-    console.log('조회된 데이터:', rows);
-
     if (rows.length > 0) {
-      return res.json(rows[0]);
+      return rows[0]; // 센서 데이터 반환
     } else {
-      return res.status(404).json({ error: '데이터를 찾을 수 없습니다.' });
+      return null;
     }
   } catch (error) {
     console.error('센서 데이터 조회 오류:', error);
-    res.status(500).json({ error: '센서 데이터를 가져오는 중 오류 발생' });
+    return null;
   } finally {
     conn.release();
   }
-});
+}
 
-// 일지 저장 
-app.post('/save-diary', async (req, res) => {
-  const { user_id, farm_id, content } = req.body;
-
-  const query = `
-    INSERT INTO diaries (user_id, farm_id, content, created_at)
-    VALUES (?, ?, ?, NOW())
-  `;
-  let conn;
-
+// Together AI API를 호출하여 일지 내용 자동 생성
+async function getDiaryContentFromTogetherAI(sensorData) {
   try {
-    conn = await db.getConnection();
-    await conn.query(query, [user_id, farm_id, content]);
-    res.json({ success: true });
+    const response = await axios.post('https://api.together.ai/generate-text', {
+      headers: {
+        'Authorization': `Bearer ${process.env.TOGETHER_AI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      data: {
+        prompt: `오늘 농장에서 측정된 센서 데이터를 기반으로 일지를 작성해 주세요. 
+                 온도: ${sensorData.avg_temp}°C, 습도: ${sensorData.avg_humidity}%, 
+                 토양 습도: ${sensorData.avg_soil_moisture}%, CO2: ${sensorData.avg_co2}ppm.`,
+        max_tokens: 200, // 일지 길이 조정
+      },
+    });
+
+    return response.data.text; // 자동 생성된 텍스트 반환
   } catch (error) {
-    console.error('일지 저장 오류:', error);
-    res.status(500).json({ success: false, message: '일지 저장 실패' });
-  } finally {
-    conn.release();
+    console.error('Together AI 호출 오류:', error);
+    return '일지 작성에 실패했습니다.'; // 오류 발생 시 기본 텍스트 반환
   }
-});
+}
 
 // 일지 목록 가져오기
 app.get('/get-diary-entries', async (req, res) => {

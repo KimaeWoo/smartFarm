@@ -690,7 +690,7 @@
         </div>
         <div class="card-content">
           <!-- 자동 일지 작성 버튼 -->
-          <button id="generate-diary" class="btn">일지 자동 작성</button>
+          <button id="saveDiaryButton" class="btn">일지 자동 작성</button>
           
           <!-- 일지 목록 -->
           <div id="diary-list" class="diary-list">
@@ -1570,6 +1570,26 @@
         }
       }
     }  
+
+    // 클라이언트에서 버튼 클릭 시
+    document.getElementById('saveDiaryButton').addEventListener('click', async () => {
+      const userId = '사용자 ID';
+      const farmId = '농장 ID';
+      const date = new Date().toISOString().split('T')[0]; // 오늘 날짜
+
+      const response = await fetch('/save-diary', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, farm_id: farmId, date: date })
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        alert('일지가 저장되었습니다!');
+      } else {
+        alert('일지 저장에 실패했습니다.');
+      }
+    });
   </script>
 </body>
 </html>
