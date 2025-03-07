@@ -506,7 +506,7 @@ app.get('/get-sensor-data', async (req, res) => {
 
   try {
     conn = await db.getConnection();
-    const [rows] = await conn.query(query, [user_id, farm_id, date]);
+    const rows = await conn.query(query, [user_id, farm_id, date]);
 
     console.log('📌 조회된 데이터:', rows);
     console.log('📌 rows 길이이:', rows.length);
