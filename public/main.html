@@ -1659,15 +1659,7 @@
         alert("API 키를 가져올 수 없습니다.");
         return;
       }
-
-      const userId = sessionStorage.getItem("user_id");
-      const farmId = sessionStorage.getItem("farm_id");
-
-      if (!userId || !farmId) {
-        alert("사용자 정보를 찾을 수 없습니다.");
-        return;
-      }
-
+      
       const sensorData = await fetchSensorData(userId, farmId);
       if (!sensorData) {
         alert("센서 데이터를 가져올 수 없습니다.");
