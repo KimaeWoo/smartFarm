@@ -329,7 +329,7 @@ app.get('/sensors/status', async (req, res) => {
       console.log('[GET /sensors/status] 조회된 데이터 없음');
       return res.status(404).json({ message:'해당 조건에 맞는 데이터가 없습니다.' });
     }
-    console.log('[GET /sensors/status] 조회된 데이터:', results[0]);
+    console.log('[GET /sensors/status] 센서 조회 성공공');
     return res.json(results[0]); 
   } catch (err) {
     console.error('[GET /sensors/status] DB 오류:', err);
@@ -349,7 +349,7 @@ app.get('/devices/status', async(req, res) => {
     conn = await db.getConnection();
     const results = await conn.query(query, [user_id, farm_id]);
 
-    console.log('[GET /devices/status] 조회된 상태:', results[0]);
+    console.log('[GET /devices/status] 제어장치 조회 성공:');
     return res.json(results[0]);
   } catch (err) {
     console.error('[GET /devices/status] DB 오류:', err);
@@ -369,7 +369,7 @@ app.post('/devices/:deviceId/status', async (req, res) => {
     conn = await db.getConnection();
     await conn.query(query, [user_id, farm_id]);
 
-    console.log('[/devices/:deviceId/status] 제어장치 변경:', device);
+    console.log('[/devices/:deviceId/status] 제어장치 변경 성공');
     return res.json({ message: '제어장치 변경 성공' });
   } catch (err) {
     console.error('[POST /devices/:deviceId/status] DB 오류:', err);
@@ -440,7 +440,7 @@ app.get('/history-data', async (req, res) => {
   const endOfDayUTC = new Date(formattedDate);
   endOfDayUTC.setHours(23, 59, 59, 999);
 
-  console.log('[GET /history-data] 시작 시간(UTC):', startOfDayUTC, '끝 시간(UTC):', endOfDayUTC);
+  //console.log('[GET /history-data] 시작 시간(UTC):', startOfDayUTC, '끝 시간(UTC):', endOfDayUTC);
 
   // 1시간 단위로 데이터를 그룹화하여 평균값 계산
   const query = `
