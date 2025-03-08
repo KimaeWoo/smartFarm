@@ -333,7 +333,7 @@ app.post('/devices/:deviceId/status', async (req, res) => {
     conn = await db.getConnection();
     await conn.query(query, [user_id, farm_id]);
 
-    console.log('[/devices/:deviceId/status] 제어장치 변경 성공');
+    console.log('[/devices/:deviceId/status] 제어장치 변경 성공',device);
     return res.json({ message: '제어장치 변경 성공' });
   } catch (err) {
     console.error('[POST /devices/:deviceId/status] DB 오류:', err);
@@ -356,16 +356,17 @@ app.post('/devices/:deviceId/force-status', async (req, res) => {
     // 변경된 상태를 가져오기 위해 다시 조회
     const [rows] = await conn.query(`SELECT ${device} FROM devices WHERE user_id = ? AND farm_id = ?`, [user_id, farm_id]);
     const updatedStatus = rows[0][device]; // 변경된 상태 값 (1 또는 0)
-
+    console.log('[/devices/:deviceId/force-status] H/W 서버에 전달 성공');
+     
     // 다른 서버 API 호출
-    await axios.post('https://other-server.com/api/update-device', {
+    await axios.post('http://14.54.126.218:8000/update', {
       user_id,
       farm_id,
       devices: device,
       status: updatedStatus
     });
 
-    console.log('[/devices/:deviceId/force-status] 제어장치 변경 및 다른 서버에 전달 성공');
+    console.log('[/devices/:deviceId/force-status] 제어장치 변경 성공');
     return res.json({ message: '제어장치 변경 성공' });
 
   } catch (err) {

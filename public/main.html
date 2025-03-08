@@ -1542,7 +1542,7 @@
     const userId = sessionStorage.getItem('user_id');
     const farmId = sessionStorage.getItem('farm_id');
 
-    // 상태 변경하기
+    // 제어장치 상태 강제 변경하기
     async function updateDevice(device) {
       try {
         // user_id와 farm_id가 존재할 경우에만 요청
