@@ -1551,7 +1551,7 @@
           const isChecked = document.getElementById(`${device}-switch`).checked;
 
           // 서버로 상태 변경 요청
-          await fetch(`${API_BASE_URL}/devices/${device}/status`, {
+          await fetch(`${API_BASE_URL}/devices/${device}/force-status`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 

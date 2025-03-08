@@ -345,7 +345,7 @@ app.post('/devices/:deviceId/status', async (req, res) => {
   }
 });
 
-// 제어장치 강제 변경
+// 제어장치 상태 강제 변경
 app.post('/devices/:deviceId/force-status', async (req, res) => {
   const { user_id, farm_id, device } = req.body;
   const query = `UPDATE devices SET ${device} = NOT ${device} WHERE user_id = ? AND farm_id = ?`;
