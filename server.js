@@ -360,12 +360,12 @@ app.post('/devices/force-status', async (req, res) => {
     console.log(`[/devices/force-status] ${device} 상태 변경 성공: ${status}`);
 
     // 다른 서버 API 호출
-    await axios.post('http://14.54.126.218:8000/update', {
-      user_id,
-      farm_id,
-      devices: device,
-      status
-    });
+    // await axios.post('http://14.54.126.218:8000/update', {
+    //   user_id,
+    //   farm_id,
+    //   devices: device,
+    //   status
+    // });
 
     console.log('[/devices/force-status] H/W 서버에 상태 전달 성공');
     return res.json({ message: '제어장치 상태 강제 변경 성공' });
