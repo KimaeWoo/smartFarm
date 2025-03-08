@@ -1555,7 +1555,6 @@
             device: device, 
             status: isChecked 
           });
-
           
           // 서버로 상태 변경 요청
           const response = await fetch(`${API_BASE_URL}/devices/force-status`, { 
@@ -1569,15 +1568,12 @@
             })
           });
 
-          const responseBody = await response.json();
-          console.log(responseBody);
-          
           if (!response.ok) {
             throw new Error('서버 응답 실패');
           }
 
           // UI 업데이트
-          updateSwitchUI(device, !isChecked);
+          updateSwitchUI(device, isChecked);
 
         } else {
           console.error('user_id 또는 farm_id가 존재하지 않습니다.');
