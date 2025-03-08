@@ -283,7 +283,6 @@ app.post('/sensors', async (req, res) => {
 // 최근 센서 데이터 조회
 app.get('/sensors/status', async (req, res) => {
   const { user_id, farm_id } = req.query;
-  console.log("user_id, farm_id :",user_id, farm_id);
   const query = `SELECT * FROM sensors WHERE user_id = ? AND farm_id = ? ORDER BY created_at DESC LIMIT 1`;
   let conn;
 
@@ -307,7 +306,6 @@ app.get('/sensors/status', async (req, res) => {
 // 제어장치 상태 가져오기
 app.get('/devices/status', async(req, res) => {
   const { user_id, farm_id } = req.query;
-  console.log("user_id, farm_id :",user_id, farm_id);
   const query = `SELECT * FROM devices WHERE user_id = ? AND farm_id = ?`
   let conn;
 
