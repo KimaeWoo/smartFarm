@@ -344,34 +344,35 @@ app.post('/devices/:deviceId/status', async (req, res) => {
 });
 
 // 제어장치 상태 강제 변경
-app.post('/devices/:deviceId/force-status', async (req, res) => {
-  const { user_id, farm_id, device } = req.body;
-  const query = `UPDATE devices SET ${device} = NOT ${device} WHERE user_id = ? AND farm_id = ?`;
+app.post('/devices/force-status', async (req, res) => {
+  const { user_id, farm_id, device, status } = req.body;
+
+  if (!user_id || !farm_id || !device || status === undefined) {
+    return res.status(400).json({ message: '잘못된 요청입니다. 모든 필드가 필요합니다.' });
+  }
+
+  const query = `UPDATE devices SET ${device} = ? WHERE user_id = ? AND farm_id = ?`;
   let conn;
 
   try {
     conn = await db.getConnection();
-    await conn.query(query, [user_id, farm_id]);
+    await conn.query(query, [status, user_id, farm_id]);
+    console.log(`[/devices/force-status] ${device} 상태 변경 성공: ${status}`);
 
-    // 변경된 상태를 가져오기 위해 다시 조회
-    const [rows] = await conn.query(`SELECT ${device} FROM devices WHERE user_id = ? AND farm_id = ?`, [user_id, farm_id]);
-    const updatedStatus = rows[0][device]; // 변경된 상태 값 (1 또는 0)
-    console.log('[/devices/:deviceId/force-status] H/W 서버에 전달 성공');
-     
     // 다른 서버 API 호출
     await axios.post('http://14.54.126.218:8000/update', {
       user_id,
       farm_id,
       devices: device,
-      status: updatedStatus
+      status
     });
 
-    console.log('[/devices/:deviceId/force-status] 제어장치 변경 성공');
-    return res.json({ message: '제어장치 변경 성공' });
+    console.log('[/devices/force-status] H/W 서버에 상태 전달 성공');
+    return res.json({ message: '제어장치 상태 강제 변경 성공' });
 
   } catch (err) {
-    console.error('[POST /devices/:deviceId/froce-status] 오류:', err);
-    return res.status(500).json({ message: 'DB 오류' });
+    console.error('[POST /devices/force-status] 오류:', err);
+    return res.status(500).json({ message: '서버 오류 발생' });
   } finally {
     if (conn) conn.release();
   }

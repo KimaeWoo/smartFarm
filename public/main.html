@@ -1545,31 +1545,34 @@
     // 제어장치 상태 강제 변경하기
     async function updateDevice(device) {
       try {
-        // user_id와 farm_id가 존재할 경우에만 요청
         if (userId && farmId) {
           // 현재 토글 상태 확인
           const isChecked = document.getElementById(`${device}-switch`).checked;
 
           // 서버로 상태 변경 요청
-          await fetch(`${API_BASE_URL}/devices/${device}/force-status`, {
+          const response = await fetch(`${API_BASE_URL}/devices/force-status`, { 
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
               user_id: userId, 
               farm_id: farmId, 
               device: device, 
-              status: isChecked 
+              status: isChecked ? 0 : 1  // 현재 상태 반전
             })
           });
 
-          // 상태 업데이트
-          updateSwitchUI(device, isChecked);
+          if (!response.ok) {
+            throw new Error('서버 응답 실패');
+          }
+
+          // UI 업데이트
+          updateSwitchUI(device, !isChecked);
 
         } else {
-            console.error('user_id 또는 farm_id가 존재하지 않습니다.');
+          console.error('user_id 또는 farm_id가 존재하지 않습니다.');
         }
       } catch (error) {
-          console.error('상태 변경 실패:', error);
+        console.error('상태 변경 실패:', error);
       }
     }
 
