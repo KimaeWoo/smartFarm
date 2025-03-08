@@ -353,7 +353,7 @@ app.post('/devices/force-status', async (req, res) => {
 
   const query = `UPDATE devices SET ${device} = ? WHERE user_id = ? AND farm_id = ?`;
   let conn;
-  status = !status;
+  status = status ? 0 : 1;
   try {
     conn = await db.getConnection();
     await conn.query(query, [status, user_id, farm_id]);
