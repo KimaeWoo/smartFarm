@@ -1548,14 +1548,6 @@
         if (userId && farmId) {
           // 현재 토글 상태 확인
           const isChecked = document.getElementById(`${device}-switch`).checked;
-
-          console.log({ 
-            user_id: userId, 
-            farm_id: farmId, 
-            device: device, 
-            status: isChecked 
-          });
-          
           // 서버로 상태 변경 요청
           const response = await fetch(`${API_BASE_URL}/devices/force-status`, { 
             method: 'POST',

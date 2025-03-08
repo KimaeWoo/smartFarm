@@ -353,19 +353,19 @@ app.post('/devices/force-status', async (req, res) => {
 
   const query = `UPDATE devices SET ${device} = ? WHERE user_id = ? AND farm_id = ?`;
   let conn;
-  console.log({ user_id, farm_id, device, status});
+  
   try {
     conn = await db.getConnection();
     await conn.query(query, [status, user_id, farm_id]);
     console.log(`[/devices/force-status] ${device} 상태 변경 성공`);
 
     // 다른 서버 API 호출
-    // await axios.post('http://14.54.126.218:8000/update', {
-    //   user_id,
-    //   farm_id,
-    //   devices: device,
-    //   status
-    // });
+    await axios.post('http://14.54.126.218:8000/update', {
+      user_id,
+      farm_id,
+      devices: device,
+      status
+    });
 
     console.log('[/devices/force-status] H/W 서버에 상태 전달 성공');
     return res.json({ message: '제어장치 상태 강제 변경 성공' });
