@@ -351,13 +351,13 @@ app.post('/devices/force-status', async (req, res) => {
     return res.status(400).json({ message: '잘못된 요청입니다. 모든 필드가 필요합니다.' });
   }
 
-  const query = `UPDATE devices SET ${device} = ? WHERE user_id = ? AND farm_id = ?`;
+  const query = `UPDATE devices SET ${device} = NOT ? WHERE user_id = ? AND farm_id = ?`;
   let conn;
-  status = status ? 0 : 1;
+  
   try {
     conn = await db.getConnection();
     await conn.query(query, [status, user_id, farm_id]);
-    console.log(`[/devices/force-status] ${device} 상태 변경 성공: ${status}`);
+    console.log(`[/devices/force-status] ${device} 상태 변경 성공`);
 
     // 다른 서버 API 호출
     // await axios.post('http://14.54.126.218:8000/update', {
