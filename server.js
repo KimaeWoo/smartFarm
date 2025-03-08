@@ -365,11 +365,11 @@ app.post('/devices/:deviceId/force-status', async (req, res) => {
       status: updatedStatus
     });
 
-    console.log('[/devices/:deviceId/status] 제어장치 변경 및 다른 서버에 전달 성공');
+    console.log('[/devices/:deviceId/force-status] 제어장치 변경 및 다른 서버에 전달 성공');
     return res.json({ message: '제어장치 변경 성공' });
 
   } catch (err) {
-    console.error('[POST /devices/:deviceId/status] 오류:', err);
+    console.error('[POST /devices/:deviceId/froce-status] 오류:', err);
     return res.status(500).json({ message: 'DB 오류' });
   } finally {
     if (conn) conn.release();
