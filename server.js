@@ -280,45 +280,10 @@ app.post('/sensors', async (req, res) => {
   }
 });
 
-// 장비 제어 함수
-function Controldevice(user_id, farm_id, temperature, humidity, soil_moisture, co2) {
-  let fanStatus = 0; 
-  let waterStatus = 0; 
-
-  // 온도에 따른 환기팬 제어
-  if (temperature >= 22) {
-    fanStatus = 1;
-    console.log('환기팬 켬 (온도 22°C 이상)');
-  } else if (temperature <= 18) {
-    fanStatus = 0; 
-    console.log('환기팬 끔 (온도 18°C 이하)');
-  } else {
-    // 온도가 적절한 범위에 있을 때만 습도 조건 체크
-    if (humidity >= 70) {
-      fanStatus = 1;
-      console.log('환기팬 켬 (습도 70% 이상)');
-    } else if (humidity <= 60) {
-      fanStatus = 0;
-      console.log('환기팬 끔 (습도 60% 이하)');
-    }
-  }
-
-  // 토양 수분에 따른 물 공급 제어
-  if (soil_moisture <= 50) {
-    waterStatus = 1; 
-    console.log('물 공급 (토양 수분 50% 이하)');
-  } else if (soil_moisture >= 70) {
-    waterStatus = 0;  
-    console.log('물 공급 중지 (토양 수분 70% 이상)');
-  }
-
-  // 상태 제어를 위한 DB 업데이트
-  updateDevice(user_id, farm_id, fanStatus, waterStatus);
-}
-
 // 최근 센서 데이터 조회
 app.get('/sensors/status', async (req, res) => {
   const { user_id, farm_id } = req.query;
+  console.log("user_id, farm_id :",user_id, farm_id);
   const query = `SELECT * FROM sensors WHERE user_id = ? AND farm_id = ? ORDER BY created_at DESC LIMIT 1`;
   let conn;
 
@@ -342,6 +307,7 @@ app.get('/sensors/status', async (req, res) => {
 // 제어장치 상태 가져오기
 app.get('/devices/status', async(req, res) => {
   const { user_id, farm_id } = req.query;
+  console.log("user_id, farm_id :",user_id, farm_id);
   const query = `SELECT * FROM devices WHERE user_id = ? AND farm_id = ?`
   let conn;
 
@@ -376,6 +342,39 @@ app.post('/devices/:deviceId/status', async (req, res) => {
     return res.status(500).json({ message: 'DB 오류' });
   } finally {
     conn.release();
+  }
+});
+
+// 제어장치 강제 변경
+app.post('/devices/:deviceId/force-status', async (req, res) => {
+  const { user_id, farm_id, device } = req.body;
+  const query = `UPDATE devices SET ${device} = NOT ${device} WHERE user_id = ? AND farm_id = ?`;
+  let conn;
+
+  try {
+    conn = await db.getConnection();
+    await conn.query(query, [user_id, farm_id]);
+
+    // 변경된 상태를 가져오기 위해 다시 조회
+    const [rows] = await conn.query(`SELECT ${device} FROM devices WHERE user_id = ? AND farm_id = ?`, [user_id, farm_id]);
+    const updatedStatus = rows[0][device]; // 변경된 상태 값 (1 또는 0)
+
+    // 다른 서버 API 호출
+    await axios.post('https://other-server.com/api/update-device', {
+      user_id,
+      farm_id,
+      devices: device,
+      status: updatedStatus
+    });
+
+    console.log('[/devices/:deviceId/status] 제어장치 변경 및 다른 서버에 전달 성공');
+    return res.json({ message: '제어장치 변경 성공' });
+
+  } catch (err) {
+    console.error('[POST /devices/:deviceId/status] 오류:', err);
+    return res.status(500).json({ message: 'DB 오류' });
+  } finally {
+    if (conn) conn.release();
   }
 });
 
