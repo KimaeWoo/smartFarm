@@ -351,9 +351,9 @@ app.post('/devices/force-status', async (req, res) => {
     return res.status(400).json({ message: '잘못된 요청입니다. 모든 필드가 필요합니다.' });
   }
 
-  const query = `UPDATE devices SET ${device} = NOT ? WHERE user_id = ? AND farm_id = ?`;
+  const query = `UPDATE devices SET ${device} = ? WHERE user_id = ? AND farm_id = ?`;
   let conn;
-
+  console.log({ user_id, farm_id, device, status});
   try {
     conn = await db.getConnection();
     await conn.query(query, [status, user_id, farm_id]);
