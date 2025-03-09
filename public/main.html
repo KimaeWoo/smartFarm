@@ -703,7 +703,7 @@
               <div class="device-name">환풍팬</div>
               <div class="switch-container">
                 <label class="switch">
-                  <input type="checkbox" id="fan-switch" onchange="updateDevice('fan')">
+                  <input type="checkbox" id="fan-switch">
                   <span class="slider"></span>
                 </label>
                 <span class="switch-label" id="fan-status">꺼짐</span>
@@ -718,7 +718,7 @@
               <div class="device-name">물주기</div>
               <div class="switch-container">
                 <label class="switch">
-                  <input type="checkbox" id="water-switch" onchange="updateDevice('water')">
+                  <input type="checkbox" id="water-switch">
                   <span class="slider"></span>
                 </label>
                 <span class="switch-label" id="water-status">꺼짐</span>
@@ -733,7 +733,7 @@
               <div class="device-name">히터</div>
               <div class="switch-container">
                 <label class="switch">
-                  <input type="checkbox" id="heater-switch" onchange="updateDevice('heater')">
+                  <input type="checkbox" id="heater-switch">
                   <span class="slider"></span>
                 </label>
                 <span class="switch-label" id="heater-status">꺼짐</span>
@@ -748,7 +748,7 @@
               <div class="device-name">쿨러</div>
               <div class="switch-container">
                 <label class="switch">
-                  <input type="checkbox" id="cooler-switch" onchange="updateDevice('cooler')">
+                  <input type="checkbox" id="cooler-switch">
                   <span class="slider"></span>
                 </label>
                 <span class="switch-label" id="cooler-status">꺼짐</span>
@@ -1769,13 +1769,6 @@
           localStorage.setItem("theme", selectedTheme);
       });
     
-      // 페이지가 로드될 때 로컬 스토리지에서 테마 불러오기
-      const savedTheme = localStorage.getItem("theme");
-      if (savedTheme) {
-          document.documentElement.classList.add(savedTheme); // 저장된 테마 적용
-          themeSelect.value = savedTheme; // 드롭다운 메뉴에 저장된 테마 표시
-      }
-      
       fetchFarmName() // 스마트팜 이름 가져오기
       fetchName(); // 사용자 이름 가져오기
       updateDateDisplay(); // 날짜 표시 업데이트
