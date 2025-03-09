@@ -1686,24 +1686,6 @@
         }
       }
 
-      // 장치 제어 카드에서 각 스위치에 이벤트 추가
-      document.addEventListener('DOMContentLoaded', function () {
-        // 각 장치의 스위치 요소를 가져오기
-        const devices = ['led', 'fan', 'water', 'heater', 'cooler'];
-        
-        // 각 장치에 대해 이벤트 리스너 추가
-        devices.forEach(device => {
-          const switchElement = document.getElementById(`${device}-switch`);
-          if (switchElement) {
-            switchElement.addEventListener('change', function() {
-              updateDevice(device);
-            });
-          } else {
-            console.error(`${device}-switch 요소를 찾을 수 없습니다.`);
-          }
-        });
-      });
-
       // 스위치 UI 업데이트 함수
       function updateSwitchUI(device, status) {
         const switchElement = document.getElementById(`${device}-switch`);
@@ -1731,6 +1713,21 @@
           }
         }
       }
+
+      // 각 장치의 스위치 요소를 가져오기
+      const devices = ['led', 'fan', 'water', 'heater', 'cooler'];
+        
+      // 각 장치에 대해 이벤트 리스너 추가
+      devices.forEach(device => {
+        const switchElement = document.getElementById(`${device}-switch`);
+        if (switchElement) {
+          switchElement.addEventListener('change', function() {
+            updateDevice(device);
+          });
+        } else {
+          console.error(`${device}-switch 요소를 찾을 수 없습니다.`);
+        }
+      });
 
       let panel = document.querySelector(".floating-panel");
       panel.style.top = "57.5%";
