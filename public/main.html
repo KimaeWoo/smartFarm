@@ -864,7 +864,7 @@
     const API_BASE_URL = "https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app";
 
     // CSS 변수 가져오기
-    const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-color').trim();
+    let textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-color').trim();
 
     // 로그아웃 처리 
     const logoutButton = document.getElementById("logout-btn");       
