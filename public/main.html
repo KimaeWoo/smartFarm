@@ -1714,13 +1714,6 @@
         }
       }
 
-      // 페이지가 로드될 때 로컬 스토리지에서 테마 불러오기
-      const savedTheme = localStorage.getItem("theme");
-      if (savedTheme) {
-          document.documentElement.classList.add(savedTheme); // 저장된 테마 적용
-          themeSelect.value = savedTheme; // 드롭다운 메뉴에 저장된 테마 표시
-      }
-
       let panel = document.querySelector(".floating-panel");
       panel.style.top = "57.5%";
       panel.style.transform = "translateY(-50%)";
@@ -1758,6 +1751,13 @@
           localStorage.setItem("theme", selectedTheme);
       });
     
+      // 페이지가 로드될 때 로컬 스토리지에서 테마 불러오기
+      const savedTheme = localStorage.getItem("theme");
+      if (savedTheme) {
+          document.documentElement.classList.add(savedTheme); // 저장된 테마 적용
+          themeSelect.value = savedTheme; // 드롭다운 메뉴에 저장된 테마 표시
+      }
+      
       fetchFarmName() // 스마트팜 이름 가져오기
       fetchName(); // 사용자 이름 가져오기
       updateDateDisplay(); // 날짜 표시 업데이트
@@ -1770,14 +1770,6 @@
       //setInterval(fetchSensorData, 5000);
       //setInterval(updateChartData, 300000);
     });
-
-    // 세션스토리지에서 user_id와 farm_id 가져오기
-    const userId = sessionStorage.getItem('user_id');
-    const farmId = sessionStorage.getItem('farm_id');
-
-      
-
-    
   </script>
 </body>
 </html>
