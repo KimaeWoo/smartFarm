@@ -547,318 +547,6 @@
   </style>
 </head>
 <body>
-  <header>
-    <div class="header-container">
-      <h1 class="header-title">스마트팜 대시보드</h1>
-      <div class="header-right">
-        <a href="farm.html" id="farmname">New 스마트팜</a>
-        <span id="username">홍길동님</span>
-        <button class="logout-btn" id="logout-btn">로그아웃</button>
-        <div class="settings-icon" id="settingsBtn">⋮</div>
-        <!--<div class="date-picker" id="datePicker">
-          <i class="fas fa-calendar"></i>
-          <span id="currentDate"></span>
-        </div>-->
-      </div>
-    </div>
-  </header>
-
-  <!-- 설정 패널 -->
-  <div class="settings-panel" id="settingsPanel">
-    <div class="settings-content">
-        <h2>설정</h2>
-
-        <!-- 테마 선택 드롭다운 -->
-        <div class="setting-item">
-            <label for="themeSelect">테마 선택</label>
-            <select id="themeSelect">
-                <option value="light">라이트 모드</option>
-                <option value="dark">다크 모드</option>
-                <option value="gray">그레이 모드</option>
-            </select>
-        </div>
-
-        <!-- 닫기 버튼 -->
-        <button id="closeSettings">닫기</button>
-    </div>
-  </div>
-
-  <div class="floating-panel">
-    
-  </div>
-
-  <main>
-    <div class="tabs">
-      <div class="tab active" data-tab="current">현재 상태</div>
-      <div class="tab" data-tab="history">기록 데이터</div>
-      <div class="tab" data-tab="cctv">CCTV 화면</div>
-      <div class="tab" data-tab="writeDiary">일지 작성</div>
-    </div>
-
-    <!-- 현재 상태 탭 -->
-    <div class="tab-content active" id="current-tab">
-      <!-- 센서 데이터 카드 -->
-      <div class="grid grid-cols-1 grid-cols-2 grid-cols-4">
-        <!-- 온도 카드 -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">
-              <i class="fas fa-temperature-high" style="color: var(--temp-color);"></i>
-              온도
-            </div>
-          </div>
-          <div class="card-content">
-            <div class="sensor-value temp">
-              0<span class="sensor-unit">°C</span>
-            </div>
-            <div class="progress-container">
-              <div class="progress-bar temp" style="width: 63%;"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 습도 카드 -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">
-              <i class="fas fa-tint" style="color: var(--humidity-color);"></i>
-              습도
-            </div>
-          </div>
-          <div class="card-content">
-            <div class="sensor-value humidity">
-              0<span class="sensor-unit">%</span>
-            </div>
-            <div class="progress-container">
-              <div class="progress-bar humidity" style="width: 62%;"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 토양 수분 카드 -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">
-              <i class="fas fa-leaf" style="color: var(--soil-color);"></i>
-              토양 수분
-            </div>
-          </div>
-          <div class="card-content">
-            <div class="sensor-value soil">
-              0<span class="sensor-unit">%</span>
-            </div>
-            <div class="progress-container">
-              <div class="progress-bar soil" style="width: 55%;"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- CO2 카드 -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">
-              <i class="fas fa-wind" style="color: var(--co2-color);"></i>
-              CO2
-            </div>
-          </div>
-          <div class="card-content">
-            <div class="sensor-value co2">
-              0<span class="sensor-unit">ppm</span>
-            </div>
-            <div class="progress-container">
-              <div class="progress-bar co2" style="width: 42%;"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 장치 제어 카드 -->
-      <div class="card" style="margin-top: 1.5rem;">
-        <div class="card-header">
-          <div class="card-title">장치 제어</div>
-          <div class="card-description">스마트팜 장치를 원격으로 제어합니다</div>
-        </div>
-        <div class="card-content">
-          <div class="device-grid">
-            <!-- LED 제어 -->
-            <div class="device-item">
-              <div class="device-icon led" id="led-icon">
-                <i class="fas fa-lightbulb"></i>
-              </div>
-              <div class="device-name">LED</div>
-              <div class="switch-container">
-                <label class="switch">
-                  <input type="checkbox" id="led-switch" onchange="updateDevice('led')">
-                  <span class="slider"></span>
-                </label>
-                <span class="switch-label" id="led-status">꺼짐</span>
-              </div>
-            </div>
-
-            <!-- 환풍팬 제어 -->
-            <div class="device-item">
-              <div class="device-icon fan" id="fan-icon">
-                <i class="fas fa-fan"></i>
-              </div>
-              <div class="device-name">환풍팬</div>
-              <div class="switch-container">
-                <label class="switch">
-                  <input type="checkbox" id="fan-switch" onchange="updateDevice('fan')">
-                  <span class="slider"></span>
-                </label>
-                <span class="switch-label" id="fan-status">꺼짐</span>
-              </div>
-            </div>
-
-            <!-- 물주기 제어 -->
-            <div class="device-item">
-              <div class="device-icon water" id="water-icon">
-                <i class="fas fa-tint"></i>
-              </div>
-              <div class="device-name">물주기</div>
-              <div class="switch-container">
-                <label class="switch">
-                  <input type="checkbox" id="water-switch" onchange="updateDevice('water')">
-                  <span class="slider"></span>
-                </label>
-                <span class="switch-label" id="water-status">꺼짐</span>
-              </div>
-            </div>
-
-            <!-- 히터 제어 -->
-            <div class="device-item">
-              <div class="device-icon heater" id="heater-icon">
-                <i class="fas fa-fire"></i>
-              </div>
-              <div class="device-name">히터</div>
-              <div class="switch-container">
-                <label class="switch">
-                  <input type="checkbox" id="heater-switch" onchange="updateDevice('heater')">
-                  <span class="slider"></span>
-                </label>
-                <span class="switch-label" id="heater-status">꺼짐</span>
-              </div>
-            </div>
-
-            <!-- 쿨러 제어 -->
-            <div class="device-item">
-              <div class="device-icon cooler" id="cooler-icon">
-                <i class="fas fa-wind"></i>
-              </div>
-              <div class="device-name">쿨러</div>
-              <div class="switch-container">
-                <label class="switch">
-                  <input type="checkbox" id="cooler-switch" onchange="updateDevice('cooler')">
-                  <span class="slider"></span>
-                </label>
-                <span class="switch-label" id="cooler-status">꺼짐</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 실시간 센서 데이터 그래프 -->
-      <div class="card" style="margin-top: 1.5rem;">
-        <div class="card-header">
-          <div class="card-title">실시간 센서 데이터</div>
-          <div class="card-description">최근 24시간 데이터 추이</div>
-        </div>
-        <div class="card-content">
-          <div class="chart-container">
-            <canvas id="realtime-chart"></canvas>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 기록 데이터 탭 -->
-    <div class="tab-content" id="history-tab">
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">센서 데이터 기록</div>
-          <div class="card-description" id="history-date"></div>
-        </div>
-        <div class="card-content">
-          <div class="sensor-tabs">
-            <div class="sensor-tab active temp" data-sensor="temperature">온도</div>
-            <div class="sensor-tab humidity" data-sensor="humidity">습도</div>
-            <div class="sensor-tab soil" data-sensor="soil">토양 수분</div>
-            <div class="sensor-tab co2" data-sensor="co2">CO2</div>
-          </div>
-
-          <div class="sensor-chart active" id="temperature-chart">
-            <canvas id="temperature-canvas"></canvas>
-          </div>
-          <div class="sensor-chart" id="humidity-chart">
-            <canvas id="humidity-canvas"></canvas>
-          </div>
-          <div class="sensor-chart" id="soil-chart">
-            <canvas id="soil-canvas"></canvas>
-          </div>
-          <div class="sensor-chart" id="co2-chart">
-            <canvas id="co2-canvas"></canvas>
-          </div>
-        </div>
-        <div class="card-footer">
-          <button class="btn" id="prev-date">
-            <i class="fas fa-chevron-left"></i>
-            이전 날짜
-          </button>
-          <button class="btn" id="next-date">
-            다음 날짜
-            <i class="fas fa-chevron-right"></i>
-          </button>
-        </div>
-      </div>
-
-      <!-- 일일 센서 데이터 요약 -->
-      <div class="card" style="margin-top: 1.5rem;">
-        <div class="card-header">
-          <div class="card-title">일일 센서 데이터 요약</div>
-          <div class="card-description" id="summary-date"></div>
-        </div>
-        <div class="card-content">
-          <div class="chart-container">
-            <canvas id="summary-chart"></canvas>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 스마트팜 일지 작성 탭 -->
-    <div class="tab-content" id="writeDiary-tab">
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">스마트팜 운영 일지</div>
-        </div>
-        <div class="card-content">
-          <div class="diary-actions">
-            <button id="generateDiaryBtn">자동 일지 작성</button>
-          </div>
-
-          <div class="diary-list">
-            <h2>최근 작성된 일지</h2>
-            <ul id="diaryEntries"></ul>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- CCTV 화면면 탭 -->
-    <div class="tab-content" id="cctv-tab">
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">스마트팜 CCTV 화면</div>
-        </div>
-        <div class="card-content">
-          <div class="iframe-wrapper">
-            <iframe src="https://toxic-messages-keyboard-exists.trycloudflare.com/monitor"></iframe>
-          </div>
-        </div>
-      </div>
-    </div>
-  </main>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
   <script>
     const API_BASE_URL = "https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app";
@@ -1757,7 +1445,7 @@
           document.documentElement.classList.add(savedTheme); // 저장된 테마 적용
           themeSelect.value = savedTheme; // 드롭다운 메뉴에 저장된 테마 표시
       }
-      
+
       fetchFarmName() // 스마트팜 이름 가져오기
       fetchName(); // 사용자 이름 가져오기
       updateDateDisplay(); // 날짜 표시 업데이트
@@ -1771,5 +1459,317 @@
       //setInterval(updateChartData, 300000);
     });
   </script>
+  <header>
+    <div class="header-container">
+      <h1 class="header-title">스마트팜 대시보드</h1>
+      <div class="header-right">
+        <a href="farm.html" id="farmname">New 스마트팜</a>
+        <span id="username">홍길동님</span>
+        <button class="logout-btn" id="logout-btn">로그아웃</button>
+        <div class="settings-icon" id="settingsBtn">⋮</div>
+        <!--<div class="date-picker" id="datePicker">
+          <i class="fas fa-calendar"></i>
+          <span id="currentDate"></span>
+        </div>-->
+      </div>
+    </div>
+  </header>
+
+  <!-- 설정 패널 -->
+  <div class="settings-panel" id="settingsPanel">
+    <div class="settings-content">
+        <h2>설정</h2>
+
+        <!-- 테마 선택 드롭다운 -->
+        <div class="setting-item">
+            <label for="themeSelect">테마 선택</label>
+            <select id="themeSelect">
+                <option value="light">라이트 모드</option>
+                <option value="dark">다크 모드</option>
+                <option value="gray">그레이 모드</option>
+            </select>
+        </div>
+
+        <!-- 닫기 버튼 -->
+        <button id="closeSettings">닫기</button>
+    </div>
+  </div>
+
+  <div class="floating-panel">
+    
+  </div>
+
+  <main>
+    <div class="tabs">
+      <div class="tab active" data-tab="current">현재 상태</div>
+      <div class="tab" data-tab="history">기록 데이터</div>
+      <div class="tab" data-tab="cctv">CCTV 화면</div>
+      <div class="tab" data-tab="writeDiary">일지 작성</div>
+    </div>
+
+    <!-- 현재 상태 탭 -->
+    <div class="tab-content active" id="current-tab">
+      <!-- 센서 데이터 카드 -->
+      <div class="grid grid-cols-1 grid-cols-2 grid-cols-4">
+        <!-- 온도 카드 -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <i class="fas fa-temperature-high" style="color: var(--temp-color);"></i>
+              온도
+            </div>
+          </div>
+          <div class="card-content">
+            <div class="sensor-value temp">
+              0<span class="sensor-unit">°C</span>
+            </div>
+            <div class="progress-container">
+              <div class="progress-bar temp" style="width: 63%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 습도 카드 -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <i class="fas fa-tint" style="color: var(--humidity-color);"></i>
+              습도
+            </div>
+          </div>
+          <div class="card-content">
+            <div class="sensor-value humidity">
+              0<span class="sensor-unit">%</span>
+            </div>
+            <div class="progress-container">
+              <div class="progress-bar humidity" style="width: 62%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 토양 수분 카드 -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <i class="fas fa-leaf" style="color: var(--soil-color);"></i>
+              토양 수분
+            </div>
+          </div>
+          <div class="card-content">
+            <div class="sensor-value soil">
+              0<span class="sensor-unit">%</span>
+            </div>
+            <div class="progress-container">
+              <div class="progress-bar soil" style="width: 55%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CO2 카드 -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <i class="fas fa-wind" style="color: var(--co2-color);"></i>
+              CO2
+            </div>
+          </div>
+          <div class="card-content">
+            <div class="sensor-value co2">
+              0<span class="sensor-unit">ppm</span>
+            </div>
+            <div class="progress-container">
+              <div class="progress-bar co2" style="width: 42%;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 장치 제어 카드 -->
+      <div class="card" style="margin-top: 1.5rem;">
+        <div class="card-header">
+          <div class="card-title">장치 제어</div>
+          <div class="card-description">스마트팜 장치를 원격으로 제어합니다</div>
+        </div>
+        <div class="card-content">
+          <div class="device-grid">
+            <!-- LED 제어 -->
+            <div class="device-item">
+              <div class="device-icon led" id="led-icon">
+                <i class="fas fa-lightbulb"></i>
+              </div>
+              <div class="device-name">LED</div>
+              <div class="switch-container">
+                <label class="switch">
+                  <input type="checkbox" id="led-switch" onchange="updateDevice('led')">
+                  <span class="slider"></span>
+                </label>
+                <span class="switch-label" id="led-status">꺼짐</span>
+              </div>
+            </div>
+
+            <!-- 환풍팬 제어 -->
+            <div class="device-item">
+              <div class="device-icon fan" id="fan-icon">
+                <i class="fas fa-fan"></i>
+              </div>
+              <div class="device-name">환풍팬</div>
+              <div class="switch-container">
+                <label class="switch">
+                  <input type="checkbox" id="fan-switch" onchange="updateDevice('fan')">
+                  <span class="slider"></span>
+                </label>
+                <span class="switch-label" id="fan-status">꺼짐</span>
+              </div>
+            </div>
+
+            <!-- 물주기 제어 -->
+            <div class="device-item">
+              <div class="device-icon water" id="water-icon">
+                <i class="fas fa-tint"></i>
+              </div>
+              <div class="device-name">물주기</div>
+              <div class="switch-container">
+                <label class="switch">
+                  <input type="checkbox" id="water-switch" onchange="updateDevice('water')">
+                  <span class="slider"></span>
+                </label>
+                <span class="switch-label" id="water-status">꺼짐</span>
+              </div>
+            </div>
+
+            <!-- 히터 제어 -->
+            <div class="device-item">
+              <div class="device-icon heater" id="heater-icon">
+                <i class="fas fa-fire"></i>
+              </div>
+              <div class="device-name">히터</div>
+              <div class="switch-container">
+                <label class="switch">
+                  <input type="checkbox" id="heater-switch" onchange="updateDevice('heater')">
+                  <span class="slider"></span>
+                </label>
+                <span class="switch-label" id="heater-status">꺼짐</span>
+              </div>
+            </div>
+
+            <!-- 쿨러 제어 -->
+            <div class="device-item">
+              <div class="device-icon cooler" id="cooler-icon">
+                <i class="fas fa-wind"></i>
+              </div>
+              <div class="device-name">쿨러</div>
+              <div class="switch-container">
+                <label class="switch">
+                  <input type="checkbox" id="cooler-switch" onchange="updateDevice('cooler')">
+                  <span class="slider"></span>
+                </label>
+                <span class="switch-label" id="cooler-status">꺼짐</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 실시간 센서 데이터 그래프 -->
+      <div class="card" style="margin-top: 1.5rem;">
+        <div class="card-header">
+          <div class="card-title">실시간 센서 데이터</div>
+          <div class="card-description">최근 24시간 데이터 추이</div>
+        </div>
+        <div class="card-content">
+          <div class="chart-container">
+            <canvas id="realtime-chart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 기록 데이터 탭 -->
+    <div class="tab-content" id="history-tab">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">센서 데이터 기록</div>
+          <div class="card-description" id="history-date"></div>
+        </div>
+        <div class="card-content">
+          <div class="sensor-tabs">
+            <div class="sensor-tab active temp" data-sensor="temperature">온도</div>
+            <div class="sensor-tab humidity" data-sensor="humidity">습도</div>
+            <div class="sensor-tab soil" data-sensor="soil">토양 수분</div>
+            <div class="sensor-tab co2" data-sensor="co2">CO2</div>
+          </div>
+
+          <div class="sensor-chart active" id="temperature-chart">
+            <canvas id="temperature-canvas"></canvas>
+          </div>
+          <div class="sensor-chart" id="humidity-chart">
+            <canvas id="humidity-canvas"></canvas>
+          </div>
+          <div class="sensor-chart" id="soil-chart">
+            <canvas id="soil-canvas"></canvas>
+          </div>
+          <div class="sensor-chart" id="co2-chart">
+            <canvas id="co2-canvas"></canvas>
+          </div>
+        </div>
+        <div class="card-footer">
+          <button class="btn" id="prev-date">
+            <i class="fas fa-chevron-left"></i>
+            이전 날짜
+          </button>
+          <button class="btn" id="next-date">
+            다음 날짜
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- 일일 센서 데이터 요약 -->
+      <div class="card" style="margin-top: 1.5rem;">
+        <div class="card-header">
+          <div class="card-title">일일 센서 데이터 요약</div>
+          <div class="card-description" id="summary-date"></div>
+        </div>
+        <div class="card-content">
+          <div class="chart-container">
+            <canvas id="summary-chart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 스마트팜 일지 작성 탭 -->
+    <div class="tab-content" id="writeDiary-tab">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">스마트팜 운영 일지</div>
+        </div>
+        <div class="card-content">
+          <div class="diary-actions">
+            <button id="generateDiaryBtn">자동 일지 작성</button>
+          </div>
+
+          <div class="diary-list">
+            <h2>최근 작성된 일지</h2>
+            <ul id="diaryEntries"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CCTV 화면면 탭 -->
+    <div class="tab-content" id="cctv-tab">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">스마트팜 CCTV 화면</div>
+        </div>
+        <div class="card-content">
+          <div class="iframe-wrapper">
+            <iframe src="https://toxic-messages-keyboard-exists.trycloudflare.com/monitor"></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
 </body>
 </html>
