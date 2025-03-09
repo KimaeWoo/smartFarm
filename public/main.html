@@ -441,6 +441,86 @@
       height: 100%;
       border: none;
     }
+
+    .farm-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .farm-card {
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .farm-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .farm-image {
+      height: 160px;
+      background-color: #e8f5e9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #2e7d32;
+      font-size: 48px;
+    }
+    
+    .farm-info {
+        padding: 15px;
+    }
+    
+    .farm-name {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: #2e7d32;
+    }
+    
+    .farm-location {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    
+    .farm-status {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+    }
+
+    .farm-status {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+    }
+    
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    
+    .status-active {
+      background-color: #4caf50;
+    }
+    
+    .status-inactive {
+      background-color: #f44336;
+    }
   </style>
 </head>
 <body>
@@ -465,6 +545,7 @@
       <div class="tab" data-tab="history">기록 데이터</div>
       <div class="tab" data-tab="cctv">CCTV 화면</div>
       <div class="tab" data-tab="writeDiary">일지 작성</div>
+      <div class="tab" data-tab="farmList">스마트팜 변경</div>
     </div>
 
     <!-- 현재 상태 탭 -->
@@ -717,15 +798,28 @@
       </div>
     </div>
 
-    <!-- CCTV 화면면 탭 -->
+    <!-- CCTV 화면 탭 -->
     <div class="tab-content" id="cctv-tab">
       <div class="card">
         <div class="card-header">
-          <div class="card-title">스마트팜 CCTV 화면</div>
+          <div class="card-title">CCTV 화면</div>
         </div>
         <div class="card-content">
           <div class="iframe-wrapper">
             <iframe src="https://toxic-messages-keyboard-exists.trycloudflare.com/monitor"></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 농장 변경경 탭 -->
+    <div class="tab-content" id="cctv-tab">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">스마트팜 목록</div>
+        </div>
+        <div class="card-content">
+          <div class="farm-grid" id="farmGrid">
           </div>
         </div>
       </div>
@@ -1525,6 +1619,51 @@
         summaryChart.update();
       }
 
+      async function fetchFarms() {
+        try {
+          const response = await fetch(`https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app/getFarms?user_id=${userId}`);
+          if (!response.ok) throw new Error("농장 목록 불러오기 실패");
+          const data = await response.json();
+          farmGrid.innerHTML = "";
+              
+          data.farms.forEach(farm => {
+            const farmCard = document.createElement("div");
+            farmCard.classList.add("farm-card");
+            const isActive = farm.farm_active === 1;
+                  
+            farmCard.innerHTML = `
+              <div class="farm-image">🌱</div>
+              <div class="farm-info">
+                <div class="farm-name">${farm.farm_name}</div>
+                <div class="farm-location">${farm.farm_location}</div>
+                div class="farm-status">
+                  <div class="status-item">
+                    <div class="status-dot ${isActive ? 'status-active' : 'status-inactive'}"></div>
+                     ${isActive ? '활성' : '비활성'}
+                    </div>
+                  <div>${farm.farm_type}</div>
+                </div>
+              </div>
+            `;
+                  
+            farmCard.addEventListener("click", () => {
+              if (isDeleteMode) {
+                farmCard.classList.toggle("selected");
+                updateSelectedFarms(farmCard, farm.farm_id);
+              } else {
+                sessionStorage.setItem('farm_id', farm.farm_id);
+                alert(`${farm.farm_name} 농장을 선택했습니다.`);
+                window.location.href = 'main.html';
+              }
+            });
+                  
+            farmGrid.appendChild(farmCard);
+          });
+        } catch (error) {
+          console.error("농장 목록 불러오기 실패:", error);
+        }
+      }
+
       fetchFarmName() // 스마트팜 이름 가져오기
       fetchName(); // 사용자 이름 가져오기
       updateDateDisplay(); // 날짜 표시 업데이트
@@ -1533,7 +1672,7 @@
       updateChartData(); // 실시간 차트 가져오기
       updateHistoryChartData(); // 기록 차트 가져오기
       updateSummaryChart(); // 요약 차트 가져오기
-
+      fetchFarms(); // 스마트팜 목록 가져오기
       //setInterval(fetchSensorData, 5000);
       //setInterval(updateChartData, 300000);
     });
