@@ -473,7 +473,9 @@
     </div>
   </header>
 
-  <div class="floating-panel"></div>
+  <div class="floating-panel">
+    
+  </div>
 
   <main>
     <div class="tabs">
@@ -1620,11 +1622,12 @@
     }  
 
     // 우측 패널 
-    window.addEventListener("scroll", function () {
+    document.addEventListener("DOMContentLoaded", function () {
       let panel = document.querySelector(".floating-panel");
-      let scrollY = window.scrollY;
-      panel.style.top = 100 + scrollY * 0.5 + "px"; // 부드러운 이동
-    });
+      panel.style.top = "50%"; // 화면 중앙
+      panel.style.transform = "translateY(-50%)"; // 정확한 중앙 정렬
+      panel.style.position = "fixed"; // 화면에 고정
+  });
 
   </script>
 </body>
