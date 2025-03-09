@@ -863,9 +863,6 @@
   <script>
     const API_BASE_URL = "https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app";
 
-    // CSS 변수 가져오기
-    let textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-color').trim();
-
     // 로그아웃 처리 
     const logoutButton = document.getElementById("logout-btn");       
     logoutButton.addEventListener("click", () => {
@@ -1766,14 +1763,11 @@
           const selectedTheme = themeSelect.value;
           if (selectedTheme === "dark") {
               document.documentElement.classList.add("dark-theme");
-              textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-color').trim();
           } else if (selectedTheme === "gray") {
               document.documentElement.classList.add("gray-theme");
-              textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-color').trim();
           } else {
               // 라이트 테마는 별도로 처리하지 않아도 기본값이므로 아무 처리 안 함
           }
-          updateChartData();
       });
     
       fetchFarmName() // 스마트팜 이름 가져오기
