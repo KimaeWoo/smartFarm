@@ -471,6 +471,79 @@
       z-index: 10;
     }
 
+    /* 설정 버튼 (우측 상단) */
+    .settings-icon {
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 5px 10px;
+    }
+
+    /* 설정 패널 (기본적으로 숨김) */
+    .settings-panel {
+      display: none;  /* 초기에는 숨김 */
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 300px;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      z-index: 1000;
+    }
+
+    /* 설정 패널 내부 요소 */
+    .settings-content {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .setting-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    #themeSelect {
+      padding: 5px;
+      border-radius: 5px;
+    }
+
+    /* 닫기 버튼 스타일 */
+    #closeSettings {
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    #closeSettings:hover {
+      background-color: #0056b3;
+    }
+
+    /* 다크 모드 */
+    .dark-theme {
+      --text-color: #f9fafb;
+      --card-bg: #1f2937;
+      --bg-color: #111827;
+    }
+
+    /* 그레이 모드 */
+    .gray-theme {
+      --text-color: #d1d5db;
+      --card-bg: #4b5563;
+      --bg-color: #6b7280;
+    }
+
   </style>
 </head>
 <body>
@@ -481,6 +554,7 @@
         <a href="farm.html" id="farmname">New 스마트팜</a>
         <span id="username">홍길동님</span>
         <button class="logout-btn" id="logout-btn">로그아웃</button>
+        <div class="settings-icon" id="settingsBtn">⋮</div>
         <!--<div class="date-picker" id="datePicker">
           <i class="fas fa-calendar"></i>
           <span id="currentDate"></span>
@@ -488,6 +562,26 @@
       </div>
     </div>
   </header>
+
+  <!-- 설정 패널 -->
+  <div class="settings-panel" id="settingsPanel">
+    <div class="settings-content">
+        <h2>설정</h2>
+
+        <!-- 테마 선택 드롭다운 -->
+        <div class="setting-item">
+            <label for="themeSelect">테마 선택</label>
+            <select id="themeSelect">
+                <option value="light">라이트 모드</option>
+                <option value="dark">다크 모드</option>
+                <option value="gray">그레이 모드</option>
+            </select>
+        </div>
+
+        <!-- 닫기 버튼 -->
+        <button id="closeSettings">닫기</button>
+    </div>
+  </div>
 
   <div class="floating-panel">
     
@@ -906,17 +1000,17 @@
       // 센서 데이터를 가져와 화면에 업데이트하는 함수
       async function fetchSensorData() {
         try {
-          if (!userId) {
-            alert("사용자 정보를 확인할 수 없습니다. 로그인 후 다시 시도해주세요.");
-            window.location.href = "login.html";
-            return;
-          }
+          //if (!userId) {
+          //  alert("사용자 정보를 확인할 수 없습니다. 로그인 후 다시 시도해주세요.");
+          //  window.location.href = "login.html";
+          //  return;
+          //}
 
-          if (!farmId) {
-            alert("스마트팜 정보를 확인할 수 없습니다. 스마트팜 추가가 후 다시 시도해주세요.");
-            window.location.href = "farm.html";
-            return;
-          }
+          //if (!farmId) {
+          //  alert("스마트팜 정보를 확인할 수 없습니다. 스마트팜 추가가 후 다시 시도해주세요.");
+          //  window.location.href = "farm.html";
+          //  return;
+          //}
 
           const response = await fetch(`${API_BASE_URL}/sensors/status?user_id=${userId}&farm_id=${farmId}`, {
             method: 'GET',
@@ -1559,6 +1653,111 @@
         summaryChart.update();
       }
 
+      // 제어장치 상태 강제 변경하기
+      async function updateDevice(device) {
+        try {
+          if (userId && farmId) {
+            // 현재 토글 상태 확인
+            const isChecked = document.getElementById(`${device}-switch`).checked;
+            // 서버로 상태 변경 요청
+            const response = await fetch(`${API_BASE_URL}/devices/force-status`, { 
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ 
+                user_id: userId, 
+                farm_id: farmId, 
+                device: device, 
+                status: isChecked
+              })
+            });
+
+            if (!response.ok) {
+              throw new Error('서버 응답 실패');
+            }
+
+            // UI 업데이트
+            updateSwitchUI(device, isChecked);
+
+          } else {
+            console.error('user_id 또는 farm_id가 존재하지 않습니다.');
+          }
+        } catch (error) {
+          console.error('상태 변경 실패:', error);
+        }
+      }
+
+      // 스위치 UI 업데이트 함수
+      function updateSwitchUI(device, status) {
+        const switchElement = document.getElementById(`${device}-switch`);
+        const iconElement = document.getElementById(`${device}-icon`);
+        const statusElement = document.getElementById(`${device}-status`);
+
+        // 장치 상태에 맞게 UI 업데이트
+        if (status) {
+          switchElement.checked = true;
+          iconElement.classList.add('active');
+          statusElement.textContent = '켜짐';
+
+          // 팬이 켜지면 회전 애니메이션 추가
+          if (device === 'fan') {
+            iconElement.querySelector('i').classList.add('spin');
+          }
+        } else {
+          switchElement.checked = false;
+          iconElement.classList.remove('active');
+          statusElement.textContent = '꺼짐';
+
+          // 팬이 꺼지면 회전 애니메이션 제거
+          if (device === 'fan') {
+            iconElement.querySelector('i').classList.remove('spin');
+          }
+        }
+      }
+
+      // 페이지가 로드될 때 로컬 스토리지에서 테마 불러오기
+      const savedTheme = localStorage.getItem("theme");
+      if (savedTheme) {
+          document.documentElement.classList.add(savedTheme); // 저장된 테마 적용
+          themeSelect.value = savedTheme; // 드롭다운 메뉴에 저장된 테마 표시
+      }
+
+      let panel = document.querySelector(".floating-panel");
+      panel.style.top = "57.5%";
+      panel.style.transform = "translateY(-50%)";
+      panel.style.position = "fixed"; 
+
+      const settingsBtn = document.getElementById("settingsBtn");
+      const settingsPanel = document.getElementById("settingsPanel");
+      const closeSettings = document.getElementById("closeSettings");
+      const themeSelect = document.getElementById("themeSelect");
+
+      // 설정 버튼 클릭 시 패널 표시
+      settingsBtn.addEventListener("click", function () {
+          settingsPanel.style.display = "block";
+      });
+
+      // 닫기 버튼 클릭 시 패널 숨김
+      closeSettings.addEventListener("click", function () {
+          settingsPanel.style.display = "none";
+      });
+
+      // 테마 변경 이벤트
+      themeSelect.addEventListener("change", function () {
+          document.documentElement.classList.remove("dark-theme", "gray-theme");
+
+          const selectedTheme = themeSelect.value;
+          if (selectedTheme === "dark") {
+              document.documentElement.classList.add("dark-theme");
+          } else if (selectedTheme === "gray") {
+              document.documentElement.classList.add("gray-theme");
+          } else {
+              // 라이트 테마는 별도로 처리하지 않아도 기본값이므로 아무 처리 안 함
+          }
+
+          // 선택한 테마를 로컬 스토리지에 저장
+          localStorage.setItem("theme", selectedTheme);
+      });
+    
       fetchFarmName() // 스마트팜 이름 가져오기
       fetchName(); // 사용자 이름 가져오기
       updateDateDisplay(); // 날짜 표시 업데이트
@@ -1576,75 +1775,9 @@
     const userId = sessionStorage.getItem('user_id');
     const farmId = sessionStorage.getItem('farm_id');
 
-    // 제어장치 상태 강제 변경하기
-    async function updateDevice(device) {
-      try {
-        if (userId && farmId) {
-          // 현재 토글 상태 확인
-          const isChecked = document.getElementById(`${device}-switch`).checked;
-          // 서버로 상태 변경 요청
-          const response = await fetch(`${API_BASE_URL}/devices/force-status`, { 
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-              user_id: userId, 
-              farm_id: farmId, 
-              device: device, 
-              status: isChecked
-            })
-          });
+      
 
-          if (!response.ok) {
-            throw new Error('서버 응답 실패');
-          }
-
-          // UI 업데이트
-          updateSwitchUI(device, isChecked);
-
-        } else {
-          console.error('user_id 또는 farm_id가 존재하지 않습니다.');
-        }
-      } catch (error) {
-        console.error('상태 변경 실패:', error);
-      }
-    }
-
-    // 스위치 UI 업데이트 함수
-    function updateSwitchUI(device, status) {
-      const switchElement = document.getElementById(`${device}-switch`);
-      const iconElement = document.getElementById(`${device}-icon`);
-      const statusElement = document.getElementById(`${device}-status`);
-
-      // 장치 상태에 맞게 UI 업데이트
-      if (status) {
-        switchElement.checked = true;
-        iconElement.classList.add('active');
-        statusElement.textContent = '켜짐';
-
-        // 팬이 켜지면 회전 애니메이션 추가
-        if (device === 'fan') {
-          iconElement.querySelector('i').classList.add('spin');
-        }
-      } else {
-        switchElement.checked = false;
-        iconElement.classList.remove('active');
-        statusElement.textContent = '꺼짐';
-
-        // 팬이 꺼지면 회전 애니메이션 제거
-        if (device === 'fan') {
-          iconElement.querySelector('i').classList.remove('spin');
-        }
-      }
-    }  
-
-    // 우측 패널 
-    document.addEventListener("DOMContentLoaded", function () {
-      let panel = document.querySelector(".floating-panel");
-      panel.style.top = "57.5%";
-      panel.style.transform = "translateY(-50%)";
-      panel.style.position = "fixed"; 
-  });
-
+    
   </script>
 </body>
 </html>
