@@ -106,9 +106,23 @@
     main {
       flex: 1;
       padding: 1.5rem;
-      max-width: 1200px;
+      max-width: 1100px;
       margin: 0 auto;
       width: 100%;
+      margin-right: 290px; /* 패널이 차지하는 공간을 고려하여 우측 여백 추가 */
+    }
+
+    #farmname {
+      color: #1a7e56;
+      font-size: 20px;
+      font-weight: bold;
+      text-decoration: underline; /* 밑줄 추가 */
+      cursor: pointer; /* 마우스 커서를 손가락 모양으로 변경 */
+      transition: color 0.2s ease-in-out; /* 부드러운 색상 변화 효과 */
+    }
+    
+    #farmname:hover {
+      color: #0f5a3c; /* 마우스 오버 시 색상 변경 */
     }
 
     .tabs {
@@ -443,16 +457,18 @@
     }
 
     .floating-panel {
-      position: fixed;  /* 화면에서 고정 */
-      right: 20px;      /* 우측 여백 */
-      top: 50%;         /* 화면 중앙 정렬 */
-      transform: translateY(-50%); /* 정확한 중앙 정렬 */
-      width: 200px;
+      position: fixed;  
+      right: 20px;
+      top: 57.5%; 
+      transform: translateY(-50%);
+      width: 270px;
+      height: 70%;
       padding: 20px;
-      background-color: #f1f1f1;
-      border-radius: 10px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      background-color: var(--card-bg);
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
       text-align: center;
+      z-index: 10;
     }
 
   </style>
@@ -462,7 +478,7 @@
     <div class="header-container">
       <h1 class="header-title">스마트팜 대시보드</h1>
       <div class="header-right">
-        <span id="farmname" style="color: #1a7e56; font-size: 20px; font-weight: bold;">New 스마트팜</span>
+        <a href="farm.html" id="farmname">New 스마트팜</a>
         <span id="username">홍길동님</span>
         <button class="logout-btn" id="logout-btn">로그아웃</button>
         <!--<div class="date-picker" id="datePicker">
@@ -1624,9 +1640,9 @@
     // 우측 패널 
     document.addEventListener("DOMContentLoaded", function () {
       let panel = document.querySelector(".floating-panel");
-      panel.style.top = "50%"; // 화면 중앙
-      panel.style.transform = "translateY(-50%)"; // 정확한 중앙 정렬
-      panel.style.position = "fixed"; // 화면에 고정
+      panel.style.top = "57.5%";
+      panel.style.transform = "translateY(-50%)";
+      panel.style.position = "fixed"; 
   });
 
   </script>
