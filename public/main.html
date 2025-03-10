@@ -160,6 +160,10 @@
       grid-template-columns: 1fr;
     }
 
+    .grid-cols-2 {
+      grid-template-columns: 2fr;
+    }
+
     @media (min-width: 768px) {
       .grid-cols-2 {
         grid-template-columns: repeat(2, 1fr);
@@ -561,6 +565,16 @@
       --shadow: 0 1px 3px 0 rgba(255, 255, 255, 0.1), 0 1px 2px 0 rgba(255, 255, 255, 0.06);
     }
 
+    .alarm {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.25rem;
+      color: var(--text-color);
+    }
+
+    .text-sm {
+      font-size: 1rem;
+    }
   </style>
 </head>
 <body>
@@ -774,7 +788,44 @@
           </div>
         </div>
       </div>
+      
+      <div class="grid grid-cols-2">
+        <!-- 자원 사용량 카드 -->
+        <div class="card" style="margin-top: 1.5rem;">
+          <div class="card-header">
+            <div class="card-title">자원 사용량</div>
+            <div class="card-description">물, 전기, 영양분 사용량</div>
+          </div>
+          <div class="card-content">
 
+          </div>
+        </div>
+        <!-- 알림 카드 -->
+        <div class="card" style="margin-top: 1.5rem;">
+          <div class="card-header">
+            <div class="card-title">알림</div>
+            <div class="card-description">최근 시스템 알림 및 경고</div>
+          </div>
+          <div class="card-content">
+            <div class="alarm">
+              <p class="text-sm">🔥 위험</p>
+              <p class="text-sm text-muted-foreground">3개</p>
+            </div>
+            <div class="alarm">
+              <p class="text-sm">⚠️ 경고</p>
+              <p class="text-sm">2개</p>
+            </div>
+            <div class="alarm">
+              <p class="text-sm">✅ 완료</p>
+              <p class="text-sm">1개</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 기록 데이터 탭 -->
+    <div class="tab-content" id="history-tab">
       <!-- 실시간 센서 데이터 그래프 -->
       <div class="card" style="margin-top: 1.5rem;">
         <div class="card-header">
@@ -787,10 +838,7 @@
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- 기록 데이터 탭 -->
-    <div class="tab-content" id="history-tab">
       <div class="card">
         <div class="card-header">
           <div class="card-title">센서 데이터 기록</div>
