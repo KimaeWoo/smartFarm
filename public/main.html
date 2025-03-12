@@ -852,16 +852,7 @@
                 <p class="text-md" id="complete-head">알림 없음</p>
                 <p class="text-md" id="complete-time">시간</p>
               </div>
-            </div>
-            
-            <!-- 알림 상세 목록 -->
-            <div id="alarm-modal" class="modal">
-              <div class="modal-content">
-                <span class="close-btn">&times;</span>
-                <h2 id="modal-title"></h2>
-                <ul id="alarm-list"></ul>
-              </div>
-            </div>            
+            </div>     
           </div>
         </div>
       </div>
@@ -974,7 +965,6 @@
           <div class="card-title">알림 리스트</div>
         </div>
         <div class="card-content">
-          <!-- 필터 옵션 추가 -->
           <div class="filter">
             <label for="alarm-filter">알림 유형 필터: </label>
             <select id="alarm-filter">
@@ -982,10 +972,8 @@
               <option value="type1">위험</option>
               <option value="type2">경고</option>
               <option value="type3">완료</option>
-              <!-- 다른 유형 추가 가능 -->
             </select>
           </div>
-          <!-- 알림 리스트가 이곳에 표시됨 -->
           <table id="alarm-list-table">
             <thead>
               <tr>
@@ -996,7 +984,6 @@
               </tr>
             </thead>
             <tbody>
-              <!-- 알림 항목들이 여기에 동적으로 추가됩니다. -->
             </tbody>
           </table>
         </div>
@@ -1779,14 +1766,6 @@
         const newSoilData = historyData.soilData;
         const newCo2Data = historyData.co2Data;
 
-        // realtimeChart 업데이트
-        //realtimeChart.data.labels = newTimeLabels;
-        //realtimeChart.data.datasets[0].data = newTemperatureData;
-        //realtimeChart.data.datasets[1].data = newHumidityData;
-        //realtimeChart.data.datasets[2].data = newSoilData;
-        //realtimeChart.data.datasets[3].data = newCo2Data;
-        //realtimeChart.update();
-
         // temperatureChart 업데이트
         temperatureChart.data.labels = newTimeLabels;
         temperatureChart.data.datasets[0].data = newTemperatureData;
@@ -1983,7 +1962,7 @@
           // 필터링된 알림 리스트 (type 필터링)
           const filteredAlarms = sortedAlarms.filter(alarm => {
             if (!selectedType) return true; // 필터가 선택되지 않으면 모든 알림을 표시
-            return alarm.type === selectedType;
+            return alarm.type === selectedType; // type 필터링
           });
 
           // 정렬된 알림을 테이블로 표시
@@ -2016,8 +1995,7 @@
       }
 
       // 필터 변경 시 알림 리스트 갱신
-      document.querySelector('#alarm-filter').addEventListener('change', fetchAlarmList);
-              
+      document.querySelector('#alarm-filter').addEventListener('change', fetchAlarmList);        
 
       document.querySelector('.alarm').addEventListener('click', () => {
         // 알림 탭으로 이동하는 코드
