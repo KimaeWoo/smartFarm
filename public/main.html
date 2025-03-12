@@ -119,7 +119,7 @@
     }
 
     #farmname {
-      color: #2bc386;
+      color: #20a670;
       font-size: 20px;
       font-weight: bold;
       text-decoration: underline; /* 밑줄 추가 */
@@ -1939,9 +1939,10 @@
           } catch (error) {
               console.error('알림 불러오기 실패:', error);
           }
+          fetchAlarm();
       }
 
-      function showAllAlarms() {
+      function fetchAlarm() {
           const alarmList = document.querySelector('#alarm-tab .card-content');
 
           if (!alarmList) {
@@ -1991,21 +1992,19 @@
                 });
               });
           }
-
-          // 탭 전환 기능을 통해 알림 탭으로 이동
-          document.querySelectorAll('.tab').forEach(tab => {
-              tab.classList.remove('active');
-          });
-          document.querySelector('[data-tab="alarm"]').classList.add('active');
-
-          document.querySelectorAll('.tab-content').forEach(content => {
-              content.classList.remove('active');
-          });
-          document.getElementById('alarm-tab').classList.add('active');
       }
 
-      // 이벤트 리스너 추가
-      document.querySelector('.alarm').addEventListener('click', showAllAlarms);
+      document.querySelector('.alarm').addEventListener('click', () => {
+        const tabId = tab.getAttribute('data-tab');
+          
+        // 탭 활성화
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+          
+        // 탭 컨텐츠 활성화
+        tabContents.forEach(content => content.classList.remove('active'));
+        document.getElementById(`${tabId}-tab`).classList.add('active');
+      });
 
       fetchFarmName() // 스마트팜 이름 가져오기
       fetchName(); // 사용자 이름 가져오기
