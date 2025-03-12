@@ -503,7 +503,6 @@ app.get('/getAlarm', async (req, res) => {
   const end = new Date(formattedDate);
   end.setHours(23, 59, 59, 999);
 
-  console.log(farm_id,formattedDate);
   try {
     conn = await db.getConnection();
     const results = await conn.query(query, [farm_id, start, end]);
