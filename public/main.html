@@ -1940,8 +1940,8 @@
 
       // 알림 리스트를 가져오는 함수
       function fetchAlarmList() {
-        const alarmListTableBody = document.getElementById('alarm-list-table tbody');
-        const alarmFilter = document.getElementById('alarm-filter');
+        const alarmListTableBody = document.querySelector('#alarm-list-table tbody');
+        const alarmFilter = document.querySelector('#alarm-filter');
 
         if (!alarmListTableBody || !alarmFilter) {
           console.error("필터 또는 테이블 요소를 찾을 수 없습니다.");
@@ -1950,7 +1950,7 @@
 
         // 선택된 필터 값
         const selectedType = alarmFilter.value;
-        console.log("선택된 필터 유형:", selectedType);
+        console.log('selectedtype:',selectedType);
 
         alarmListTableBody.innerHTML = ''; // 기존 알림 내용 초기화
 
@@ -1977,13 +1977,13 @@
             const createdAtTd = document.createElement('td');
             createdAtTd.textContent = formatDateTime(alarm.created_at);
 
+            console.log('createdAtTd.textContent:',createdAtTd.textContent);
             const deviceTd = document.createElement('td');
             deviceTd.textContent = alarm.device || '장치 없음';
 
             const typeTd = document.createElement('td');
             typeTd.textContent = alarm.type;
 
-            console.log("createdAtTd.textContent:",createdAtTd.textContent);
             // tr에 <td>들 추가
             tr.appendChild(contentTd);
             tr.appendChild(createdAtTd);
@@ -1997,7 +1997,7 @@
       }
 
       // 필터 변경 시 알림 리스트 갱신
-      document.getElementById('alarm-filter').addEventListener('change', fetchAlarmList);        
+      document.querySelector('#alarm-filter').addEventListener('change', fetchAlarmList);        
 
       document.querySelector('.alarm').addEventListener('click', () => {
         // 알림 탭으로 이동하는 코드
