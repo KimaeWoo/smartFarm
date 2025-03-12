@@ -1950,7 +1950,6 @@
 
         // 선택된 필터 값
         const selectedType = alarmFilter.value;
-        console.log('selectedtype:',selectedType);
 
         alarmListTableBody.innerHTML = ''; // 기존 알림 내용 초기화
 
@@ -1977,7 +1976,6 @@
             const createdAtTd = document.createElement('td');
             createdAtTd.textContent = formatDateTime(alarm.created_at);
 
-            console.log('createdAtTd.textContent:',createdAtTd.textContent);
             const deviceTd = document.createElement('td');
             deviceTd.textContent = alarm.device || '장치 없음';
 
