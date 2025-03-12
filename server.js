@@ -443,9 +443,7 @@ app.get('/history-data', async (req, res) => {
 
   const end = new Date(formattedDate);
   end.setHours(23, 59, 59, 999);
-  
-  console.log('시작,끝',start,end);
-
+ 
   // 1시간 단위로 데이터를 그룹화하여 평균값 계산
   const query = `
     SELECT 

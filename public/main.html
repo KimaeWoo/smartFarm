@@ -1923,6 +1923,20 @@
           }
       }
 
+      // 시간 형식 변환하는 함수
+      function formatDateTime(dateString) {
+        const date = new Date(dateString);
+        
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        
+        return `${year}년 ${month}월 ${day}일 ${hours}시 ${minutes}분`;
+      }
+
       // 모든 알림 표시 함수
       function showAllAlarmsCombined() {
         const alarmList = document.getElementById('alarm-list');
@@ -1958,12 +1972,16 @@
       }
 
       // alarm 클래스 클릭 시 모든 알림 표시
-      const alarmDiv = document.querySelector('.alarm');
+      const alarmDiv = document.getElementById('alarm');
       if (alarmDiv) {
         alarmDiv.addEventListener('click', showAllAlarmsCombined);
       } else {
         console.error("alarm 클래스 요소를 찾을 수 없습니다.");
       }
+
+      document.querySelector('.close-btn').addEventListener('click', () => {
+        document.getElementById('alarm-modal').style.display = 'none';
+      });
 
       fetchFarmName() // 스마트팜 이름 가져오기
       fetchName(); // 사용자 이름 가져오기
