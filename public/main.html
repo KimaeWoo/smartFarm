@@ -1943,56 +1943,56 @@
       }
 
       function fetchAlarm() {
-          const alarmList = document.querySelector('#alarm-tab .card-content');
-
-          if (!alarmList) {
-              console.error("alarm-tab 요소를 찾을 수 없습니다.");
-              return;
-          }
-
-          alarmList.innerHTML = ''; // 기존 목록을 비움
-
-          if (allAlarms.length === 0) {
-              alarmList.innerHTML = '<li>알림이 없습니다.</li>';
-          } else {
-              let groupedAlarms = {};
-              allAlarms.forEach(alarm => {
-                  if (!groupedAlarms[alarm.type]) {
-                      groupedAlarms[alarm.type] = [];
-                  }
-                  groupedAlarms[alarm.type].push(alarm);
-              });
-
-              Object.keys(groupedAlarms).forEach(type => {
-                  const typeHeader = document.createElement('h3');
-                  typeHeader.textContent = type;
-                  alarmList.appendChild(typeHeader);
-
-                  groupedAlarms[type].forEach(alarm => {
-                    const li = document.createElement('li');
-                    li.innerHTML = `${alarm.content}<br><span class="alarm-created-at">${formatDateTime(alarm.created_at)}</span>`;
-                    li.style.color = '#000000';
-                    li.style.backgroundColor = alarm.type === '위험' ? '#f8d7da' : alarm.type === '경고' ? '#fff3cd' : '#d4edda';
-                    li.style.border = '1px solid #ddd';
-                    li.style.borderRadius = '5px';
-                    li.style.padding = '5px 10px';
-                    li.style.margin = '5px 0';
-                
-                    // created_at 부분의 스타일 추가
-                    const createdAtSpan = li.querySelector('.alarm-created-at');
-                    if (createdAtSpan) {
-                        createdAtSpan.style.fontSize = '12px';  // 글씨 크기 작게
-                        createdAtSpan.style.color = '#6c757d';  // 회색
-                        createdAtSpan.style.display = 'block';  // 새로운 줄로
-                        createdAtSpan.style.marginTop = '5px';  // 들여쓰기 효과
-                        createdAtSpan.style.marginLeft = '20px'; // 들여쓰기
-                    }
-                
-                    alarmList.appendChild(li);
-                });
-              });
-          }
-      }
+        const alarmList = document.querySelector('#alarm-tab .card-content');
+    
+        if (!alarmList) {
+            console.error("alarm-tab 요소를 찾을 수 없습니다.");
+            return;
+        }
+    
+        alarmList.innerHTML = ''; // 기존 목록을 비움
+    
+        if (allAlarms.length === 0) {
+            alarmList.innerHTML = '<li>알림이 없습니다.</li>';
+        } else {
+          let groupedAlarms = {};
+          allAlarms.forEach(alarm => {
+            if (!groupedAlarms[alarm.type]) {
+              groupedAlarms[alarm.type] = [];
+            }
+            groupedAlarms[alarm.type].push(alarm);
+          });
+    
+          Object.keys(groupedAlarms).forEach(type => {
+            const typeHeader = document.createElement('h3');
+            typeHeader.textContent = type;
+            alarmList.appendChild(typeHeader);
+    
+            groupedAlarms[type].forEach(alarm => {
+              const li = document.createElement('li');
+              li.innerHTML = `${alarm.content}<br><span class="alarm-created-at">${formatDateTime(alarm.created_at)}</span>`;
+              li.style.color = '#000000';
+              li.style.backgroundColor = alarm.type === '위험' ? '#f8d7da' : alarm.type === '경고' ? '#fff3cd' : '#d4edda';
+              li.style.border = '1px solid #ddd';
+              li.style.borderRadius = '5px';
+              li.style.padding = '5px 10px';
+              li.style.margin = '5px 0';
+    
+              // created_at 부분의 스타일 추가
+              const createdAtSpan = li.querySelector('.alarm-created-at');
+              if (createdAtSpan) {
+                createdAtSpan.style.fontSize = '12px';  // 글씨 크기 작게
+                createdAtSpan.style.color = '#6c757d';  // 회색
+                createdAtSpan.style.display = 'block';  // 새로운 줄로
+                createdAtSpan.style.marginTop = '5px';  // 들여쓰기 효과
+                createdAtSpan.style.marginLeft = '20px'; // 들여쓰기
+              }
+    
+              alarmList.appendChild(li);
+            });
+          });
+        }
+      }    
 
       document.querySelector('.alarm').addEventListener('click', () => {
         // 알림 탭으로 이동하는 코드
@@ -2005,9 +2005,6 @@
             content.classList.remove('active');
         });
         document.getElementById('alarm-tab').classList.add('active');
-    
-        // 알림 목록을 업데이트 (showAllAlarms 함수 호출)
-        showAllAlarms();
       });
     
 
