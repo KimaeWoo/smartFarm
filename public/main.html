@@ -1929,14 +1929,14 @@
 
               // 최신 알림 표시
               document.getElementById('danger-head').textContent = latestAlarms['위험'] ? latestAlarms['위험'].content : '알림 없음';
-              document.getElementById('danger-time').textContent = latestAlarms['위험'] ? latestAlarms['위험'].created_at : '시간';
-
+              document.getElementById('danger-time').textContent = latestAlarms['위험'] ? formatDateTime(latestAlarms['위험'].created_at) : '시간';
+      
               document.getElementById('warning-head').textContent = latestAlarms['경고'] ? latestAlarms['경고'].content : '알림 없음';
-              document.getElementById('warning-time').textContent = latestAlarms['경고'] ? latestAlarms['경고'].created_at : '시간';
-
+              document.getElementById('warning-time').textContent = latestAlarms['경고'] ? formatDateTime(latestAlarms['경고'].created_at) : '시간';
+      
               document.getElementById('complete-head').textContent = latestAlarms['완료'] ? latestAlarms['완료'].content : '알림 없음';
-              document.getElementById('complete-time').textContent = latestAlarms['완료'] ? latestAlarms['완료'].created_at : '시간';
-
+              document.getElementById('complete-time').textContent = latestAlarms['완료'] ? formatDateTime(latestAlarms['완료'].created_at) : '시간';
+      
           } catch (error) {
               console.error('알림 불러오기 실패:', error);
           }
@@ -1976,15 +1976,9 @@
     
 
       // 이벤트 리스너 추가
-      document.getElementById('danger-head').textContent = latestAlarms['위험'] ? latestAlarms['위험'].content : '알림 없음';
-      document.getElementById('danger-time').textContent = latestAlarms['위험'] ? formatDateTime(latestAlarms['위험'].created_at) : '시간';
-
-      document.getElementById('warning-head').textContent = latestAlarms['경고'] ? latestAlarms['경고'].content : '알림 없음';
-      document.getElementById('warning-time').textContent = latestAlarms['경고'] ? formatDateTime(latestAlarms['경고'].created_at) : '시간';
-
-      document.getElementById('complete-head').textContent = latestAlarms['완료'] ? latestAlarms['완료'].content : '알림 없음';
-      document.getElementById('complete-time').textContent = latestAlarms['완료'] ? formatDateTime(latestAlarms['완료'].created_at) : '시간';
-
+      document.getElementById('danger-head').addEventListener('click', () => showAllAlarms('위험'));
+      document.getElementById('warning-head').addEventListener('click', () => showAllAlarms('경고'));
+      document.getElementById('complete-head').addEventListener('click', () => showAllAlarms('완료'));
       document.querySelector('.close-btn').addEventListener('click', () => {
         document.getElementById('alarm-modal').style.display = 'none';
       });
