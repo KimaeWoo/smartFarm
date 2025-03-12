@@ -1903,7 +1903,9 @@
       // 날짜 포맷팅 함수 (년, 월, 일, 시, 분 형식)
       function formatDateTime(dateString) {
           const date = new Date(dateString);
-          return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일 ${date.getHours()}시 ${date.getMinutes()}분`;
+          const offset = 9 * 60; // KST offset (UTC+9)
+          const kstDate = new Date(date.getTime() + offset * 60000);
+          return `${kstDate.getFullYear()}년 ${kstDate.getMonth() + 1}월 ${kstDate.getDate()}일 ${kstDate.getHours()}시 ${kstDate.getMinutes()}분`;
       }
 
       // 서버에서 알림 데이터 불러오기
