@@ -1965,7 +1965,8 @@
         } else {
             allAlarms[type].forEach(alarm => {
                 const li = document.createElement('li');
-                li.textContent = `${alarm.content} (${alarm.created_at})`;
+                li.textContent = `${alarm.content} 
+                                  (${formatDateTime(alarm.created_at)})`;
                 alarmList.appendChild(li);
             });
         }
