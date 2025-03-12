@@ -580,40 +580,34 @@
       color: var(--text-color);
     }
 
-    .modal {
-      display: none;
-      position: fixed;
-      top: 20%;
-      left: 50%;
-      transform: translate(-50%, -20%);
-      background-color: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-      width: 300px;
+    #alarm-list-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
     }
     
-    .modal-content h2 {
-      margin-top: 0;
-      text-align: center;
+    #alarm-list-table th,
+    #alarm-list-table td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      text-align: left;
     }
     
-    #alarm-list {
-      list-style: none;
-      padding: 0;
+    #alarm-list-table th {
+      background-color: #f2f2f2;
     }
     
-    #alarm-list li {
-      margin: 5px 0;
+    .filter {
+      margin-bottom: 15px;
+    }
+    
+    .filter label {
+      font-size: 16px;
+    }
+    
+    .filter select {
       padding: 5px;
-      background-color: #e6e6e6;
-      border-radius: 5px;
-    }
-    
-    .close-btn {
-      float: right;
-      font-size: 20px;
-      cursor: pointer;
+      font-size: 14px;
     }
   </style>
 </head>
@@ -847,7 +841,6 @@
                 <p class="text-md" id="danger-head">알림 없음</p>
                 <p class="text-md" id="danger-time">시간</p>
               </div>
-              🔥⚠️✅
               <div class="alarm-content">
                 <p class="text-bg" id="warning">⚠️ 경고</p>
                 <p class="text-md" id="warning-head">알림 없음</p>
@@ -981,7 +974,31 @@
           <div class="card-title">알림 리스트</div>
         </div>
         <div class="card-content">
-          
+          <!-- 필터 옵션 추가 -->
+          <div class="filter">
+            <label for="alarm-filter">알림 유형 필터: </label>
+            <select id="alarm-filter">
+              <option value="">전체</option>
+              <option value="type1">위험</option>
+              <option value="type2">경고</option>
+              <option value="type3">완료</option>
+              <!-- 다른 유형 추가 가능 -->
+            </select>
+          </div>
+          <!-- 알림 리스트가 이곳에 표시됨 -->
+          <table id="alarm-list-table">
+            <thead>
+              <tr>
+                <th>알림 내용</th>
+                <th>시간</th>
+                <th>장치</th>
+                <th>유형</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- 알림 항목들이 여기에 동적으로 추가됩니다. -->
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -1942,65 +1959,65 @@
           fetchAlarmList();
       }
 
+      // 알림 리스트를 가져오는 함수
       function fetchAlarmList() {
-        const alarmList = document.querySelector('#alarm-tab .card-content');
-    
-        if (!alarmList) {
-            console.error("alarm-tab 요소를 찾을 수 없습니다.");
-            return;
+        const alarmListTableBody = document.querySelector('#alarm-list-table tbody');
+        const alarmFilter = document.querySelector('#alarm-filter');
+
+        if (!alarmListTableBody || !alarmFilter) {
+          console.error("필터 또는 테이블 요소를 찾을 수 없습니다.");
+          return;
         }
-    
-        alarmList.innerHTML = '';
-    
+
+        // 선택된 필터 값
+        const selectedType = alarmFilter.value;
+
+        alarmListTableBody.innerHTML = ''; // 기존 알림 내용 초기화
+
         if (allAlarms.length === 0) {
-            alarmList.innerHTML = '<li>알림이 없습니다.</li>';
+          alarmListTableBody.innerHTML = '<tr><td colspan="4">알림이 없습니다.</td></tr>';
         } else {
           // 시간 순으로 알림을 정렬 (가장 최근 알림이 위로 오도록)
           const sortedAlarms = allAlarms.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-    
-          // 정렬된 알림을 리스트로 표시
-          sortedAlarms.forEach(alarm => {
-            const li = document.createElement('li');
-            li.style.color = '#000000';
-            li.style.backgroundColor = 'var(--cooler-color)';
-            li.style.padding = '5px 10px';
-            li.style.height = '50px';
-            li.style.margin = '0';
-            li.style.display = 'flex';  // 각 항목을 일렬로 나열하기 위해 flex 사용
-            li.style.flexWrap = 'wrap';  // 여러 줄로 넘어가도록 허용
 
-            // content, created_at, device, type 등을 각각 <span>으로 감싸서 나열
-            const contentSpan = document.createElement('span');
-            contentSpan.textContent = alarm.content;
-            contentSpan.style.flex = '1'; // 각 요소들이 고르게 나열되도록 설정
-            contentSpan.style.fontSize = '16px';
-              
-            const createdAtSpan = document.createElement('span');
-            createdAtSpan.textContent = formatDateTime(alarm.created_at);
-            createdAtSpan.style.flex = '1'; // 동일하게 고르게 나열되도록 설정
-            createdAtSpan.style.fontSize = '16px';
+          // 필터링된 알림 리스트 (type 필터링)
+          const filteredAlarms = sortedAlarms.filter(alarm => {
+            if (!selectedType) return true; // 필터가 선택되지 않으면 모든 알림을 표시
+            return alarm.type === selectedType;
+          });
 
-            const deviceSpan = document.createElement('span');
-            deviceSpan.textContent = alarm.device || '장치 없음'; // device 정보가 없을 경우 '장치 없음'을 표시
-            deviceSpan.style.flex = '1'; // 동일하게 고르게 나열되도록 설정
-            deviceSpan.style.fontSize = '16px';
+          // 정렬된 알림을 테이블로 표시
+          filteredAlarms.forEach(alarm => {
+            const tr = document.createElement('tr');
 
-            const typeSpan = document.createElement('span');
-            typeSpan.textContent = alarm.type;
-            typeSpan.style.flex = '1'; // 동일하게 고르게 나열되도록 설정
-            typeSpan.style.fontSize = '16px';
+            // 각 항목을 <td>로 만들어서 테이블에 추가
+            const contentTd = document.createElement('td');
+            contentTd.textContent = alarm.content;
 
-            // 각 항목을 li에 추가
-            li.appendChild(contentSpan);
-            li.appendChild(createdAtSpan);
-            li.appendChild(deviceSpan);
-            li.appendChild(typeSpan);
+            const createdAtTd = document.createElement('td');
+            createdAtTd.textContent = formatDateTime(alarm.created_at);
 
-            // li를 alarmList에 추가
-            alarmList.appendChild(li);
+            const deviceTd = document.createElement('td');
+            deviceTd.textContent = alarm.device || '장치 없음';
+
+            const typeTd = document.createElement('td');
+            typeTd.textContent = alarm.type;
+
+            // tr에 <td>들 추가
+            tr.appendChild(contentTd);
+            tr.appendChild(createdAtTd);
+            tr.appendChild(deviceTd);
+            tr.appendChild(typeTd);
+
+            // 테이블 본문에 추가
+            alarmListTableBody.appendChild(tr);
           });
         }
-      }        
+      }
+
+      // 필터 변경 시 알림 리스트 갱신
+      document.querySelector('#alarm-filter').addEventListener('change', fetchAlarmList);
+              
 
       document.querySelector('.alarm').addEventListener('click', () => {
         // 알림 탭으로 이동하는 코드
