@@ -327,7 +327,7 @@ app.get('/devices/status', async(req, res) => {
 app.post('/devices/:deviceId/status', async (req, res) => {
   const { farm_id, device, status, content } = req.body;
   const query = `UPDATE devices SET ${device} = ? WHERE farm_id = ?`;
-  const alarm_query = `INSERT INTO alarms (farm_id, content, type) VALUES (?, ?, ?)`;
+  const alarm_query = `INSERT INTO alarms (farm_id, content, type, device) VALUES (?, ?, ?, ?)`;
   let conn;
 
   try {
@@ -336,10 +336,10 @@ app.post('/devices/:deviceId/status', async (req, res) => {
     console.log('[/devices/:deviceId/status] 제어장치 변경 성공', device, status);
     
     if (status == 1) {
-      await conn.query(alarm_query, [farm_id, content, "경고"]);
+      await conn.query(alarm_query, [farm_id, content, "경고", device]);
       console.log('[/devices/:deviceId/status] warning 알림 추가 성공');
     } else {
-      await conn.query(alarm_query, [farm_id, content, "완료"]);
+      await conn.query(alarm_query, [farm_id, content, "완료", device]);
       console.log('[/devices/:deviceId/status] complete 알림 추가 성공');
     }
     return res.json({ message: '제어장치 변경 및 알림 추가 성공' });
@@ -485,7 +485,7 @@ app.get('/history-data', async (req, res) => {
 
 app.get('/getAlarm', async (req, res) => {
   const { farm_id } = req.query;
-  const query = `SELECT content, type, created_at FROM alarms 
+  const query = `SELECT content, type, created_at, device FROM alarms 
                  WHERE farm_id = ? AND created_at BETWEEN ? AND ?`;
   let conn;
 
