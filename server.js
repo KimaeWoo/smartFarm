@@ -441,7 +441,7 @@ app.get('/history-data', async (req, res) => {
   const start = new Date(formattedDate).setHours(0, 0, 0, 0);
   const end = new Date(formattedDate).setHours(23, 59, 59, 999);
 
-  //console.log('[GET /history-data] 시작 시간(UTC):', start, '끝 시간(UTC):', end);
+  console.log('[GET /history-data] 시작 시간(UTC):', start, '끝 시간(UTC):', end);
 
   // 1시간 단위로 데이터를 그룹화하여 평균값 계산
   const query = `
