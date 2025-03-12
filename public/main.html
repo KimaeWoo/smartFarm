@@ -837,18 +837,18 @@
           <div class="card-content">
             <div class="alarm">
               <div class="alarm-content">
-                <p class="text-bg" id="danger">🔥 위험</p>
+                <p class="text-bg" id="danger">🔴 위험</p>
                 <p class="text-md" id="danger-head">알림 없음</p>
                 <p class="text-md" id="danger-time">시간</p>
               </div>
               <div class="alarm-content">
-                <p class="text-bg" id="warning">⚠️ 경고</p>
+                <p class="text-bg" id="warning">🟡 경고</p>
                 <p class="text-md" id="warning-head">알림 없음</p>
                 <p class="text-md" id="warning-time">시간</p>
               </div>
             
               <div class="alarm-content">
-                <p class="text-bg" id="complete">✅ 완료</p>
+                <p class="text-bg" id="complete">🟢 완료</p>
                 <p class="text-md" id="complete-head">알림 없음</p>
                 <p class="text-md" id="complete-time">시간</p>
               </div>
@@ -1969,9 +1969,12 @@
           filteredAlarms.forEach(alarm => {
             const tr = document.createElement('tr');
 
+            // 알림 내용 앞에 이모지 추가
+            const emoji = getEmojiForType(alarm.type);
+
             // 각 항목을 <td>로 만들어서 테이블에 추가
             const contentTd = document.createElement('td');
-            contentTd.textContent = alarm.content;
+            contentTd.textContent = emoji + ' ' + alarm.content;  // 이모지와 알림 내용 결합
 
             const createdAtTd = document.createElement('td');
             createdAtTd.textContent = formatDateTime(alarm.created_at);
@@ -1991,6 +1994,20 @@
             // 테이블 본문에 추가
             alarmListTableBody.appendChild(tr);
           });
+        }
+      }
+
+      // 알림 유형에 맞는 이모지 반환 함수
+      function getEmojiForType(type) {
+        switch (type) {
+          case '위험':
+            return '🔴'; 
+          case '경고':
+            return '🟡'; 
+          case '완료':
+            return '🟢'; 
+          default:
+            return '';
         }
       }
 
