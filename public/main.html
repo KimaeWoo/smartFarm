@@ -1904,7 +1904,7 @@
       function formatDateTime(dateString) {
           const date = new Date(dateString);
           const offset = 9 * 60; // KST offset (UTC+9)
-          const kstDate = new Date(date.getTime() + offset * 60000);
+          const kstDate = new Date(date.getTime() - offset * 60000);
           return `${kstDate.getFullYear()}년 ${kstDate.getMonth() + 1}월 ${kstDate.getDate()}일 ${kstDate.getHours()}시 ${kstDate.getMinutes()}분`;
       }
 
@@ -1924,15 +1924,18 @@
               const latestWarning = allAlarms.find(alarm => alarm.type === '경고') || { content: '알림 없음', created_at: '시간' };
               const latestComplete = allAlarms.find(alarm => alarm.type === '완료') || { content: '알림 없음', created_at: '시간' };
 
-              document.getElementById('danger-head').textContent = latestDanger.content;
-              document.getElementById('danger-time').textContent = formatDateTime(latestDanger.created_at);
-
-              document.getElementById('warning-head').textContent = latestWarning.content;
-              document.getElementById('warning-time').textContent = formatDateTime(latestWarning.created_at);
-
-              document.getElementById('complete-head').textContent = latestComplete.content;
-              document.getElementById('complete-time').textContent = formatDateTime(latestComplete.created_at);
-
+              if(latestDanger.content != '알림 없음'){
+                document.getElementById('danger-head').textContent = latestDanger.content;
+                document.getElementById('danger-time').textContent = formatDateTime(latestDanger.created_at);  
+              }
+              if(latestWarning.content != '알림 없음'){
+                document.getElementById('warning-head').textContent = latestWarning.content;
+                document.getElementById('warning-time').textContent = formatDateTime(latestWarning.created_at);
+              }
+              if(latestComplete.content != '알림 없음'){
+                document.getElementById('complete-head').textContent = latestComplete.content;
+                document.getElementById('complete-time').textContent = formatDateTime(latestComplete.created_at);
+              }
           } catch (error) {
               console.error('알림 불러오기 실패:', error);
           }
@@ -1966,7 +1969,8 @@
 
                   groupedAlarms[type].forEach(alarm => {
                       const li = document.createElement('li');
-                      li.innerHTML = `- 알림 내용: ${alarm.content}<br>- 알림 시간: ${formatDateTime(alarm.created_at)}`;
+                      li.innerHTML = `${alarm.content}<br>${formatDateTime(alarm.created_at)}`;
+                      li.style.color = 'var(--text-color)';
                       li.style.backgroundColor = alarm.type === '위험' ? '#f8d7da' : alarm.type === '경고' ? '#fff3cd' : '#d4edda';
                       li.style.border = '1px solid #ddd';
                       li.style.borderRadius = '5px';
