@@ -496,8 +496,8 @@ app.get('/getAlarm', async (req, res) => {
 
   const formattedDate = `${year}-${month}-${day}`;
 
-  const start = new Date(formattedDate).setHours(0, 0, 0, 0);
-  const end = new Date(formattedDate).setHours(23, 59, 59, 999);
+  const start = new Date(formattedDate.setHours(0, 0, 0, 0));
+  const end = new Date(formattedDate.setHours(23, 59, 59, 999));
 
   console.log(farm_id,formattedDate);
   try {
