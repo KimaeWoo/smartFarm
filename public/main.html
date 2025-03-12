@@ -1939,10 +1939,10 @@
           } catch (error) {
               console.error('알림 불러오기 실패:', error);
           }
-          fetchAlarm();
+          fetchAlarmList();
       }
 
-      function fetchAlarm() {
+      function fetchAlarmList() {
         const alarmList = document.querySelector('#alarm-tab .card-content');
     
         if (!alarmList) {
