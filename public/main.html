@@ -521,13 +521,6 @@
       align-items: center;
     }
 
-    #themeSelect {
-      padding: 5px;
-      border-radius: 5px;
-      color: var(--text-color);
-      background-color: var(--bg-color);
-    }
-
     /* 닫기 버튼 스타일 */
     #closeSettings {
       margin-top: 10px;
@@ -554,17 +547,6 @@
       --shadow: 0 1px 3px 0 rgba(255, 255, 255, 0.1), 0 1px 2px 0 rgba(255, 255, 255, 0.06);
     }
 
-    /* 그레이 모드 */
-    .gray-theme {
-      --text-color: #f9fafb;
-      --card-bg: #4b5563;
-      --bg-color: #6b7280;
-      --muted-color: #b6b9be;
-      --secondary-color: #7b7c7d;
-      --logout-color: #c3c1c1;
-      --shadow: 0 1px 3px 0 rgba(255, 255, 255, 0.1), 0 1px 2px 0 rgba(255, 255, 255, 0.06);
-    }
-
     .alarm {
       display: flex;
       flex-direction: column;
@@ -578,13 +560,14 @@
       color: var(--text-color);
     }
 
-    .alarm-content:hover {
-      transform: scale(1.05);
-    }
-
     .text-bg {
       font-size: 1.1rem;
+    }
 
+    .text-bg:hover {
+      cursor: pointer;
+      color: #515151;
+      transition: color 0.2s ease-in-out;
     }
 
     .text-md {
@@ -634,6 +617,7 @@
   <header>
     <div class="header-container">
       <h1 class="header-title">스마트팜 대시보드</h1>
+      <img id="mode-toggle" src="lightmode.png" alt="Mode Toggle" onclick="toggleMode()" style="width: 50px; cursor: pointer;">
       <div class="header-right">
         <a href="farm.html" id="farmname">New 스마트팜</a>
         <span id="username">홍길동님</span>
@@ -651,16 +635,6 @@
   <div class="settings-panel" id="settingsPanel">
     <div class="settings-content">
         <h2>설정</h2>
-
-        <!-- 테마 선택 드롭다운 -->
-        <div class="setting-item">
-            <label for="themeSelect">테마 선택</label>
-            <select id="themeSelect">
-                <option value="light">라이트 모드</option>
-                <option value="dark">다크 모드</option>
-                <option value="gray">그레이 모드</option>
-            </select>
-        </div>
 
         <!-- 닫기 버튼 -->
         <button id="closeSettings">닫기</button>
@@ -862,19 +836,19 @@
           <div class="card-content">
             <div class="alarm">
               <div class="alarm-content">
-                <p class="text-bg danger">🔥 위험</p>
+                <p class="text-bg" id="danger">🔥 위험</p>
                 <p class="text-md" id="danger-head">알림 없음</p>
                 <p class="text-md" id="danger-time">시간</p>
               </div>
             
               <div class="alarm-content">
-                <p class="text-bg warning">⚠️ 경고</p>
+                <p class="text-bg" id="warning">⚠️ 경고</p>
                 <p class="text-md" id="warning-head">알림 없음</p>
                 <p class="text-md" id="warning-time">시간</p>
               </div>
             
               <div class="alarm-content">
-                <p class="text-bg complete">✅ 완료</p>
+                <p class="text-bg" id="complete">✅ 완료</p>
                 <p class="text-md" id="complete-head">알림 없음</p>
                 <p class="text-md" id="complete-time">시간</p>
               </div>
@@ -996,6 +970,22 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
   <script>
     const API_BASE_URL = "https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app";
+
+    // 테마 변경
+    function toggleMode() {
+      const htmlElement = document.documentElement;
+      const modeToggleImg = document.getElementById('mode-toggle');
+
+      if (htmlElement.classList.contains('dark-theme')) {
+          htmlElement.classList.remove('dark-theme');
+          htmlElement.classList.add('light-theme');
+          modeToggleImg.src = 'lightmode.png'; // 라이트 모드 이미지
+      } else {
+          htmlElement.classList.remove('light-theme');
+          htmlElement.classList.add('dark-theme');
+          modeToggleImg.src = 'darkmode.png'; // 다크 모드 이미지
+      }
+    }
 
     // 로그아웃 처리 
     const logoutButton = document.getElementById("logout-btn");       
@@ -1877,7 +1867,6 @@
       const settingsBtn = document.getElementById("settingsBtn");
       const settingsPanel = document.getElementById("settingsPanel");
       const closeSettings = document.getElementById("closeSettings");
-      const themeSelect = document.getElementById("themeSelect");
 
       // 설정 버튼 클릭 시 패널 표시
       settingsBtn.addEventListener("click", function () {
@@ -1887,20 +1876,6 @@
       // 닫기 버튼 클릭 시 패널 숨김
       closeSettings.addEventListener("click", function () {
           settingsPanel.style.display = "none";
-      });
-
-      // 테마 변경 이벤트
-      themeSelect.addEventListener("change", function () {
-          document.documentElement.classList.remove("dark-theme", "gray-theme");
-
-          const selectedTheme = themeSelect.value;
-          if (selectedTheme === "dark") {
-              document.documentElement.classList.add("dark-theme");
-          } else if (selectedTheme === "gray") {
-              document.documentElement.classList.add("gray-theme");
-          } else {
-              // 라이트 테마는 별도로 처리하지 않아도 기본값이므로 아무 처리 안 함
-          }
       });
 
       // 전체 알림 데이터 저장용
@@ -1991,9 +1966,9 @@
       }    
 
       // 이벤트 리스너 추가
-      document.getElementById('danger-head').addEventListener('click', () => showAllAlarms('위험'));
-      document.getElementById('warning-head').addEventListener('click', () => showAllAlarms('경고'));
-      document.getElementById('complete-head').addEventListener('click', () => showAllAlarms('완료'));
+      document.getElementById('danger').addEventListener('click', () => showAllAlarms('위험'));
+      document.getElementById('warning').addEventListener('click', () => showAllAlarms('경고'));
+      document.getElementById('complete').addEventListener('click', () => showAllAlarms('완료'));
       document.querySelector('.close-btn').addEventListener('click', () => {
         document.getElementById('alarm-modal').style.display = 'none';
       });
