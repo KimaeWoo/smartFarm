@@ -1950,6 +1950,7 @@
 
         // 선택된 필터 값
         const selectedType = alarmFilter.value;
+        console.log("선택된 필터 유형:", selectedType);
 
         alarmListTableBody.innerHTML = ''; // 기존 알림 내용 초기화
 
@@ -1982,6 +1983,7 @@
             const typeTd = document.createElement('td');
             typeTd.textContent = alarm.type;
 
+            console.log("createdAtTd.textContent:",createdAtTd.textContent);
             // tr에 <td>들 추가
             tr.appendChild(contentTd);
             tr.appendChild(createdAtTd);
