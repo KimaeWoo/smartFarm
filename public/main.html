@@ -809,15 +809,15 @@
           <div class="card-content">
             <div class="alarm">
               <p class="text-sm">🔥 위험</p>
-              <p class="text-sm text-muted-foreground">3개</p>
+              <p class="text-sm text-muted-foreground">0개</p>
             </div>
             <div class="alarm">
               <p class="text-sm">⚠️ 경고</p>
-              <p class="text-sm">2개</p>
+              <p class="text-sm">0개</p>
             </div>
             <div class="alarm">
               <p class="text-sm">✅ 완료</p>
-              <p class="text-sm">1개</p>
+              <p class="text-sm">0개</p>
             </div>
           </div>
         </div>
@@ -1021,7 +1021,7 @@
       // 농장 이름 불러오기
       async function fetchFarmName() {
         try {
-          const response = await fetch(`${API_BASE_URL}/getFarmName?user_id=${userId}`, {
+          const response = await fetch(`${API_BASE_URL}/getFarmName?farm_id=${farmId}`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json'

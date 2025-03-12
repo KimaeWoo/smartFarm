@@ -143,13 +143,13 @@ app.get('/getName', async (req,res) => {
 
 // 스마트팜 이름 불러오기
 app.get('/getFarmName', async (req,res) => {
-  const user_id = req.query.user_id;
-  const query = `SELECT farm_name from farms where user_id = ?`;
+  const farm_id = req.query.farm_id;
+  const query = `SELECT farm_name from farms where farm_id = ?`;
   let conn;
 
   try {
     conn = await db.getConnection();
-    const results = await conn.query(query, [user_id]);
+    const results = await conn.query(query, [farm_id]);
 
     if (results.length > 0) {
       console.log('[GET /getFarmName] 스마트팜 이름:',results[0].farm_name);
@@ -242,20 +242,20 @@ app.post('/delFarm', async (req, res) => {
 
 // 센서 데이터 저장
 app.post('/sensors', async (req, res) => {
-  const { user_id, farm_id, temperature, humidity, soil_moisture, co2, created_at } = req.body;
+  const { farm_id, temperature, humidity, soil_moisture, co2, created_at } = req.body;
   
   // created_at이 없으면 현재 시간을 한국 시간으로 설정
   const timestamp = created_at 
     ? moment.tz(created_at, "Asia/Seoul").format('YYYY-MM-DD HH:mm:ss') 
     : moment().tz("Asia/Seoul").format('YYYY-MM-DD HH:mm:ss');
   
-  const query = `INSERT INTO sensors (user_id, farm_id, temperature, humidity, soil_moisture, co2, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+  const query = `INSERT INTO sensors (farm_id, temperature, humidity, soil_moisture, co2, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)`;
   const selectQuery = `SELECT * FROM sensors WHERE id = ?`;
   let conn;
   
   try {
     conn = await db.getConnection();
-    const results = await conn.query(query, [user_id, farm_id, temperature, humidity, soil_moisture, co2, timestamp]);
+    const results = await conn.query(query, [farm_id, temperature, humidity, soil_moisture, co2, timestamp]);
   
     // 방금 삽입된 튜플의 id 가져오기
     const insertedId = results.insertId;
@@ -266,7 +266,7 @@ app.post('/sensors', async (req, res) => {
       res.json({ message: '센서 데이터 저장 성공' });
     
       // 저장된 센서 데이터를 기반으로 제어 여부 체크 및 실행
-      //Controldevice(user_id, farm_id, temperature, humidity, soil_moisture, co2);
+      //Controldevice(farm_id, temperature, humidity, soil_moisture, co2);
       
     } catch (err) {
       console.error('[POST /sensors] 데이터 조회 오류:', err);
@@ -282,13 +282,13 @@ app.post('/sensors', async (req, res) => {
 
 // 최근 센서 데이터 조회
 app.get('/sensors/status', async (req, res) => {
-  const { user_id, farm_id } = req.query;
+  const { farm_id } = req.query;
   const query = `SELECT * FROM sensors WHERE user_id = ? AND farm_id = ? ORDER BY created_at DESC LIMIT 1`;
   let conn;
 
   try {
     conn = await db.getConnection();
-    const results = await conn.query(query, [user_id, farm_id]);
+    const results = await conn.query(query, [farm_id]);
     if (results.length === 0) {
       console.log('[GET /sensors/status] 조회된 데이터 없음');
       return res.status(404).json({ message:'해당 조건에 맞는 데이터가 없습니다.' });
@@ -305,13 +305,13 @@ app.get('/sensors/status', async (req, res) => {
 
 // 제어장치 상태 가져오기
 app.get('/devices/status', async(req, res) => {
-  const { user_id, farm_id } = req.query;
+  const { farm_id } = req.query;
   const query = `SELECT * FROM devices WHERE user_id = ? AND farm_id = ?`
   let conn;
 
   try {
     conn = await db.getConnection();
-    const results = await conn.query(query, [user_id, farm_id]);
+    const results = await conn.query(query, [farm_id]);
 
     console.log('[GET /devices/status] 제어장치 조회 성공:');
     return res.json(results[0]);
@@ -325,16 +325,24 @@ app.get('/devices/status', async(req, res) => {
 
 // 제어장치 상태 변경하기
 app.post('/devices/:deviceId/status', async (req, res) => {
-  const { user_id, farm_id, device } = req.body;
-  const query = `UPDATE devices SET ${device} = NOT ${device} WHERE user_id = ? AND farm_id = ?`;
+  const { farm_id, device, status, content } = req.body;
+  const query = `UPDATE devices SET ${device} = ? WHERE farm_id = ?`;
+  const alarm_query = `INSERT INTO alarms (farm_id, content, type) VALUES (?, ?, ?)`;
   let conn;
 
   try {
     conn = await db.getConnection();
-    await conn.query(query, [user_id, farm_id]);
-
-    console.log('[/devices/:deviceId/status] 제어장치 변경 성공',device);
-    return res.json({ message: '제어장치 변경 성공' });
+    await conn.query(query, [status, farm_id]);
+    console.log('[/devices/:deviceId/status] 제어장치 변경 성공', device, status);
+    
+    if (status == 1) {
+      await conn.query(alarm_query, [farm_id, content, "warning"]);
+      console.log('[/devices/:deviceId/status] warning 알림 추가 성공');
+    } else {
+      await conn.query(alarm_query, [farm_id, content, "complete"]);
+      console.log('[/devices/:deviceId/status] complete 알림 추가 성공');
+    }
+    return res.json({ message: '제어장치 변경 및 알림 추가 성공' });
   } catch (err) {
     console.error('[POST /devices/:deviceId/status] DB 오류:', err);
     return res.status(500).json({ message: 'DB 오류' });
@@ -345,24 +353,23 @@ app.post('/devices/:deviceId/status', async (req, res) => {
 
 // 제어장치 상태 강제 변경
 app.post('/devices/force-status', async (req, res) => {
-  const { user_id, farm_id, device, status } = req.body;
+  const { farm_id, device, status } = req.body;
 
-  if (!user_id || !farm_id || !device) {
+  if (!farm_id || !device) {
     return res.status(400).json({ message: '잘못된 요청입니다. 모든 필드가 필요합니다.' });
   }
 
-  const query = `UPDATE devices SET ${device} = ? WHERE user_id = ? AND farm_id = ?`;
+  const query = `UPDATE devices SET ${device} = ? WHERE AND farm_id = ?`;
   let conn;
 
   try {
     conn = await db.getConnection();
-    await conn.query(query, [status, user_id, farm_id]);
+    await conn.query(query, [status, farm_id]);
     console.log(`[/devices/force-status] ${device} 상태 변경 성공`);
     const status_val = status ? 1 : 0;
     
     // 다른 서버 API 호출
     await axios.post('http://14.54.126.218:8000/update', {
-      user_id,
       farm_id,
       devices: device,
       status: status_val
@@ -381,7 +388,7 @@ app.post('/devices/force-status', async (req, res) => {
 
 // 실시간 데이터 불러오기 (1시간 단위 평균)
 app.get('/realtime-data', async (req, res) => {
-  const { user_id, farm_id } = req.query;
+  const { farm_id } = req.query;
   const query = `
     SELECT 
       DATE_FORMAT(created_at, '%Y-%m-%d %H:00:00') AS time_interval,
@@ -392,8 +399,7 @@ app.get('/realtime-data', async (req, res) => {
     FROM 
       sensors
     WHERE 
-      user_id = ? 
-      AND farm_id = ? 
+      farm_id = ? 
       AND created_at >= NOW() - INTERVAL 24 HOUR
     GROUP BY 
       time_interval
@@ -403,7 +409,7 @@ app.get('/realtime-data', async (req, res) => {
   let conn;
   try {
     conn = await db.getConnection();
-    const results = await conn.query(query, [user_id, farm_id]);
+    const results = await conn.query(query, [farm_id]);
 
     if (results.length === 0) {
       console.log('[GET /real-time-data] 조회된 데이터가 없습니다.');
@@ -433,14 +439,14 @@ app.get('/history-data', async (req, res) => {
   }
 
   // 시작 시간을 계산하기 위해서 formattedDate의 복사본을 사용하여 시간을 설정 (UTC 기준)
-  const startOfDayUTC = new Date(formattedDate);
+  const start = new Date(formattedDate);
   startOfDayUTC.setHours(0, 0, 0, 0);
 
   // 끝 시간을 계산하기 위해서 formattedDate의 복사본을 사용하여 시간을 설정 (UTC 기준)
-  const endOfDayUTC = new Date(formattedDate);
+  const end = new Date(formattedDate);
   endOfDayUTC.setHours(23, 59, 59, 999);
 
-  //console.log('[GET /history-data] 시작 시간(UTC):', startOfDayUTC, '끝 시간(UTC):', endOfDayUTC);
+  //console.log('[GET /history-data] 시작 시간(UTC):', start, '끝 시간(UTC):', end);
 
   // 1시간 단위로 데이터를 그룹화하여 평균값 계산
   const query = `
@@ -465,7 +471,7 @@ app.get('/history-data', async (req, res) => {
 
   try {
     conn = await db.getConnection();
-    const results = await conn.query(query, [user_id, farm_id, startOfDayUTC, endOfDayUTC]);
+    const results = await conn.query(query, [user_id, farm_id, start, end]);
   
     if (results.length === 0) {
       console.log('[GET /history-data] 조회된 데이터가 없습니다.');
@@ -477,6 +483,47 @@ app.get('/history-data', async (req, res) => {
   } catch (err) {
     console.error('[GET /history-data] DB 오류: ', err.stack);
     return res.status(500).json({ message: 'DB 오류' });
+  } finally {
+    conn.release();
+  }
+});
+
+app.get('getAlarm', async (req,res) => {
+  const { farm_id, date} = req.query;
+  const query = `SELECT content, type, created_at FROM alarms 
+                 where farm_id = ? AND created_at BETWEEN ? AND ?`;
+  let conn;
+
+  // 날짜 파싱 (YYYY-MM-DD 형태)
+  const formattedDate = new Date(date);
+
+  // 날짜가 유효하지 않으면 오류 반환
+  if (isNaN(formattedDate)) {
+    return res.status(400).json({ message:'유효한 날짜 형식이 아닙니다.' });
+  }
+
+  // 시작 시간을 계산하기 위해서 formattedDate의 복사본을 사용하여 시간을 설정 (UTC 기준)
+  const start = new Date(formattedDate);
+  startOfDayUTC.setHours(0, 0, 0, 0);
+
+  // 끝 시간을 계산하기 위해서 formattedDate의 복사본을 사용하여 시간을 설정 (UTC 기준)
+  const end= new Date(formattedDate);
+  endOfDayUTC.setHours(23, 59, 59, 999);
+
+  try {
+    conn = await db.getConnection();
+    const results = await conn.query(query, [farm_id, start, end]);
+
+    if (results.length == 0) {
+      console.log('[GET /getAlarm] 조회된 데이터가 없습니다.');
+      return res.status(404).json({ message:'해당 날짜에 기록된 데이터가 없습니다.' });
+    } else {
+      console.log('[GET /getAlarm] 알림', results);
+      res.json(results);
+    }
+  } catch (err) {
+    console.log('[GET /getAlarm] DB 오류:',err.stack);
+    return res.status(500).json({ message: 'DB 오류'});
   } finally {
     conn.release();
   }
