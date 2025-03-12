@@ -438,13 +438,8 @@ app.get('/history-data', async (req, res) => {
     return res.status(400).json({ message:'유효한 날짜 형식이 아닙니다.' });
   }
 
-  // 시작 시간을 계산하기 위해서 formattedDate의 복사본을 사용하여 시간을 설정 (UTC 기준)
-  const start = new Date(formattedDate);
-  start.setHours(0, 0, 0, 0);
-
-  // 끝 시간을 계산하기 위해서 formattedDate의 복사본을 사용하여 시간을 설정 (UTC 기준)
-  const end = new Date(formattedDate);
-  end.setHours(23, 59, 59, 999);
+  const start = new Date(formattedDate).setHours(0, 0, 0, 0);
+  const end = new Date(formattedDate).setHours(23, 59, 59, 999);
 
   //console.log('[GET /history-data] 시작 시간(UTC):', start, '끝 시간(UTC):', end);
 
@@ -487,44 +482,39 @@ app.get('/history-data', async (req, res) => {
   }
 });
 
-app.get('getAlarm', async (req,res) => {
-  const { farm_id, date} = req.query;
+app.get('/getAlarm', async (req, res) => {
+  const { farm_id } = req.query;
   const query = `SELECT content, type, created_at FROM alarms 
-                 where farm_id = ? AND created_at BETWEEN ? AND ?`;
+                 WHERE farm_id = ? AND created_at BETWEEN ? AND ?`;
   let conn;
 
-  // 날짜 파싱 (YYYY-MM-DD 형태)
-  const formattedDate = new Date(date);
+  // 현재 날짜 가져오기 (한국 시간 기준)
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0'); // 월은 0부터 시작
+  const day = String(now.getDate()).padStart(2, '0');
 
-  // 날짜가 유효하지 않으면 오류 반환
-  if (isNaN(formattedDate)) {
-    return res.status(400).json({ message:'유효한 날짜 형식이 아닙니다.' });
-  }
+  const formattedDate = `${year}-${month}-${day}`;
 
-  // 시작 시간을 계산하기 위해서 formattedDate의 복사본을 사용하여 시간을 설정 (UTC 기준)
-  const start = new Date(formattedDate);
-  start.setHours(0, 0, 0, 0);
-
-  // 끝 시간을 계산하기 위해서 formattedDate의 복사본을 사용하여 시간을 설정 (UTC 기준)
-  const end= new Date(formattedDate);
-  end.setHours(23, 59, 59, 999);
+  const start = new Date(formattedDate).setHours(0, 0, 0, 0);
+  const end = new Date(formattedDate).setHours(23, 59, 59, 999);
 
   try {
     conn = await db.getConnection();
     const results = await conn.query(query, [farm_id, start, end]);
 
-    if (results.length == 0) {
+    if (results.length === 0) {
       console.log('[GET /getAlarm] 조회된 데이터가 없습니다.');
-      return res.status(404).json({ message:'해당 날짜에 기록된 데이터가 없습니다.' });
+      return res.status(404).json({ message: '해당 날짜에 기록된 데이터가 없습니다.' });
     } else {
       console.log('[GET /getAlarm] 알림', results);
       res.json(results);
     }
   } catch (err) {
-    console.log('[GET /getAlarm] DB 오류:',err.stack);
-    return res.status(500).json({ message: 'DB 오류'});
+    console.log('[GET /getAlarm] DB 오류:', err.stack);
+    return res.status(500).json({ message: 'DB 오류' });
   } finally {
-    conn.release();
+    if (conn) conn.release();
   }
 });
 

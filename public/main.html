@@ -567,13 +567,25 @@
 
     .alarm {
       display: flex;
-      justify-content: space-between;
-      margin-bottom: 0.25rem;
+      flex-direction: column;
+      align-items: left;
+      gap: 7px;
+    }
+    .alarm-content {
+      display: flex;
+      flex-direction: column;
       color: var(--text-color);
     }
 
-    .text-sm {
-      font-size: 1rem;
+    .text-bg {
+      font-size: 1.1rem;
+
+    }
+
+    .text-md {
+      margin-left: 30px;
+      font-size: 0.8rem;
+      color: var(--muted-color);
     }
   </style>
 </head>
@@ -808,16 +820,21 @@
           </div>
           <div class="card-content">
             <div class="alarm">
-              <p class="text-sm">🔥 위험</p>
-              <p class="text-sm text-muted-foreground">0개</p>
-            </div>
-            <div class="alarm">
-              <p class="text-sm">⚠️ 경고</p>
-              <p class="text-sm">0개</p>
-            </div>
-            <div class="alarm">
-              <p class="text-sm">✅ 완료</p>
-              <p class="text-sm">0개</p>
+              <div class="alarm-content">
+                <p class="text-bg">🔥 위험</p>
+                <p class="text-md" id="danger-head">알림 없음</p>
+                <p class="text-md" id="danger-time">시간</p>
+              </div>
+              <div class="alarm-content">
+                <p class="text-bg">⚠️ 경고</p>
+                <p class="text-md" id="warning-head">알림 없음</p>
+                <p class="text-md" id="warning-time">시간</p>
+              </div>
+              <div class="alarm-content">
+                <p class="text-bg">✅ 완료</p>
+                <p class="text-md" id="complete-head">알림 없음</p>
+                <p class="text-md" id="complete-time">시간</p>
+              </div>
             </div>
           </div>
         </div>
@@ -1834,6 +1851,64 @@
           }
       });
     
+      // 알림 불러오기기
+      async function fetchAlarm() {
+        try {
+          const response = await fetch(`${API_BASE_URL}/getAlarm?farm_id=${farmId}`);
+          if (!response.ok) throw new Error('네트워크 응답 오류:' + response.statusText);
+      
+          const data = await response.json();
+      
+          // 최신 알림 저장
+          const latestAlarms = {
+            '위험': null,
+            '경고': null,
+            '완료': null
+          };
+      
+          // 알림 전체 저장
+          const allAlarms = {
+            '위험': [],
+            '경고': [],
+            '완료': []
+          };
+      
+          // 알림 데이터 정렬 및 저장
+          data.forEach(alarm => {
+            const type = alarm.type;
+            if (latestAlarms[type] === null || new Date(alarm.created_at) > new Date(latestAlarms[type].created_at)) {
+              latestAlarms[type] = alarm;
+            }
+            allAlarms[type].push(alarm);
+          });
+      
+          // 최신 알림 표시
+          document.getElementById('danger-head').textContent = latestAlarms['위험'] ? latestAlarms['위험'].content : '알림 없음';
+          document.getElementById('danger-time').textContent = latestAlarms['위험'] ? latestAlarms['위험'].created_at : '시간';
+      
+          document.getElementById('warning-head').textContent = latestAlarms['경고'] ? latestAlarms['경고'].content : '알림 없음';
+          document.getElementById('warning-time').textContent = latestAlarms['경고'] ? latestAlarms['경고'].created_at : '시간';
+      
+          document.getElementById('complete-head').textContent = latestAlarms['완료'] ? latestAlarms['완료'].content : '알림 없음';
+          document.getElementById('complete-time').textContent = latestAlarms['완료'] ? latestAlarms['완료'].created_at : '시간';
+      
+          // 클릭 이벤트 추가 (전체 알림 보기)
+          document.querySelector('.alarm-content').addEventListener('click', (e) => {
+            const type = e.target.textContent.includes('위험') ? '위험' :
+                         e.target.textContent.includes('경고') ? '경고' : '완료';
+      
+            const alertDetails = allAlarms[type]
+              .map(alarm => `${alarm.content} (${alarm.created_at})`)
+              .join('\n');
+      
+            alert(`${type} 알림 목록:\n${alertDetails}`);
+          });
+      
+        } catch (error) {
+          console.error('알림 불러오기 실패:', error);
+        }
+      }      
+
       fetchFarmName() // 스마트팜 이름 가져오기
       fetchName(); // 사용자 이름 가져오기
       updateDateDisplay(); // 날짜 표시 업데이트
@@ -1842,7 +1917,7 @@
       updateChartData(); // 실시간 차트 가져오기
       updateHistoryChartData(); // 기록 차트 가져오기
       updateSummaryChart(); // 요약 차트 가져오기
-
+      fetchAlarm(); // 알림 가져오기기
       //setInterval(fetchSensorData, 5000);
       //setInterval(updateChartData, 300000);
     });
