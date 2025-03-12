@@ -283,7 +283,7 @@ app.post('/sensors', async (req, res) => {
 // 최근 센서 데이터 조회
 app.get('/sensors/status', async (req, res) => {
   const { farm_id } = req.query;
-  const query = `SELECT * FROM sensors WHERE user_id = ? AND farm_id = ? ORDER BY created_at DESC LIMIT 1`;
+  const query = `SELECT * FROM sensors WHERE farm_id = ? ORDER BY created_at DESC LIMIT 1`;
   let conn;
 
   try {
@@ -306,7 +306,7 @@ app.get('/sensors/status', async (req, res) => {
 // 제어장치 상태 가져오기
 app.get('/devices/status', async(req, res) => {
   const { farm_id } = req.query;
-  const query = `SELECT * FROM devices WHERE user_id = ? AND farm_id = ?`
+  const query = `SELECT * FROM devices WHERE farm_id = ?`
   let conn;
 
   try {
@@ -428,7 +428,7 @@ app.get('/realtime-data', async (req, res) => {
 
 // 기록 데이터 API (날짜별 센서 데이터)
 app.get('/history-data', async (req, res) => {
-  const { user_id, farm_id, date } = req.query;
+  const { farm_id, date } = req.query;
 
   // 날짜 파싱 (YYYY-MM-DD 형태)
   const formattedDate = new Date(date);
@@ -459,8 +459,7 @@ app.get('/history-data', async (req, res) => {
     FROM 
       sensors
     WHERE 
-      user_id = ? 
-      AND farm_id = ? 
+      farm_id = ? 
       AND created_at BETWEEN ? AND ?
     GROUP BY 
       time_interval
@@ -471,7 +470,7 @@ app.get('/history-data', async (req, res) => {
 
   try {
     conn = await db.getConnection();
-    const results = await conn.query(query, [user_id, farm_id, start, end]);
+    const results = await conn.query(query, [farm_id, start, end]);
   
     if (results.length === 0) {
       console.log('[GET /history-data] 조회된 데이터가 없습니다.');

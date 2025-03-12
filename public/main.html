@@ -1077,7 +1077,7 @@
           //  return;
           //}
 
-          const response = await fetch(`${API_BASE_URL}/sensors/status?user_id=${userId}&farm_id=${farmId}`, {
+          const response = await fetch(`${API_BASE_URL}/sensors/status?farm_id=${farmId}`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json'
@@ -1133,7 +1133,7 @@
       // 상태 가져오기
       async function fetchDevicesStatus() {
         try {
-          const response = await fetch(`${API_BASE_URL}/devices/status?user_id=${userId}&farm_id=${farmId}`, {
+          const response = await fetch(`${API_BASE_URL}/devices/status?farm_id=${farmId}`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json'
@@ -1159,7 +1159,7 @@
       // 실시간 데이터 불러오기
       async function fetchRealtimeData() {
         try {
-          const response = await fetch(`${API_BASE_URL}/realtime-data?user_id=${userId}&farm_id=${farmId}`, {
+          const response = await fetch(`${API_BASE_URL}/realtime-data?farm_id=${farmId}`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json'
@@ -1314,7 +1314,7 @@
         }
       
         try {
-          const response = await fetch(`${API_BASE_URL}/history-data?user_id=${userId}&farm_id=${farmId}&date=${formattedDate}`, {
+          const response = await fetch(`${API_BASE_URL}/history-data?farm_id=${farmId}&date=${formattedDate}`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
@@ -1728,15 +1728,14 @@
       // 제어장치 상태 강제 변경하기
       async function updateDevice(device) {
         try {
-          if (userId && farmId) {
+          if (farmId) {
             // 현재 토글 상태 확인
             const isChecked = document.getElementById(`${device}-switch`).checked;
             // 서버로 상태 변경 요청
             const response = await fetch(`${API_BASE_URL}/devices/force-status`, { 
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ 
-                user_id: userId, 
+              body: JSON.stringify({
                 farm_id: farmId, 
                 device: device, 
                 status: isChecked
