@@ -440,11 +440,11 @@ app.get('/history-data', async (req, res) => {
 
   // 시작 시간을 계산하기 위해서 formattedDate의 복사본을 사용하여 시간을 설정 (UTC 기준)
   const start = new Date(formattedDate);
-  startOfDayUTC.setHours(0, 0, 0, 0);
+  start.setHours(0, 0, 0, 0);
 
   // 끝 시간을 계산하기 위해서 formattedDate의 복사본을 사용하여 시간을 설정 (UTC 기준)
   const end = new Date(formattedDate);
-  endOfDayUTC.setHours(23, 59, 59, 999);
+  end.setHours(23, 59, 59, 999);
 
   //console.log('[GET /history-data] 시작 시간(UTC):', start, '끝 시간(UTC):', end);
 
@@ -503,11 +503,11 @@ app.get('getAlarm', async (req,res) => {
 
   // 시작 시간을 계산하기 위해서 formattedDate의 복사본을 사용하여 시간을 설정 (UTC 기준)
   const start = new Date(formattedDate);
-  startOfDayUTC.setHours(0, 0, 0, 0);
+  start.setHours(0, 0, 0, 0);
 
   // 끝 시간을 계산하기 위해서 formattedDate의 복사본을 사용하여 시간을 설정 (UTC 기준)
   const end= new Date(formattedDate);
-  endOfDayUTC.setHours(23, 59, 59, 999);
+  end.setHours(23, 59, 59, 999);
 
   try {
     conn = await db.getConnection();
