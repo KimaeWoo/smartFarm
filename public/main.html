@@ -571,10 +571,15 @@
       align-items: left;
       gap: 7px;
     }
+
     .alarm-content {
       display: flex;
       flex-direction: column;
       color: var(--text-color);
+    }
+
+    .alarm-content:hover {
+      transform: scale(1.05);
     }
 
     .text-bg {
@@ -586,6 +591,42 @@
       margin-left: 30px;
       font-size: 0.8rem;
       color: var(--muted-color);
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 20%;
+      left: 50%;
+      transform: translate(-50%, -20%);
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      width: 300px;
+    }
+    
+    .modal-content h2 {
+      margin-top: 0;
+      text-align: center;
+    }
+    
+    #alarm-list {
+      list-style: none;
+      padding: 0;
+    }
+    
+    #alarm-list li {
+      margin: 5px 0;
+      padding: 5px;
+      background-color: #e6e6e6;
+      border-radius: 5px;
+    }
+    
+    .close-btn {
+      float: right;
+      font-size: 20px;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -821,21 +862,32 @@
           <div class="card-content">
             <div class="alarm">
               <div class="alarm-content">
-                <p class="text-bg">🔥 위험</p>
+                <p class="text-bg danger">🔥 위험</p>
                 <p class="text-md" id="danger-head">알림 없음</p>
                 <p class="text-md" id="danger-time">시간</p>
               </div>
+            
               <div class="alarm-content">
-                <p class="text-bg">⚠️ 경고</p>
+                <p class="text-bg warning">⚠️ 경고</p>
                 <p class="text-md" id="warning-head">알림 없음</p>
                 <p class="text-md" id="warning-time">시간</p>
               </div>
+            
               <div class="alarm-content">
-                <p class="text-bg">✅ 완료</p>
+                <p class="text-bg complete">✅ 완료</p>
                 <p class="text-md" id="complete-head">알림 없음</p>
                 <p class="text-md" id="complete-time">시간</p>
               </div>
             </div>
+            
+            <!-- 알림 상세 목록 -->
+            <div id="alarm-modal" class="modal">
+              <div class="modal-content">
+                <span class="close-btn">&times;</span>
+                <h2 id="modal-title"></h2>
+                <ul id="alarm-list"></ul>
+              </div>
+            </div>            
           </div>
         </div>
       </div>
@@ -1850,64 +1902,72 @@
               // 라이트 테마는 별도로 처리하지 않아도 기본값이므로 아무 처리 안 함
           }
       });
-    
-      // 알림 불러오기기
+
+      // 전체 알림 데이터 저장용
+      let allAlarms = { '위험': [], '경고': [], '완료': [] };
+
+      // 서버에서 알림 데이터 불러오기
       async function fetchAlarm() {
-        try {
-          const response = await fetch(`${API_BASE_URL}/getAlarm?farm_id=${farmId}`);
-          if (!response.ok) throw new Error('네트워크 응답 오류:' + response.statusText);
-      
-          const data = await response.json();
-      
-          // 최신 알림 저장
-          const latestAlarms = {
-            '위험': null,
-            '경고': null,
-            '완료': null
-          };
-      
-          // 알림 전체 저장
-          const allAlarms = {
-            '위험': [],
-            '경고': [],
-            '완료': []
-          };
-      
-          // 알림 데이터 정렬 및 저장
-          data.forEach(alarm => {
-            const type = alarm.type;
-            if (latestAlarms[type] === null || new Date(alarm.created_at) > new Date(latestAlarms[type].created_at)) {
-              latestAlarms[type] = alarm;
-            }
-            allAlarms[type].push(alarm);
-          });
-      
-          // 최신 알림 표시
-          document.getElementById('danger-head').textContent = latestAlarms['위험'] ? latestAlarms['위험'].content : '알림 없음';
-          document.getElementById('danger-time').textContent = latestAlarms['위험'] ? latestAlarms['위험'].created_at : '시간';
-      
-          document.getElementById('warning-head').textContent = latestAlarms['경고'] ? latestAlarms['경고'].content : '알림 없음';
-          document.getElementById('warning-time').textContent = latestAlarms['경고'] ? latestAlarms['경고'].created_at : '시간';
-      
-          document.getElementById('complete-head').textContent = latestAlarms['완료'] ? latestAlarms['완료'].content : '알림 없음';
-          document.getElementById('complete-time').textContent = latestAlarms['완료'] ? latestAlarms['완료'].created_at : '시간';
-      
-          // 클릭 이벤트 추가 (전체 알림 보기)
-          document.querySelector('.alarm-content').addEventListener('click', (e) => {
-            const type = e.target.textContent.includes('위험') ? '위험' :
-                         e.target.textContent.includes('경고') ? '경고' : '완료';
-      
-            const alertDetails = allAlarms[type]
-              .map(alarm => `${alarm.content} (${alarm.created_at})`)
-              .join('\n');
-      
-            alert(`${type} 알림 목록:\n${alertDetails}`);
-          });
-      
-        } catch (error) {
-          console.error('알림 불러오기 실패:', error);
+          try {
+              const response = await fetch(`${API_BASE_URL}/getAlarm?farm_id=${farmId}`);
+              if (!response.ok) throw new Error('네트워크 오류:' + response.statusText);
+
+              const data = await response.json();
+
+              // 최신 알림을 저장하는 객체
+              const latestAlarms = { '위험': null, '경고': null, '완료': null };
+              allAlarms = { '위험': [], '경고': [], '완료': [] }; // 초기화
+
+              // 데이터 정렬 및 최신 알림 찾기
+              data.forEach(alarm => {
+                  const type = alarm.type;
+                  if (!latestAlarms[type] || new Date(alarm.created_at) > new Date(latestAlarms[type].created_at)) {
+                      latestAlarms[type] = alarm;
+                  }
+                  allAlarms[type].push(alarm); // 전체 알림 저장
+              });
+
+              // 최신 알림 표시
+              document.getElementById('danger-head').textContent = latestAlarms['위험'] ? latestAlarms['위험'].content : '알림 없음';
+              document.getElementById('danger-time').textContent = latestAlarms['위험'] ? latestAlarms['위험'].created_at : '시간';
+
+              document.getElementById('warning-head').textContent = latestAlarms['경고'] ? latestAlarms['경고'].content : '알림 없음';
+              document.getElementById('warning-time').textContent = latestAlarms['경고'] ? latestAlarms['경고'].created_at : '시간';
+
+              document.getElementById('complete-head').textContent = latestAlarms['완료'] ? latestAlarms['완료'].content : '알림 없음';
+              document.getElementById('complete-time').textContent = latestAlarms['완료'] ? latestAlarms['완료'].created_at : '시간';
+
+          } catch (error) {
+              console.error('알림 불러오기 실패:', error);
+          }
+      }
+
+      function showAllAlarms(type) {
+        const alarmList = document.getElementById('alarm-list');
+        alarmList.innerHTML = ''; // 기존 목록을 비우고
+        
+        if (allAlarms[type].length === 0) {
+            alarmList.innerHTML = `<li>해당 날짜에 ${type} 알림이 없습니다.</li>`;
+        } else {
+            allAlarms[type].forEach(alarm => {
+                const li = document.createElement('li');
+                li.textContent = `${alarm.content} (${alarm.created_at})`;
+                alarmList.appendChild(li);
+            });
         }
-      }      
+        
+        // 모달 띄우기
+        document.getElementById('alarm-modal').style.display = 'block';
+    }
+    
+
+      // 이벤트 리스너 추가
+      document.getElementById('danger-head').addEventListener('click', () => showAllAlarms('위험'));
+      document.getElementById('warning-head').addEventListener('click', () => showAllAlarms('경고'));
+      document.getElementById('complete-head').addEventListener('click', () => showAllAlarms('완료'));
+      document.querySelector('.close-btn').addEventListener('click', () => {
+        document.getElementById('alarm-modal').style.display = 'none';
+      });
 
       fetchFarmName() // 스마트팜 이름 가져오기
       fetchName(); // 사용자 이름 가져오기
