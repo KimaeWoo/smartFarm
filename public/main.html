@@ -847,7 +847,7 @@
                 <p class="text-md" id="danger-head">알림 없음</p>
                 <p class="text-md" id="danger-time">시간</p>
               </div>
-            
+              🔥⚠️✅
               <div class="alarm-content">
                 <p class="text-bg" id="warning">⚠️ 경고</p>
                 <p class="text-md" id="warning-head">알림 없음</p>
@@ -1964,9 +1964,7 @@
             li.style.color = '#000000';
             li.style.backgroundColor = alarm.type === '위험' ? '#f8d7da' : alarm.type === '경고' ? '#fff3cd' : '#d4edda';
             li.style.border = '1px solid #ddd';
-            li.style.borderRadius = '5px';
-            li.style.padding = '5px 10px';
-            li.style.margin = '5px 0';
+            li.style.padding = '10px 10px';
             li.style.display = 'flex';  // 각 항목을 일렬로 나열하기 위해 flex 사용
             li.style.flexWrap = 'wrap';  // 여러 줄로 넘어가도록 허용
 
@@ -1974,18 +1972,22 @@
             const contentSpan = document.createElement('span');
             contentSpan.textContent = alarm.content;
             contentSpan.style.flex = '1'; // 각 요소들이 고르게 나열되도록 설정
-
+            contentSpan.style.fontSize = '16px';
+              
             const createdAtSpan = document.createElement('span');
             createdAtSpan.textContent = formatDateTime(alarm.created_at);
             createdAtSpan.style.flex = '1'; // 동일하게 고르게 나열되도록 설정
+            createdAtSpan.style.fontSize = '16px';
 
             const deviceSpan = document.createElement('span');
             deviceSpan.textContent = alarm.device || '장치 없음'; // device 정보가 없을 경우 '장치 없음'을 표시
             deviceSpan.style.flex = '1'; // 동일하게 고르게 나열되도록 설정
+            deviceSpan.style.fontSize = '16px';
 
             const typeSpan = document.createElement('span');
             typeSpan.textContent = alarm.type;
             typeSpan.style.flex = '1'; // 동일하게 고르게 나열되도록 설정
+            typeSpan.style.fontSize = '16px';
 
             // 각 항목을 li에 추가
             li.appendChild(contentSpan);
