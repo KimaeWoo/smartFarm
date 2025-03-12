@@ -74,6 +74,12 @@
       font-weight: bold;
     }
 
+    .header-left {
+      display: flex;
+      justify-content: flex-start;
+      gap: 10px;
+      align-items: center;
+    }
     .header-right {
       display: flex;
       justify-content: flex-end;
@@ -553,6 +559,10 @@
       align-items: left;
       gap: 7px;
     }
+    
+    .alarm:hover {
+      cursor: pointer;
+    }
 
     .alarm-content {
       display: flex;
@@ -562,12 +572,6 @@
 
     .text-bg {
       font-size: 1.1rem;
-    }
-
-    .text-bg:hover {
-      cursor: pointer;
-      color: #515151;
-      transition: color 0.2s ease-in-out;
     }
 
     .text-md {
@@ -616,8 +620,10 @@
 <body>
   <header>
     <div class="header-container">
-      <h1 class="header-title">스마트팜 대시보드</h1>
-      <img id="mode-toggle" src="lightmode.png" alt="Mode Toggle" onclick="toggleMode()" style="width: 50px; cursor: pointer;">
+      <div class="header-left">
+        <h1 class="header-title">스마트팜 대시보드</h1>
+        <img id="mode-toggle" src="lightmode.png" alt="Mode Toggle" onclick="toggleMode()" style="width: 50px; cursor: pointer;">
+      </div>      
       <div class="header-right">
         <a href="farm.html" id="farmname">New 스마트팜</a>
         <span id="username">홍길동님</span>
@@ -1917,45 +1923,31 @@
           }
       }
 
-      // 시간 형식 변환하는 함수
-      function formatDateTime(dateString) {
-        const date = new Date(dateString);
-        
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        
-        const hours = String(date.getHours()).padStart(2, '0');
-        const minutes = String(date.getMinutes()).padStart(2, '0');
-        
-        return `${year}년 ${month}월 ${day}일 ${hours}시 ${minutes}분`;
-      }
-
-      function showAllAlarms(type) {
+      // 모든 알림 표시 함수
+      function showAllAlarmsCombined() {
         const alarmList = document.getElementById('alarm-list');
-        
         if (!alarmList) {
             console.error("alarm-list 요소를 찾을 수 없습니다.");
             return;
         }
-        
-        alarmList.innerHTML = ''; // 기존 목록을 비우고
-        
-        if (!allAlarms[type]) {
-            console.error(`${type} 알림이 정의되어 있지 않습니다.`);
-            return;
-        }
-    
-        if (allAlarms[type].length === 0) {
-            alarmList.innerHTML = `<li>해당 날짜에 ${type} 알림이 없습니다.</li>`;
+
+        alarmList.innerHTML = ''; // 기존 목록 초기화
+
+        // 모든 알림을 하나의 배열로 합치고 정렬
+        const combinedAlarms = [...allAlarms['위험'], ...allAlarms['경고'], ...allAlarms['완료']]
+            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+        if (combinedAlarms.length === 0) {
+            alarmList.innerHTML = '<li>표시할 알림이 없습니다.</li>';
         } else {
-            allAlarms[type].forEach(alarm => {
+            combinedAlarms.forEach(alarm => {
                 const li = document.createElement('li');
-                li.textContent = `${alarm.content} (${formatDateTime(alarm.created_at)})`;
+                li.innerHTML = `<strong>${alarm.type}</strong>: ${alarm.content} <br> <span class='alarm-time'>(${formatDateTime(alarm.created_at)})</span>`;
+                li.classList.add('alarm-item');
                 alarmList.appendChild(li);
             });
         }
-    
+
         // 모달 띄우기
         const alarmModal = document.getElementById('alarm-modal');
         if (alarmModal) {
@@ -1963,15 +1955,15 @@
         } else {
             console.error("alarm-modal 요소를 찾을 수 없습니다.");
         }
-      }    
+      }
 
-      // 이벤트 리스너 추가
-      document.getElementById('danger').addEventListener('click', () => showAllAlarms('위험'));
-      document.getElementById('warning').addEventListener('click', () => showAllAlarms('경고'));
-      document.getElementById('complete').addEventListener('click', () => showAllAlarms('완료'));
-      document.querySelector('.close-btn').addEventListener('click', () => {
-        document.getElementById('alarm-modal').style.display = 'none';
-      });
+      // alarm 클래스 클릭 시 모든 알림 표시
+      const alarmDiv = document.querySelector('.alarm');
+      if (alarmDiv) {
+        alarmDiv.addEventListener('click', showAllAlarmsCombined);
+      } else {
+        console.error("alarm 클래스 요소를 찾을 수 없습니다.");
+      }
 
       fetchFarmName() // 스마트팜 이름 가져오기
       fetchName(); // 사용자 이름 가져오기
