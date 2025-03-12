@@ -1995,16 +1995,21 @@
       }
 
       document.querySelector('.alarm').addEventListener('click', () => {
-        const tabId = tab.getAttribute('data-tab');
-          
-        // 탭 활성화
-        tabs.forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-          
-        // 탭 컨텐츠 활성화
-        tabContents.forEach(content => content.classList.remove('active'));
-        document.getElementById(`${tabId}-tab`).classList.add('active');
+        // 알림 탭으로 이동하는 코드
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        document.querySelector('[data-tab="alarm"]').classList.add('active');
+    
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        document.getElementById('alarm-tab').classList.add('active');
+    
+        // 알림 목록을 업데이트 (showAllAlarms 함수 호출)
+        showAllAlarms();
       });
+    
 
       fetchFarmName() // 스마트팜 이름 가져오기
       fetchName(); // 사용자 이름 가져오기

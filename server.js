@@ -512,7 +512,7 @@ app.get('/getAlarm', async (req, res) => {
       console.log('[GET /getAlarm] 조회된 데이터가 없습니다.');
       return res.status(404).json({ message: '해당 날짜에 기록된 데이터가 없습니다.' });
     } else {
-      console.log('[GET /getAlarm] 알림', results);
+      console.log(`[GET /getAlarm] 알림 ${results.length}개`);
       res.json(results);
     }
   } catch (err) {
