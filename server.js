@@ -249,7 +249,7 @@ app.post('/sensors', async (req, res) => {
     ? moment.tz(created_at, "Asia/Seoul").format('YYYY-MM-DD HH:mm:ss') 
     : moment().tz("Asia/Seoul").format('YYYY-MM-DD HH:mm:ss');
   
-  const query = `INSERT INTO sensors (farm_id, temperature, humidity, soil_moisture, co2, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+  const query = `INSERT INTO sensors (farm_id, temperature, humidity, soil_moisture, co2, created_at) VALUES (?, ?, ?, ?, ?, ?)`;
   const selectQuery = `SELECT * FROM sensors WHERE id = ?`;
   let conn;
   
