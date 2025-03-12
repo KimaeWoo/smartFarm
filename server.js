@@ -336,10 +336,10 @@ app.post('/devices/:deviceId/status', async (req, res) => {
     console.log('[/devices/:deviceId/status] 제어장치 변경 성공', device, status);
     
     if (status == 1) {
-      await conn.query(alarm_query, [farm_id, content, "warning"]);
+      await conn.query(alarm_query, [farm_id, content, "경고"]);
       console.log('[/devices/:deviceId/status] warning 알림 추가 성공');
     } else {
-      await conn.query(alarm_query, [farm_id, content, "complete"]);
+      await conn.query(alarm_query, [farm_id, content, "완료"]);
       console.log('[/devices/:deviceId/status] complete 알림 추가 성공');
     }
     return res.json({ message: '제어장치 변경 및 알림 추가 성공' });
