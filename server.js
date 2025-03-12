@@ -438,8 +438,11 @@ app.get('/history-data', async (req, res) => {
     return res.status(400).json({ message:'유효한 날짜 형식이 아닙니다.' });
   }
 
-  const start = new Date(formattedDate.setHours(0, 0, 0, 0));
-  const end = new Date(formattedDate.setHours(23, 59, 59, 999));
+  const start = new Date(formattedDate);
+  start.setHours(0, 0, 0, 0);
+
+  const end = new Date(formattedDate);
+  end.setHours(23, 59, 59, 999);
   
   console.log('시작,끝',start,end);
 
@@ -496,8 +499,11 @@ app.get('/getAlarm', async (req, res) => {
 
   const formattedDate = `${year}-${month}-${day}`;
 
-  const start = new Date(formattedDate.setHours(0, 0, 0, 0));
-  const end = new Date(formattedDate.setHours(23, 59, 59, 999));
+  const start = new Date(formattedDate);
+  start.setHours(0, 0, 0, 0);
+
+  const end = new Date(formattedDate);
+  end.setHours(23, 59, 59, 999);
 
   console.log(farm_id,formattedDate);
   try {
