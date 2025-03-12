@@ -1884,22 +1884,8 @@
           settingsPanel.style.display = "none";
       });
 
-      // 시간 형식 변환하는 함수
-      function formatDateTime(dateString) {
-        const date = new Date(dateString);
-        
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        
-        const hours = String(date.getHours()).padStart(2, '0');
-        const minutes = String(date.getMinutes()).padStart(2, '0');
-        
-        return `${year}년 ${month}월 ${day}일 ${hours}시 ${minutes}분`;
-      }
-      
       // 전체 알림 데이터 저장용
-      let allAlarms = { '위험': [], '경고': [], '완료': [] };
+      let allAlarms = [];
 
       // 서버에서 알림 데이터 불러오기
       async function fetchAlarm() {
@@ -1909,78 +1895,77 @@
 
               const data = await response.json();
 
-              // 최신 알림을 저장하는 객체
-              const latestAlarms = { '위험': null, '경고': null, '완료': null };
-              allAlarms = { '위험': [], '경고': [], '완료': [] }; // 초기화
-
-              // 데이터 정렬 및 최신 알림 찾기
-              data.forEach(alarm => {
-                  const type = alarm.type;
-                  if (!latestAlarms[type] || new Date(alarm.created_at) > new Date(latestAlarms[type].created_at)) {
-                      latestAlarms[type] = alarm;
-                  }
-                  allAlarms[type].push(alarm); // 전체 알림 저장
-              });
+              // 전체 알림 저장 및 정렬
+              allAlarms = data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
               // 최신 알림 표시
-              document.getElementById('danger-head').textContent = latestAlarms['위험'] ? latestAlarms['위험'].content : '알림 없음';
-              document.getElementById('danger-time').textContent = latestAlarms['위험'] ? formatDateTime(latestAlarms['위험'].created_at) : '시간';
-      
-              document.getElementById('warning-head').textContent = latestAlarms['경고'] ? latestAlarms['경고'].content : '알림 없음';
-              document.getElementById('warning-time').textContent = latestAlarms['경고'] ? formatDateTime(latestAlarms['경고'].created_at) : '시간';
-      
-              document.getElementById('complete-head').textContent = latestAlarms['완료'] ? latestAlarms['완료'].content : '알림 없음';
-              document.getElementById('complete-time').textContent = latestAlarms['완료'] ? formatDateTime(latestAlarms['완료'].created_at) : '시간';
-      
+              const latestDanger = allAlarms.find(alarm => alarm.type === '위험') || { content: '알림 없음', created_at: '시간' };
+              const latestWarning = allAlarms.find(alarm => alarm.type === '경고') || { content: '알림 없음', created_at: '시간' };
+              const latestComplete = allAlarms.find(alarm => alarm.type === '완료') || { content: '알림 없음', created_at: '시간' };
+
+              document.getElementById('danger-head').textContent = latestDanger.content;
+              document.getElementById('danger-time').textContent = formatDateTime(latestDanger.created_at);
+
+              document.getElementById('warning-head').textContent = latestWarning.content;
+              document.getElementById('warning-time').textContent = formatDateTime(latestWarning.created_at);
+
+              document.getElementById('complete-head').textContent = latestComplete.content;
+              document.getElementById('complete-time').textContent = formatDateTime(latestComplete.created_at);
+
           } catch (error) {
               console.error('알림 불러오기 실패:', error);
           }
       }
 
-      // 모든 알림 표시 함수
-      function showAllAlarmsCombined() {
-        const alarmList = document.getElementById('alarm-list');
-        if (!alarmList) {
-            console.error("alarm-list 요소를 찾을 수 없습니다.");
-            return;
-        }
-
-        alarmList.innerHTML = ''; // 기존 목록 초기화
-
-        // 모든 알림을 하나의 배열로 합치고 정렬
-        const combinedAlarms = [...allAlarms['위험'], ...allAlarms['경고'], ...allAlarms['완료']]
-            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-        if (combinedAlarms.length === 0) {
-            alarmList.innerHTML = '<li>표시할 알림이 없습니다.</li>';
-        } else {
-            combinedAlarms.forEach(alarm => {
-                const li = document.createElement('li');
-                li.innerHTML = `<strong>${alarm.type}</strong>: ${alarm.content} <br> <span class='alarm-time'>(${formatDateTime(alarm.created_at)})</span>`;
-                li.classList.add('alarm-item');
-                alarmList.appendChild(li);
-            });
-        }
-
-        // 모달 띄우기
-        const alarmModal = document.getElementById('alarm-modal');
-        if (alarmModal) {
-            alarmModal.style.display = 'block';
-        } else {
-            console.error("alarm-modal 요소를 찾을 수 없습니다.");
-        }
+      // 시간 형식 변환하는 함수
+      function formatDateTime(dateString) {
+          const date = new Date(dateString);
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          const hours = String(date.getHours()).padStart(2, '0');
+          const minutes = String(date.getMinutes()).padStart(2, '0');
+          return `${year}년 ${month}월 ${day}일 ${hours}시 ${minutes}분`;
       }
 
-      // alarm 클래스 클릭 시 모든 알림 표시
-      const alarmDiv = document.getElementById('alarm');
-      if (alarmDiv) {
-        alarmDiv.addEventListener('click', showAllAlarmsCombined);
-      } else {
-        console.error("alarm 클래스 요소를 찾을 수 없습니다.");
+      function showAllAlarms() {
+          const alarmList = document.getElementById('alarm-list');
+
+          if (!alarmList) {
+              console.error("alarm-list 요소를 찾을 수 없습니다.");
+              return;
+          }
+
+          alarmList.innerHTML = ''; // 기존 목록을 비움
+
+          if (allAlarms.length === 0) {
+              alarmList.innerHTML = '<li>알림이 없습니다.</li>';
+          } else {
+              allAlarms.forEach(alarm => {
+                  const li = document.createElement('li');
+                  li.innerHTML = `<strong>${alarm.type}</strong> - ${alarm.content} (${formatDateTime(alarm.created_at)})`;
+                  li.style.backgroundColor = alarm.type === '위험' ? '#f8d7da' : alarm.type === '경고' ? '#fff3cd' : '#d4edda';
+                  li.style.border = '1px solid #ddd';
+                  li.style.borderRadius = '5px';
+                  li.style.padding = '5px 10px';
+                  li.style.margin = '5px 0';
+                  alarmList.appendChild(li);
+              });
+          }
+
+          // 모달 띄우기
+          const alarmModal = document.getElementById('alarm-modal');
+          if (alarmModal) {
+              alarmModal.style.display = 'block';
+          } else {
+              console.error("alarm-modal 요소를 찾을 수 없습니다.");
+          }
       }
 
+      // 이벤트 리스너 추가
+      document.querySelector('.alarm').addEventListener('click', showAllAlarms);
       document.querySelector('.close-btn').addEventListener('click', () => {
-        document.getElementById('alarm-modal').style.display = 'none';
+          document.getElementById('alarm-modal').style.display = 'none';
       });
 
       fetchFarmName() // 스마트팜 이름 가져오기
