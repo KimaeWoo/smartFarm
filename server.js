@@ -497,6 +497,7 @@ app.get('/getAlarm', async (req, res) => {
 
   const formattedDate = `${year}-${month}-${day}`;
 
+  console.log('시간:',formattedDate);
   const start = new Date(formattedDate);
   start.setHours(0, 0, 0, 0);
 
