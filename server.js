@@ -201,7 +201,7 @@ app.post('/addFarm', async (req, res) => {
     // devices 테이블에 초기값 삽입
     const addDeviceQuery = `INSERT INTO devices (farm_id, led, fan, water, heater, cooler) VALUES (?, false, false, false, false, false)`;
     
-    await conn.query(addDeviceQuery, [user_id, farm_id]);
+    await conn.query(addDeviceQuery, [farm_id]);
     console.log('[POST /addFarm] devices 초기값 추가 성공');
     return res.json({ message: '농장 추가 성공' });
   } catch (err) {
