@@ -1450,13 +1450,21 @@
           });
       }
       
+      function formatDateYMD(date) {
+        const d = new Date(date);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0'); // 월은 0부터 시작하므로 +1
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      }
+
       function updateGrowthStatus(growthRate, harvestDays, startDate) {
         // 성장률, 시작일, 수확까지 남은 일수 표시
         document.getElementById('growth-rate').textContent = `${growthRate}%`;
         document.getElementById('growth-circle').style.setProperty('--growth-rate', `${growthRate}%`);
         
         // 시작일을 로컬 시간대로 변환하여 표시
-        const formattedStartDate = formatDateTime(startDate);
+        const formattedStartDate = formatDateYMD(startDate);
         document.getElementById('start-date').textContent = `시작일: ${formattedStartDate}`;
       
         // D-Day 계산
