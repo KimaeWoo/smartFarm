@@ -564,8 +564,7 @@ app.post('/start-farm', async (req, res) => {
     }
 
     const harvestDays = cropResult[0].harvest_days;
-    console.log('[POST /start-farm] ${farmId} 농장 시작 성공')
-    res.json({ message: '성공적으로 시작되었습니다.', harvestDays });
+    res.json({ message: '성공적으로 시작되었습니다.', harvestDays, startDate: currentDate });
   } catch (err) {
     console.log('[POST /start-farm] DB 오류:', err.stack);
     return res.status(500).json({ message: 'DB 오류' });
@@ -590,12 +589,19 @@ app.get('/get-farm-status/:farmId', async (req, res) => {
     conn = await db.getConnection();
     const [results] = await conn.query(query, [farmId]);
 
+    // 농장 정보가 없으면 404 반환
     if (results.length === 0) {
-      return res.status(500).send('농장 정보 조회 실패');
+      return res.status(404).send('농장 정보가 없습니다.');
     }
 
     const { growth_rate, harvest_days, start_date } = results[0];
-    console.log(`[GET /get-farm-status] ${farmId} 농장 D-DAY 가져오기 성공`);
+
+    // 값이 없으면 처리
+    if (growth_rate === null || harvest_days === null || start_date === null) {
+      return res.status(400).json({ message: '농장 정보에 누락된 값이 있습니다.' });
+    }
+
+    console.log(`[GET /get-farm-status] ${farmId} 농장 정보 가져오기 성공 - Growth Rate: ${growth_rate}, Harvest Days: ${harvest_days}, Start Date: ${start_date}`);
 
     res.json({
       growthRate: growth_rate,
