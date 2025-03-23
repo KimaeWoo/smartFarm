@@ -1444,14 +1444,14 @@
           })
           .then(data => {
             const { growthRate, harvestDays, startDate, farmActive } = data;
-            
+
             // farmActive가 1일 경우, startButton 숨기고 cropInfo 표시
             if (farmActive === 1) {
-              document.getElementById('startButton').style.display = 'none'; // startButton 숨기기
-              document.getElementById('cropInfo').classList.add('visible'); // cropInfo 보이기
+              startButton.style.display = 'none'; // startButton 숨기기
+              cropInfo.classList.add('visible'); // cropInfo 보이기
             } else {
-              document.getElementById('startButton').style.display = 'block'; // startButton 보이기
-              document.getElementById('cropInfo').classList.remove('visible'); // cropInfo 숨기기
+              startButton.style.display = 'block'; // startButton 보이기
+              cropInfo.classList.remove('visible'); // cropInfo 숨기기
             }
             
             // 성장률과 날짜 정보 업데이트
