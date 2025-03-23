@@ -1456,7 +1456,7 @@
         document.getElementById('growth-circle').style.setProperty('--growth-rate', `${growthRate}%`);
         
         // 시작일을 로컬 시간대로 변환하여 표시
-        const formattedStartDate = formatDate(startDate);
+        const formattedStartDate = formatDateTime(startDate);
         document.getElementById('start-date').textContent = `시작일: ${formattedStartDate}`;
       
         // D-Day 계산
