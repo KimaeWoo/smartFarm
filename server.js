@@ -557,13 +557,13 @@ app.post('/start-farm', async (req, res) => {
     `;
     
     // 작물 정보 가져오기
-    const [cropResult] = await conn.query(getCropQuery, [farmId]);
+    const cropResult = await conn.query(getCropQuery, [farmId]);
 
     if (cropResult.length === 0) {
       return res.status(500).send('작물 정보 조회 실패');
     }
 
-    const harvestDays = cropResult[0].harvest_days;
+    const harvestDays = cropResult.harvest_days;
     res.json({ message: '성공적으로 시작되었습니다.', harvestDays, startDate: currentDate });
   } catch (err) {
     console.log('[POST /start-farm] DB 오류:', err.stack);
