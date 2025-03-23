@@ -1310,6 +1310,8 @@
     });
 
     document.addEventListener('DOMContentLoaded', async () => {
+
+
       // 현재 날짜 설정
       const today = new Date();
       let currentDate = new Date();
@@ -1433,52 +1435,72 @@
       });
 
       function getFarmStatus() {
-        fetch(`/get-farm-status/${farmId}`)
-          .then(response => {
-            if (!response.ok) {
-              throw new Error('농장 정보를 가져오는 데 실패했습니다.');
-            }
-            return response.json();
-          })
-          .then(data => {
-            const { growthRate, harvestDays, startDate } = data;
-            
-            updateGrowthStatus(growthRate, harvestDays, startDate);
-          })
-          .catch(error => {
-            alert(error.message);
-          });
-      }
-      
-      function formatDateYMD(date) {
-        const d = new Date(date);
-        const year = d.getFullYear();
-        const month = String(d.getMonth() + 1).padStart(2, '0'); // 월은 0부터 시작하므로 +1
-        const day = String(d.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
+      fetch(`/get-farm-status/${farmId}`)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('농장 정보를 가져오는 데 실패했습니다.');
+          }
+          return response.json();
+        })
+        .then(data => {
+          const { growthRate, harvestDays, startDate, farmActive } = data;
+          
+          // farmActive가 1일 경우, startButton 숨기고 cropInfo 표시
+          if (farmActive === 1) {
+            document.getElementById('startButton').style.display = 'none'; // startButton 숨기기
+            document.getElementById('cropInfo').classList.add('visible'); // cropInfo 보이기
+          } else {
+            document.getElementById('startButton').style.display = 'block'; // startButton 보이기
+            document.getElementById('cropInfo').classList.remove('visible'); // cropInfo 숨기기
+          }
+          
+          // 성장률과 날짜 정보 업데이트
+          updateGrowthStatus(growthRate, harvestDays, startDate);
+        })
+        .catch(error => {
+          alert(error.message);
+        });
+    }
+
+    function formatDateYMD(date) {
+      const d = new Date(date);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0'); // 월은 0부터 시작하므로 +1
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function updateGrowthStatus(growthRate, harvestDays, startDate) {
+      // 성장률, 시작일, 수확까지 남은 일수 표시
+      document.getElementById('growth-rate').textContent = `${growthRate}%`;
+      document.getElementById('growth-circle').style.setProperty('--growth-rate', `${growthRate}%`);
+
+      // 시작일을 로컬 시간대로 변환하여 표시
+      const formattedStartDate = formatDateYMD(startDate);
+      document.getElementById('start-date').textContent = `시작일: ${formattedStartDate}`;
+
+      // D-Day 계산
+      const today = new Date();
+      const startDateObj = new Date(startDate);
+      const harvestDate = new Date(startDateObj);
+      harvestDate.setDate(harvestDate.getDate() + harvestDays);
+
+      const timeDiff = harvestDate - today;
+      let daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24)); // 남은 일수 계산
+
+      // D-Day 텍스트 업데이트
+      if (daysLeft > 0) {
+        document.getElementById('d-day').textContent = `D-Day: ${daysLeft}일 남음`;
+      } else if (daysLeft === 0) {
+        document.getElementById('d-day').textContent = `D-Day: 오늘 수확 가능`;
+      } else {
+        document.getElementById('d-day').textContent = `D-Day: 수확 완료`;
       }
 
-      function updateGrowthStatus(growthRate, harvestDays, startDate) {
-        // 성장률, 시작일, 수확까지 남은 일수 표시
-        document.getElementById('growth-rate').textContent = `${growthRate}%`;
-        document.getElementById('growth-circle').style.setProperty('--growth-rate', `${growthRate}%`);
-        
-        // 시작일을 로컬 시간대로 변환하여 표시
-        const formattedStartDate = formatDateYMD(startDate);
-        document.getElementById('start-date').textContent = `시작일: ${formattedStartDate}`;
-      
-        // D-Day 계산
-        const today = new Date();
-        const startDateObj = new Date(startDate);
-        const harvestDate = new Date(startDateObj);
-        harvestDate.setDate(harvestDate.getDate() + harvestDays);
-        
-        const timeDiff = harvestDate - today;
-        const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24)); // 남은 일수 계산
-      
-        // D-Day 텍스트 업데이트
-        document.getElementById('d-day').textContent = `D-Day: ${daysLeft > 0 ? daysLeft + '일 남음' : '수확 가능'}`;
-      }
+      // 성장률은 100%를 넘지 않도록 설정
+      growthRate = Math.min(growthRate, 100);
+      document.getElementById('growth-rate').textContent = `${growthRate}%`;
+    }
       
       // 농장 이름 불러오기
       async function fetchFarmName() {

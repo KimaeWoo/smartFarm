@@ -579,7 +579,7 @@ app.get('/get-farm-status/:farmId', async (req, res) => {
   const farmId = req.params.farmId;
 
   const query = `
-    SELECT f.growth_rate, c.harvest_days, f.start_date
+    SELECT f.growth_rate, c.harvest_days, f.start_date, f.farm_active
     FROM farms f
     JOIN crops c ON f.farm_type = c.name
     WHERE f.farm_id = ?
@@ -595,10 +595,10 @@ app.get('/get-farm-status/:farmId', async (req, res) => {
       return res.status(404).send('농장 정보가 없습니다.');
     }
 
-    const { growth_rate, harvest_days, start_date } = results[0];
+    const { growth_rate, harvest_days, start_date, farm_active } = results[0];
 
     // 값이 없으면 처리
-    if (growth_rate === null || harvest_days === null || start_date === null) {
+    if (growth_rate === null || harvest_days === null || start_date === null || farm_active === null) {
       return res.status(400).json({ message: '농장 정보에 누락된 값이 있습니다.' });
     }
 
@@ -608,20 +608,21 @@ app.get('/get-farm-status/:farmId', async (req, res) => {
     const harvestDate = new Date(startDate);
     harvestDate.setDate(harvestDate.getDate() + harvest_days);
 
-    // 로그로 계산된 날짜 확인
-    console.log(`Start Date: ${startDate.toISOString().split('T')[0]}`);
-    console.log(`Harvest Date (Calculated): ${harvestDate.toISOString().split('T')[0]}`);
-    
     // 수확일까지 남은 일수 계산
     const timeDiff = harvestDate - today;
     const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24)); // 남은 일수 계산
 
-    console.log('daysLeft:',daysLeft);
-    // 성장률 계산 (100일 기준으로 비례적으로 성장률 증가)
-    let newGrowthRate = ((harvest_days - daysLeft) / harvest_days) * 100;
+    // 성장률 계산
+    const progress = (harvest_days - daysLeft) / harvest_days;
+    let newGrowthRate = progress * 100;
+
+    // growth_rate가 이미 있을 경우, 기존 값에 누적해서 반영
+    if (growth_rate !== null) {
+      newGrowthRate = Math.max(newGrowthRate, growth_rate);  // 기존 성장률보다 더 높을 수 없도록
+    }
+
     newGrowthRate = Math.min(newGrowthRate, 100); // 100%를 넘지 않도록 처리
 
-    console.log('성장률:',newGrowthRate);
     // 성장률 업데이트
     const updateGrowthQuery = `
       UPDATE farms
@@ -630,13 +631,27 @@ app.get('/get-farm-status/:farmId', async (req, res) => {
     `;
     await conn.query(updateGrowthQuery, [newGrowthRate, farmId]);
 
-    console.log(`[GET /get-farm-status] ${farmId} 농장 정보 가져오기 성공 - Growth Rate: ${newGrowthRate}, Harvest Days: ${harvest_days}, Start Date: ${start_date}`);
-
-    res.json({
-      growthRate: newGrowthRate,
-      harvestDays: harvest_days,
-      startDate: start_date
-    });
+    // 농장 활성 상태에 따른 UI 업데이트
+    if (farm_active === 1) {
+      // farm_active가 1일 경우, startButton 숨기고 cropInfo 표시
+      // startButton을 'none'으로 숨기고 cropInfo를 'visible'로 표시
+      // 이 부분은 클라이언트 측에서 처리해야 하는 부분입니다.
+      res.json({
+        success: true,
+        message: '성장률 업데이트 완료',
+        growthRate: newGrowthRate,
+        harvestDays: harvest_days,
+        startDate: start_date,
+        farmActive: farm_active
+      });
+    } else {
+      res.json({
+        growthRate: newGrowthRate,
+        harvestDays: harvest_days,
+        startDate: start_date,
+        farmActive: farm_active
+      });
+    }
   } catch (err) {
     console.log('[GET /get-farm-status] DB 오류:', err.stack);
     return res.status(500).json({ message: 'DB 오류' });
