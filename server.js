@@ -542,7 +542,7 @@ app.post('/start-farm', async (req, res) => {
     conn = await db.getConnection();
 
     // farms 테이블 업데이트
-    const [updateResult] = await conn.query(updateFarmQuery, [currentDate, farmId]);
+    const updateResult = await conn.query(updateFarmQuery, [currentDate, farmId]);
 
     if (updateResult.affectedRows === 0) {
       return res.status(500).send('농장 업데이트 실패');
