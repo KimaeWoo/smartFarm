@@ -611,6 +611,50 @@
       padding: 5px;
       font-size: 14px;
     }
+
+    .plant-image {
+      width: 200px;
+      height: 200px;
+      animation: grow 1s ease-in-out;
+    }
+    @keyframes grow {
+      from {
+        transform: scale(0.8);
+        opacity: 0.5;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+    .growth-text {
+      margin-top: 15px;
+      color: #4caf50;
+      font-weight: bold;
+    }
+    .btn-grow {
+      background-color: #4caf50;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      padding: 10px 20px;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: background-color 0.3s;
+    }
+    .btn-grow:hover {
+      background-color: #45a049;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+    
+    .plant-image {
+      animation: pulse 2s infinite ease-in-out;
+    }  
+
   </style>
 </head>
 <body>
@@ -618,7 +662,7 @@
     <div class="header-container">
       <div class="header-left">
         <h1 class="header-title">스마트팜 대시보드</h1>
-        <img id="mode-toggle" src="lightmode2.png" alt="Mode Toggle" onclick="toggleMode()" style="width: 25px; cursor: pointer;">
+        <img id="mode-toggle" src="images/lightmode2.png" alt="Mode Toggle" onclick="toggleMode()" style="width: 25px; cursor: pointer;">
       </div>      
       <div class="header-right">
         <a href="farm.html" id="farmname">New 스마트팜</a>
@@ -644,7 +688,10 @@
   </div>
 
   <div class="floating-panel">
-    
+    <h2>🌱 식물 성장도 🌿</h2>
+      <img id="plantImage" class="plant-image" src="images/11.png" alt="씨앗">
+      <p class="growth-text" id="growthText">현재 성장 단계: 씨앗</p>
+      <button class="btn-grow" onclick="growPlant()">성장시키기</button>
   </div>
 
   <main>
@@ -996,6 +1043,28 @@
   <script>
     const API_BASE_URL = "https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app";
 
+    const growthStages = [
+      { image: "images/11.png", text: "씨앗" },
+      { image: "images/22.png", text: "새싹" },
+      { image: "images/3.gif", text: "작은 식물" },
+      { image: "images/4.gif", text: "중간 크기의 식물" },
+      { image: "images/5.gif", text: "완전히 자란 식물" }
+    ];
+
+    let currentStage = 0;
+
+    function growPlant() {
+      if (currentStage < growthStages.length - 1) {
+        currentStage++;
+      }
+
+      const plantImage = document.getElementById("plantImage");
+      const growthText = document.getElementById("growthText");
+
+      plantImage.src = growthStages[currentStage].image;
+      growthText.textContent = `현재 성장 단계: ${growthStages[currentStage].text}`;
+    }
+
     // 테마 변경
     function toggleMode() {
       const htmlElement = document.documentElement;
@@ -1004,11 +1073,11 @@
       if (htmlElement.classList.contains('dark-theme')) {
           htmlElement.classList.remove('dark-theme');
           htmlElement.classList.add('light-theme');
-          modeToggleImg.src = 'lightmode2.png'; // 라이트 모드 이미지
+          modeToggleImg.src = 'images/lightmode2.png'; // 라이트 모드 이미지
       } else {
           htmlElement.classList.remove('light-theme');
           htmlElement.classList.add('dark-theme');
-          modeToggleImg.src = 'darkmode2.png'; // 다크 모드 이미지
+          modeToggleImg.src = 'images/darkmode2.png'; // 다크 모드 이미지
       }
     }
 
