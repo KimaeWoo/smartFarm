@@ -616,10 +616,12 @@ app.get('/get-farm-status/:farmId', async (req, res) => {
     const timeDiff = harvestDate - today;
     const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24)); // 남은 일수 계산
 
+    console.log('daysLeft:',daysLeft);
     // 성장률 계산 (100일 기준으로 비례적으로 성장률 증가)
     let newGrowthRate = ((harvest_days - daysLeft) / harvest_days) * 100;
     newGrowthRate = Math.min(newGrowthRate, 100); // 100%를 넘지 않도록 처리
 
+    console.log('성장률:',newGrowthRate);
     // 성장률 업데이트
     const updateGrowthQuery = `
       UPDATE farms
