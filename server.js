@@ -542,7 +542,7 @@ app.post('/start-farm', async (req, res) => {
     conn = await db.getConnection();
 
     // farms 테이블 업데이트
-    const [results] = await conn.query(updateFarmQuery, [currentDate, farmId]);
+    const results = await conn.query(updateFarmQuery, [currentDate, farmId]);
 
     if (results.affectedRows === 0) {
       return res.status(500).send('농장 업데이트 실패');
@@ -557,13 +557,13 @@ app.post('/start-farm', async (req, res) => {
     `;
     
     // 작물 정보 가져오기
-    const [cropResult] = await conn.query(getCropQuery, [farmId]);
+    const cropResult = await conn.query(getCropQuery, [farmId]);
 
     if (cropResult.length === 0) {
       return res.status(500).send('작물 정보 조회 실패');
     }
 
-    const harvestDays = cropResult[0].harvest_days;
+    const harvestDays = cropResult.harvest_days;
     res.json({ message: '성공적으로 시작되었습니다.', harvestDays, startDate: currentDate });
   } catch (err) {
     console.log('[POST /start-farm] DB 오류:', err.stack);
@@ -587,14 +587,14 @@ app.get('/get-farm-status/:farmId', async (req, res) => {
 
   try {
     conn = await db.getConnection();
-    const [results] = await conn.query(query, [farmId]);
+    const results = await conn.query(query, [farmId]);
 
     // 농장 정보가 없으면 404 반환
     if (results.length === 0) {
       return res.status(404).send('농장 정보가 없습니다.');
     }
 
-    const { growth_rate, harvest_days, start_date } = results[0];
+    const { growth_rate, harvest_days, start_date } = results;
 
     // 값이 없으면 처리
     if (growth_rate === null || harvest_days === null || start_date === null) {
