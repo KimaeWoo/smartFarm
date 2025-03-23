@@ -638,6 +638,7 @@ app.get('/get-farm-status/:farmId', async (req, res) => {
       // farm_active가 1일 경우, startButton 숨기고 cropInfo 표시
       // startButton을 'none'으로 숨기고 cropInfo를 'visible'로 표시
       // 이 부분은 클라이언트 측에서 처리해야 하는 부분입니다.
+      console.log(`[GET /get-farm-status] ${farmId} 농장 D-DAY 조회 성공(활성화)`);
       res.json({
         success: true,
         message: '성장률 업데이트 완료',
@@ -647,6 +648,7 @@ app.get('/get-farm-status/:farmId', async (req, res) => {
         farmActive: farm_active
       });
     } else {
+      console.log(`[GET /get-farm-status] ${farmId} 농장 D-DAY 조회 성공(비활성화)`);
       res.json({
         growthRate: newGrowthRate,
         harvestDays: harvest_days,
