@@ -497,7 +497,6 @@ app.get('/getAlarm', async (req, res) => {
 
   const formattedDate = `${year}-${month}-${day}`;
 
-  console.log('시간:',formattedDate);
   const start = new Date(formattedDate);
   start.setHours(0, 0, 0, 0);
 
@@ -622,6 +621,9 @@ app.get('/get-farm-status/:farmId', async (req, res) => {
     }
 
     newGrowthRate = Math.min(newGrowthRate, 100); // 100%를 넘지 않도록 처리
+
+    // 성장률 소수점 없애기 (정수로 반영)
+    newGrowthRate = Math.round(newGrowthRate);
 
     // 성장률 업데이트
     const updateGrowthQuery = `
