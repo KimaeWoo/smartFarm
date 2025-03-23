@@ -665,6 +665,16 @@
       align-items: center;
       font-size: 2rem;
     }
+
+    #start-date {
+      font-size: 1rem;
+      margin-top: 10px;
+    }
+    
+    #d-day {
+      font-size: 1.5rem;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
@@ -699,16 +709,17 @@
 
   <div class="floating-panel">
     <h2>🌱 식물 성장도 🌿</h2>
-      <img id="plantImage" class="plant-image" src="images/11.png" alt="씨앗">
-      <p class="growth-text" id="growthText">현재 성장 단계: 씨앗</p>
-      <button id="start-farm-btn">시작</button>
-      <div id="crop-info">
-        <p id="d-day">D-Day: </p>
-        <div class="circle" id="growth-circle">
-          <span id="growth-rate">0%</span>
-        </div>
+    <img id="plantImage" class="plant-image" src="images/11.png" alt="씨앗">
+    <p class="growth-text" id="growthText">현재 성장 단계: 씨앗</p>
+    <button id="start-farm-btn">시작</button>
+    <div id="crop-info">
+      <p id="d-day">D-Day: </p>
+      <p id="start-date">시작일: </p>
+      <div class="circle" id="growth-circle">
+        <span id="growth-rate">0%</span>
       </div>
-  </div>
+    </div>
+  </div>  
 
   <main>
     <div class="tabs">
@@ -1224,6 +1235,50 @@
         .catch(error => alert('오류 발생'));
       });
 
+      function getFarmStatus() {
+        fetch(`/get-farm-status/${farmId}`)
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('농장 정보를 가져오는 데 실패했습니다.');
+            }
+            return response.json();
+          })
+          .then(data => {
+            const { growthRate, harvestDays, startDate } = data;
+            
+            updateGrowthStatus(growthRate, harvestDays, startDate);
+          })
+          .catch(error => {
+            alert(error.message);
+          });
+      }
+      
+      function updateGrowthStatus(growthRate, harvestDays, startDate) {
+        // 성장률, 시작일, 수확까지 남은 일수 표시
+        document.getElementById('growth-rate').textContent = `${growthRate}%`;
+        document.getElementById('growth-circle').style.setProperty('--growth-rate', `${growthRate}%`);
+        
+        document.getElementById('start-date').textContent = `시작일: ${startDate}`;
+      
+        // D-Day 계산
+        const today = new Date();
+        const startDateObj = new Date(startDate);
+        const harvestDate = new Date(startDateObj);
+        harvestDate.setDate(harvestDate.getDate() + harvestDays);
+        
+        const timeDiff = harvestDate - today;
+        const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24)); // 남은 일수 계산
+      
+        // D-Day 텍스트 업데이트
+        document.getElementById('d-day').textContent = `D-Day: ${daysLeft > 0 ? daysLeft + '일 남음' : '수확 가능'}`;
+      }
+      
+      // 예시로 farmId 1번 농장의 상태를 가져오는 코드
+      window.addEventListener('DOMContentLoaded', () => {
+        const farmId = 1; // farmId를 예시로 1번 농장으로 설정
+        getFarmStatus(farmId);
+      });
+      
       // 농장 이름 불러오기
       async function fetchFarmName() {
         try {
@@ -2210,7 +2265,8 @@
       updateChartData(); // 실시간 차트 가져오기
       updateHistoryChartData(); // 기록 차트 가져오기
       updateSummaryChart(); // 요약 차트 가져오기
-      fetchAlarm(); // 알림 가져오기기
+      fetchAlarm(); // 알림 가져오기
+      getFarmStatus() // D-DAY 가져오기
       //setInterval(fetchSensorData, 5000);
       //setInterval(updateChartData, 300000);
     });
