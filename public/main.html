@@ -471,21 +471,6 @@
       object-fit: contain;
       color: #503951
     }
- 
-    .floating-panel {
-      position: fixed;  
-      right: 20px;
-      top: 57.5%; 
-      transform: translateY(-50%);
-      width: 270px;
-      height: 70%;
-      padding: 20px;
-      background-color: var(--card-bg);
-      border-radius: var(--border-radius);
-      box-shadow: var(--shadow);
-      text-align: center;
-      z-index: 10;
-    }
 
     /* 설정 버튼 (우측 상단) */
     .settings-icon {
@@ -612,68 +597,237 @@
       font-size: 14px;
     }
 
-    .plant-image {
-      width: 200px;
-      height: 200px;
-      animation: grow 1s ease-in-out;
+    .floating-panel {
+      position: fixed;  
+      right: 20px;
+      top: 57.5%; 
+      transform: translateY(-50%);
+      width: 280px;
+      height: auto;
+      padding: 0;
+      background-color: var(--card-bg);
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      z-index: 10;
+      overflow: hidden;
+      transition: all 0.3s ease;
     }
-    @keyframes grow {
-      from {
-        transform: scale(0.8);
-        opacity: 0.5;
-      }
-      to {
-        transform: scale(1);
-        opacity: 1;
-      }
-    }
-    .growth-text {
-      margin-top: 15px;
-      color: #4caf50;
-      font-weight: bold;
-    }
-    .btn-grow {
-      background-color: #4caf50;
-      color: #fff;
-      border: none;
-      border-radius: 5px;
-      padding: 10px 20px;
-      cursor: pointer;
-      margin-top: 20px;
-      transition: background-color 0.3s;
-    }
-    .btn-grow:hover {
-      background-color: #45a049;
-    }
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.2); }
-      100% { transform: scale(1); }
-    }
-    
-    .plant-image {
-      animation: pulse 2s infinite ease-in-out;
-    }  
 
-    .circle {
-      width: 200px;
-      height: 200px;
+    .panel-header {
+      background: linear-gradient(135deg, #4ade80, #10b981);
+      padding: 20px 15px 30px;
+      color: white;
+      position: relative;
+    }
+
+    .panel-title {
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .panel-content {
+      padding: 0 20px 20px;
+      position: relative;
+      margin-top: -20px;
+    }
+
+    .image-container {
+      width: 140px;
+      height: 140px;
+      margin: 0 auto;
+      background-color: white;
       border-radius: 50%;
-      background: conic-gradient(#4db8ff var(--growth-rate), #ccc 0);
+      padding: 5px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      position: relative;
+      z-index: 1;
+    }
+
+    .image-inner {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background-color: rgba(16, 185, 129, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .plant-image {
+      width: 80%;
+      height: 80%;
+      object-fit: contain;
+      transition: transform 0.5s ease;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0px); }
+    }
+
+    .growth-text {
+      margin: 15px 0 5px;
+      color: #10b981;
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+
+    .start-button {
+      background-color: #10b981;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 24px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      margin: 15px 0;
+      transition: all 0.2s ease;
+      width: 100%;
+    }
+
+    .start-button:hover {
+      background-color: #0d9668;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+    }
+
+    .start-button:active {
+      transform: translateY(0);
+    }
+
+    #crop-info {
+      display: none;
+      margin-top: 15px;
+    }
+
+    #crop-info.visible {
+      display: block;
+      animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .info-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      font-size: 0.95rem;
+      color: var(--text-color);
+    }
+
+    .info-icon {
+      color: #10b981;
+    }
+
+    .growth-circle-container {
+      margin: 20px auto;
+      position: relative;
+      width: 150px;
+      height: 150px;
+    }
+
+    .growth-circle {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: conic-gradient(#10b981 0%, #e5e7eb 0%);
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 2rem;
+      position: relative;
+      transition: background 0.5s ease;
     }
 
-    #start-date {
-      font-size: 1rem;
-      margin-top: 10px;
+    .growth-circle::before {
+      content: "";
+      position: absolute;
+      width: 80%;
+      height: 80%;
+      border-radius: 50%;
+      background-color: white;
     }
-    
-    #d-day {
-      font-size: 1.5rem;
-      margin-top: 10px;
+
+    .growth-rate {
+      position: relative;
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #10b981;
+      z-index: 1;
+    }
+
+    .stage-indicator {
+      display: flex;
+      justify-content: space-between;
+      margin: 15px 0;
+      position: relative;
+    }
+
+    .stage-indicator::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background-color: #e5e7eb;
+      z-index: 0;
+    }
+
+    .stage {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background-color: #e5e7eb;
+      position: relative;
+      z-index: 1;
+    }
+
+    .stage.active {
+      background-color: #10b981;
+    }
+
+    .stage-label {
+      position: absolute;
+      top: 25px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.75rem;
+      color: var(--muted-color);
+      white-space: nowrap;
+    }
+
+    .floating-panel {
+      background-color: var(--card-bg);
+    }
+
+    .growth-circle::before {
+      background-color: var(--card-bg);
+    }
+
+    .image-container {
+      background-color: var(--card-bg);
+    }
+
+    .growth-text {
+      color: #4ade80;
+    }
+
+    .growth-rate {
+      color: #4ade80;
     }
   </style>
 </head>
@@ -708,18 +862,85 @@
   </div>
 
   <div class="floating-panel">
-    <h2>🌱 식물 성장도 🌿</h2>
-    <img id="plantImage" class="plant-image" src="images/11.png" alt="씨앗">
-    <p class="growth-text" id="growthText">현재 성장 단계: 씨앗</p>
-    <button id="start-farm-btn">시작</button>
-    <div id="crop-info">
-      <p id="d-day">D-Day: </p>
-      <p id="start-date">시작일: </p>
-      <div class="circle" id="growth-circle">
-        <span id="growth-rate">0%</span>
+    <div class="panel-header">
+      <h2 class="panel-title">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2v8"></path>
+          <path d="M4.93 10.93 8 14"></path>
+          <path d="M2 18h12"></path>
+          <path d="M19.07 10.93 16 14"></path>
+          <path d="M22 18h-4"></path>
+          <path d="M16 6h0"></path>
+          <path d="M8 6h0"></path>
+          <path d="M12 22v-4"></path>
+        </svg>
+        식물 성장도
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2v8"></path>
+          <path d="M4.93 10.93 8 14"></path>
+          <path d="M2 18h12"></path>
+          <path d="M19.07 10.93 16 14"></path>
+          <path d="M22 18h-4"></path>
+          <path d="M16 6h0"></path>
+          <path d="M8 6h0"></path>
+          <path d="M12 22v-4"></path>
+        </svg>
+      </h2>
+    </div>
+    
+    <div class="panel-content">
+      <div class="image-container">
+        <div class="image-inner">
+          <img id="plantImage" class="plant-image" src="images/11.png" alt="씨앗">
+        </div>
+      </div>
+      
+      <p class="growth-text" id="growthText">현재 성장 단계: 씨앗</p>
+      
+      <button id="start-farm-btn" class="start-button">시작하기</button>
+      
+      <div id="crop-info">
+        <div class="stage-indicator">
+          <div class="stage active" data-stage="씨앗">
+            <span class="stage-label">씨앗</span>
+          </div>
+          <div class="stage" data-stage="새싹">
+            <span class="stage-label">새싹</span>
+          </div>
+          <div class="stage" data-stage="성장">
+            <span class="stage-label">성장</span>
+          </div>
+          <div class="stage" data-stage="열매">
+            <span class="stage-label">열매</span>
+          </div>
+        </div>
+        
+        <div class="info-row">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="info-icon">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <span id="start-date">시작일: </span>
+        </div>
+        
+        <div class="info-row">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="info-icon">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <span id="d-day">D-Day: 0일째</span>
+        </div>
+        
+        <div class="growth-circle-container">
+          <div class="growth-circle" id="growth-circle">
+            <span class="growth-rate" id="growth-rate">0%</span>
+          </div>
+        </div>
       </div>
     </div>
-  </div>  
+  </div>
 
   <main>
     <div class="tabs">
