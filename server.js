@@ -564,6 +564,7 @@ app.post('/start-farm', async (req, res) => {
     }
 
     const harvestDays = cropResult.harvest_days;
+    console.log(`[POST /start-farm] ${farmId} 농장 시작 성공 `);
     res.json({ message: '성공적으로 시작되었습니다.', harvestDays, startDate: currentDate });
   } catch (err) {
     console.log('[POST /start-farm] DB 오류:', err.stack);
