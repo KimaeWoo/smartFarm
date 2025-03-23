@@ -857,29 +857,7 @@
 
   <div class="floating-panel">
     <div class="panel-header">
-      <h2 class="panel-title">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2v8"></path>
-          <path d="M4.93 10.93 8 14"></path>
-          <path d="M2 18h12"></path>
-          <path d="M19.07 10.93 16 14"></path>
-          <path d="M22 18h-4"></path>
-          <path d="M16 6h0"></path>
-          <path d="M8 6h0"></path>
-          <path d="M12 22v-4"></path>
-        </svg>
-        식물 성장도
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2v8"></path>
-          <path d="M4.93 10.93 8 14"></path>
-          <path d="M2 18h12"></path>
-          <path d="M19.07 10.93 16 14"></path>
-          <path d="M22 18h-4"></path>
-          <path d="M16 6h0"></path>
-          <path d="M8 6h0"></path>
-          <path d="M12 22v-4"></path>
-        </svg>
-      </h2>
+      <h2 class="panel-title">식물 성장도</h2>
     </div>
     
     <div class="panel-content">
@@ -1477,7 +1455,9 @@
         document.getElementById('growth-rate').textContent = `${growthRate}%`;
         document.getElementById('growth-circle').style.setProperty('--growth-rate', `${growthRate}%`);
         
-        document.getElementById('start-date').textContent = `시작일: ${startDate}`;
+        // 시작일을 로컬 시간대로 변환하여 표시
+        const formattedStartDate = formatDate(startDate);
+        document.getElementById('start-date').textContent = `시작일: ${formattedStartDate}`;
       
         // D-Day 계산
         const today = new Date();
