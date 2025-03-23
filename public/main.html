@@ -1397,7 +1397,7 @@
       const cropInfo = document.getElementById('crop-info');
       const growthCircle = document.getElementById('growth-circle');
       const growthText = document.getElementById('growth-rate');
-      
+
       // 시작 버튼 클릭 시 농장 상태 가져오기
       document.getElementById('start-farm-btn').addEventListener('click', () => {
         startButton.style.display = 'none';
@@ -1428,7 +1428,7 @@
             // 원형 바 업데이트
             const growthRate = ((harvestDays - daysLeft) / harvestDays) * 100; // 성장률 계산
 
-            growthCircle.style.background = `conic-gradient(#10b981 ${rate}%, #e5e7eb ${rate}%)`;
+            growthCircle.style.background = `conic-gradient(#10b981 ${growthRate}%, #e5e7eb ${growthRate}%)`;
             growthText.textContent = `${Math.round(growthRate)}%`;
           }
         })
@@ -1474,7 +1474,7 @@
       function updateGrowthStatus(growthRate, harvestDays, startDate) {
         // 성장률, 시작일, 수확까지 남은 일수 표시
         document.getElementById('growth-rate').textContent = `${growthRate}%`;
-        growthCircle.style.background = `conic-gradient(#10b981 ${rate}%, #e5e7eb ${rate}%)`;
+        growthCircle.style.background = `conic-gradient(#10b981 ${growthRate}%, #e5e7eb ${growthRate}%)`;
 
         // 시작일을 로컬 시간대로 변환하여 표시
         const formattedStartDate = formatDateYMD(startDate);
