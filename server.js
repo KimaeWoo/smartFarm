@@ -574,7 +574,7 @@ app.post('/start-farm', async (req, res) => {
   }
 });
 
-/// 농장 상태를 가져오는 API
+// 농장 상태를 가져오는 API
 app.get('/get-farm-status/:farmId', async (req, res) => {
   const farmId = req.params.farmId;
 
@@ -608,6 +608,10 @@ app.get('/get-farm-status/:farmId', async (req, res) => {
     const harvestDate = new Date(startDate);
     harvestDate.setDate(harvestDate.getDate() + harvest_days);
 
+    // 로그로 계산된 날짜 확인
+    console.log(`Start Date: ${startDate.toISOString().split('T')[0]}`);
+    console.log(`Harvest Date (Calculated): ${harvestDate.toISOString().split('T')[0]}`);
+    
     // 수확일까지 남은 일수 계산
     const timeDiff = harvestDate - today;
     const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24)); // 남은 일수 계산
