@@ -668,12 +668,6 @@
       animation: float 3s ease-in-out infinite;
     }
 
-    @keyframes float {
-      0% { transform: translateY(0px); }
-      50% { transform: translateY(-10px); }
-      100% { transform: translateY(0px); }
-    }
-
     .growth-text {
       margin: 15px 0 5px;
       color: #10b981;
@@ -1419,8 +1413,12 @@
       const userId = sessionStorage.getItem('user_id');
       const farmId = sessionStorage.getItem('farm_id');
 
+      const startButton = document.getElementById('start-farm-btn');
+      const cropInfo = document.getElementById('crop-info');
       // 시작 버튼 클릭 시 농장 상태 가져오기
       document.getElementById('start-farm-btn').addEventListener('click', () => {
+        startButton.style.display = 'none';
+        cropInfo.classList.add('visible');
 
         fetch('/start-farm', {
           method: 'POST',
