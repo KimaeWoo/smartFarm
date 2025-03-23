@@ -1273,12 +1273,6 @@
         document.getElementById('d-day').textContent = `D-Day: ${daysLeft > 0 ? daysLeft + '일 남음' : '수확 가능'}`;
       }
       
-      // 예시로 farmId 1번 농장의 상태를 가져오는 코드
-      window.addEventListener('DOMContentLoaded', () => {
-        const farmId = 1; // farmId를 예시로 1번 농장으로 설정
-        getFarmStatus(farmId);
-      });
-      
       // 농장 이름 불러오기
       async function fetchFarmName() {
         try {

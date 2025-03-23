@@ -595,7 +595,8 @@ app.get('/get-farm-status/:farmId', async (req, res) => {
       return res.status(404).send('농장 정보가 없습니다.');
     }
 
-    const { growth_rate, harvest_days, start_date } = results;
+    // results[0]을 사용해서 첫 번째 행에 접근
+    const { growth_rate, harvest_days, start_date } = results[0]; 
 
     // 값이 없으면 처리
     if (growth_rate === null || harvest_days === null || start_date === null) {
