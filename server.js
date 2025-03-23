@@ -574,7 +574,7 @@ app.post('/start-farm', async (req, res) => {
   }
 });
 
-// 농장 상태를 가져오는 API
+/// 농장 상태를 가져오는 API
 app.get('/get-farm-status/:farmId', async (req, res) => {
   const farmId = req.params.farmId;
 
@@ -595,18 +595,39 @@ app.get('/get-farm-status/:farmId', async (req, res) => {
       return res.status(404).send('농장 정보가 없습니다.');
     }
 
-    // results[0]을 사용해서 첫 번째 행에 접근
-    const { growth_rate, harvest_days, start_date } = results[0]; 
+    const { growth_rate, harvest_days, start_date } = results[0];
 
     // 값이 없으면 처리
     if (growth_rate === null || harvest_days === null || start_date === null) {
       return res.status(400).json({ message: '농장 정보에 누락된 값이 있습니다.' });
     }
 
-    console.log(`[GET /get-farm-status] ${farmId} 농장 정보 가져오기 성공 - Growth Rate: ${growth_rate}, Harvest Days: ${harvest_days}, Start Date: ${start_date}`);
+    // 오늘 날짜 계산
+    const today = new Date();
+    const startDate = new Date(start_date);
+    const harvestDate = new Date(startDate);
+    harvestDate.setDate(harvestDate.getDate() + harvest_days);
+
+    // 수확일까지 남은 일수 계산
+    const timeDiff = harvestDate - today;
+    const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24)); // 남은 일수 계산
+
+    // 성장률 계산 (100일 기준으로 비례적으로 성장률 증가)
+    let newGrowthRate = ((harvest_days - daysLeft) / harvest_days) * 100;
+    newGrowthRate = Math.min(newGrowthRate, 100); // 100%를 넘지 않도록 처리
+
+    // 성장률 업데이트
+    const updateGrowthQuery = `
+      UPDATE farms
+      SET growth_rate = ?
+      WHERE farm_id = ?
+    `;
+    await conn.query(updateGrowthQuery, [newGrowthRate, farmId]);
+
+    console.log(`[GET /get-farm-status] ${farmId} 농장 정보 가져오기 성공 - Growth Rate: ${newGrowthRate}, Harvest Days: ${harvest_days}, Start Date: ${start_date}`);
 
     res.json({
-      growthRate: growth_rate,
+      growthRate: newGrowthRate,
       harvestDays: harvest_days,
       startDate: start_date
     });
