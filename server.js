@@ -523,6 +523,93 @@ app.get('/getAlarm', async (req, res) => {
   }
 });
 
+// 농장 시작 버튼 클릭 시 farms 테이블 업데이트
+app.post('/start-farm', async (req, res) => {
+  const { farmId } = req.body;
+  
+  // 현재 날짜 구하기
+  const currentDate = new Date().toISOString().split('T')[0];
+
+  // farm_active를 TRUE로, start_date를 현재 날짜로 업데이트
+  const updateFarmQuery = `
+    UPDATE farms
+    SET farm_active = TRUE, start_date = ?
+    WHERE farm_id = ?
+  `;
+  let conn;
+
+  try {
+    conn = await db.getConnection();
+
+    // farms 테이블 업데이트
+    const [results] = await conn.query(updateFarmQuery, [currentDate, farmId]);
+
+    if (results.affectedRows === 0) {
+      return res.status(500).send('농장 업데이트 실패');
+    }
+
+    // farm_type에 맞는 harvest_days 가져오기
+    const getCropQuery = `
+      SELECT c.harvest_days
+      FROM crops c
+      JOIN farms f ON f.farm_type = c.name
+      WHERE f.farm_id = ?
+    `;
+    
+    // 작물 정보 가져오기
+    const [cropResult] = await conn.query(getCropQuery, [farmId]);
+
+    if (cropResult.length === 0) {
+      return res.status(500).send('작물 정보 조회 실패');
+    }
+
+    const harvestDays = cropResult[0].harvest_days;
+    console.log('[POST /start-farm] ${farmId} 농장 시작 성공')
+    res.json({ message: '성공적으로 시작되었습니다.', harvestDays });
+  } catch (err) {
+    console.log('[POST /start-farm] DB 오류:', err.stack);
+    return res.status(500).json({ message: 'DB 오류' });
+  } finally {
+    if (conn) conn.release();
+  }
+});
+
+// 농장 상태를 가져오는 API
+app.get('/get-farm-status/:farmId', async (req, res) => {
+  const farmId = req.params.farmId;
+
+  const query = `
+    SELECT f.growth_rate, c.harvest_days, f.start_date
+    FROM farms f
+    JOIN crops c ON f.farm_type = c.name
+    WHERE f.farm_id = ?
+  `;
+  let conn;
+
+  try {
+    conn = await db.getConnection();
+    const [results] = await conn.query(query, [farmId]);
+
+    if (results.length === 0) {
+      return res.status(500).send('농장 정보 조회 실패');
+    }
+
+    const { growth_rate, harvest_days, start_date } = results[0];
+    console.log(`[GET /get-farm-status] ${farmId} 농장 D-DAY 가져오기 성공`);
+
+    res.json({
+      growthRate: growth_rate,
+      harvestDays: harvest_days,
+      startDate: start_date
+    });
+  } catch (err) {
+    console.log('[GET /get-farm-status] DB 오류:', err.stack);
+    return res.status(500).json({ message: 'DB 오류' });
+  } finally {
+    if (conn) conn.release();
+  }
+});
+
 app.listen(PORT, '0.0.0.0', () => {
   console.log('서버가 실행 중입니다.');
 });

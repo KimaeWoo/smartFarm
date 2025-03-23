@@ -655,6 +655,16 @@
       animation: pulse 2s infinite ease-in-out;
     }  
 
+    .circle {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: conic-gradient(#4db8ff var(--growth-rate), #ccc 0);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2rem;
+    }
   </style>
 </head>
 <body>
@@ -691,7 +701,13 @@
     <h2>🌱 식물 성장도 🌿</h2>
       <img id="plantImage" class="plant-image" src="images/11.png" alt="씨앗">
       <p class="growth-text" id="growthText">현재 성장 단계: 씨앗</p>
-      <button class="btn-grow" onclick="growPlant()">성장시키기</button>
+      <button id="start-farm-btn">시작</button>
+      <div id="crop-info">
+        <p id="d-day">D-Day: </p>
+        <div class="circle" id="growth-circle">
+          <span id="growth-rate">0%</span>
+        </div>
+      </div>
   </div>
 
   <main>
@@ -1064,6 +1080,43 @@
       plantImage.src = growthStages[currentStage].image;
       growthText.textContent = `현재 성장 단계: ${growthStages[currentStage].text}`;
     }
+    // 시작 버튼 클릭 시 농장 상태 가져오기
+    document.getElementById('start-farm-btn').addEventListener('click', () => {
+      const farmId = 1; // farmId는 1번 예시로 설정
+
+      fetch('/start-farm', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ farmId })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.harvestDays) {
+          const harvestDays = data.harvestDays;
+          const today = new Date();
+          const startDate = new Date();
+          const harvestDate = new Date(startDate);
+          harvestDate.setDate(harvestDate.getDate() + harvestDays); // 수확일 계산
+
+          const timeDiff = harvestDate - today;
+          const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24)); // 남은 일수 계산
+
+          // D-Day 출력
+          document.getElementById('d-day').textContent = `D-Day: ${daysLeft > 0 ? daysLeft + '일 남음' : '수확 가능'}`;
+
+          // 원형 바 업데이트
+          const growthCircle = document.getElementById('growth-circle');
+          const growthText = document.getElementById('growth-rate');
+          const growthRate = ((harvestDays - daysLeft) / harvestDays) * 100; // 성장률 계산
+
+          growthCircle.style.setProperty('--growth-rate', `${growthRate}%`);
+          growthText.textContent = `${Math.round(growthRate)}%`;
+        }
+      })
+      .catch(error => alert('오류 발생'));
+    });
 
     // 테마 변경
     function toggleMode() {
