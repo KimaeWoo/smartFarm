@@ -616,9 +616,9 @@ app.get('/get-farm-status/:farmId', async (req, res) => {
     let newGrowthRate = progress * 100;
 
     // growth_rate가 이미 있을 경우, 기존 값에 누적해서 반영
-    if (growth_rate !== null) {
-      newGrowthRate = Math.max(newGrowthRate, growth_rate);  // 기존 성장률보다 더 높을 수 없도록
-    }
+    //if (growth_rate !== null) {
+    //  newGrowthRate = Math.max(newGrowthRate, growth_rate);  // 기존 성장률보다 더 높을 수 없도록
+    //}
 
     newGrowthRate = Math.min(newGrowthRate, 100); // 100%를 넘지 않도록 처리
 
