@@ -1266,9 +1266,8 @@
     const growthStages = [
       { image: "images/11.png", text: "씨앗" },
       { image: "images/22.png", text: "새싹" },
-      { image: "images/3.gif", text: "작은 식물" },
-      { image: "images/4.gif", text: "중간 크기의 식물" },
-      { image: "images/5.gif", text: "완전히 자란 식물" }
+      { image: "images/3.gif", text: "성장" },
+      { image: "images/4.gif", text: "열매" }
     ];
 
     let currentStage = 0;
@@ -1472,24 +1471,26 @@
       }
 
       function updateGrowthStatus(growthRate, harvestDays, startDate) {
-        // 성장률, 시작일, 수확까지 남은 일수 표시
+        // 성장률 100%를 넘지 않도록 보정
+        growthRate = Math.min(growthRate, 100);
+      
+        // 성장률 표시 및 원형 프로그래스 바 업데이트
         document.getElementById('growth-rate').textContent = `${growthRate}%`;
         growthCircle.style.background = `conic-gradient(#10b981 ${growthRate}%, #e5e7eb ${growthRate}%)`;
-
-        // 시작일을 로컬 시간대로 변환하여 표시
+      
+        // 시작일 표시
         const formattedStartDate = formatDateYMD(startDate);
         document.getElementById('start-date').textContent = `시작일: ${formattedStartDate}`;
-
-        // D-Day 계산
+      
+        // D-Day 계산 및 표시
         const today = new Date();
         const startDateObj = new Date(startDate);
         const harvestDate = new Date(startDateObj);
         harvestDate.setDate(harvestDate.getDate() + harvestDays);
-
+      
         const timeDiff = harvestDate - today;
-        let daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24)); // 남은 일수 계산
-
-        // D-Day 텍스트 업데이트
+        let daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
+      
         if (daysLeft > 0) {
           document.getElementById('d-day').textContent = `D-Day: ${daysLeft}일 남음`;
         } else if (daysLeft === 0) {
@@ -1497,10 +1498,46 @@
         } else {
           document.getElementById('d-day').textContent = `D-Day: 수확 완료`;
         }
-
-        // 성장률은 100%를 넘지 않도록 설정
-        growthRate = Math.min(growthRate, 100);
-        document.getElementById('growth-rate').textContent = `${growthRate}%`;
+      
+        // 성장 상태, 이미지, 단계 표시 업데이트
+        updateGrowthStageByRate(growthRate);
+      }
+      
+      function updateGrowthStageByRate(growthRate) {
+        const plantImage = document.getElementById("plantImage");
+        const growthText = document.getElementById("growthText");
+        const stageElements = document.querySelectorAll(".stage");
+      
+        let stageText = "";
+        let stageIndex = 0;
+      
+        // 성장률에 따라 상태 결정
+        if (growthRate <= 10) {
+          stageText = "씨앗";
+          stageIndex = 0;
+        } else if (growthRate <= 35) {
+          stageText = "새싹";
+          stageIndex = 1;
+        } else if (growthRate < 100) {
+          stageText = "성장";
+          stageIndex = 2;
+        } else {
+          stageText = "열매";
+          stageIndex = 3;
+        }
+      
+        // 이미지 및 텍스트 업데이트
+        plantImage.src = growthStages[stageIndex].image;
+        growthText.textContent = `현재 성장 단계: ${stageText}`;
+      
+        // 단계 표시(active 클래스 업데이트)
+        stageElements.forEach((el, idx) => {
+          if (idx === stageIndex) {
+            el.classList.add("active");
+          } else {
+            el.classList.remove("active");
+          }
+        });
       }
       
       // 농장 이름 불러오기
