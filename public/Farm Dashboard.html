@@ -168,20 +168,7 @@
       color: #666;
       margin-top: 10px;
     }
-    
-    .search-bar {
-      display: flex;
-      margin-bottom: 20px;
-    }
-    
-    .search-input {
-      flex: 1;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      font-size: 14px;
-    }
-    
+
     .filter-buttons {
       display: flex;
       gap: 10px;
@@ -230,11 +217,7 @@
       <h1>스마트팜 관리 대시보드</h1>
       <p>모든 농장의 상태를 한눈에 확인하세요</p>
     </div>
-    
-    <div class="search-bar">
-      <input type="text" id="search-input" class="search-input" placeholder="농장 검색...">
-    </div>
-    
+
     <div class="filter-buttons">
       <button id="filter-all" class="filter-button active">전체</button>
       <button id="filter-critical" class="filter-button filter-button-critical">위험</button>
@@ -471,17 +454,7 @@
     document.addEventListener('DOMContentLoaded', function() {
       // 초기 렌더링
       renderFarmCards();
-      
-      // 검색 기능
-      document.getElementById('search-input').addEventListener('input', function(e) {
-        const searchQuery = e.target.value.toLowerCase();
-        const filteredFarms = farms.filter(farm => 
-          farm.name.toLowerCase().includes(searchQuery) || 
-          farm.location.toLowerCase().includes(searchQuery) ||
-          farm.crops.toLowerCase().includes(searchQuery)
-        );
-        renderFarmCards(filteredFarms);
-      });
+
       
       // 필터 버튼
       document.getElementById('filter-all').addEventListener('click', function() {
