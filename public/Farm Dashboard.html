@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>간단한 스마트팜 관리 대시보드</title>
+  <title>스마트팜 관리 대시보드</title>
   <style>
     * {
       margin: 0;
@@ -38,7 +38,7 @@
     .farm-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 20px;
+      gap: 15px;
       margin-bottom: 20px;
     }
     
@@ -46,36 +46,36 @@
       background-color: white;
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      padding: 15px;
+      padding: 12px;
       cursor: pointer;
       transition: transform 0.2s;
     }
     
     .farm-card:hover {
-      transform: translateY(-5px);
+      transform: translateY(-3px);
     }
     
     .farm-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 15px;
+      margin-bottom: 10px;
     }
     
     .farm-name {
-      font-size: 18px;
+      font-size: 16px;
       font-weight: bold;
     }
     
     .farm-location {
       color: #666;
-      font-size: 14px;
+      font-size: 12px;
     }
     
     .status {
-      padding: 5px 10px;
+      padding: 3px 8px;
       border-radius: 20px;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: bold;
     }
     
@@ -101,87 +101,157 @@
       100% { opacity: 1; }
     }
     
-    .farm-metrics {
+    .farm-sensors {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-bottom: 15px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-bottom: 10px;
     }
     
-    .metric {
+    .sensor {
       background-color: #f9fafb;
-      border-radius: 8px;
-      padding: 10px;
-      text-align: center;
+      border-radius: 6px;
+      padding: 8px;
+      display: flex;
+      align-items: center;
     }
     
-    .metric-icon {
-      margin-bottom: 5px;
+    .sensor-icon {
+      margin-right: 8px;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     
-    .metric-label {
-      font-size: 12px;
+    .sensor-info {
+      flex: 1;
+    }
+    
+    .sensor-label {
+      font-size: 11px;
       color: #666;
     }
     
-    .metric-value {
-      font-size: 16px;
+    .sensor-value {
+      font-size: 14px;
       font-weight: bold;
     }
     
-    .metric-value.warning {
+    .sensor-value.warning {
       color: #b45309;
     }
     
-    .metric-value.critical {
+    .sensor-value.critical {
       color: #b91c1c;
     }
     
-    .farm-info {
-      font-size: 14px;
+    .farm-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
       margin-bottom: 10px;
+      background-color: #f9fafb;
+      border-radius: 6px;
+      padding: 8px;
+    }
+    
+    .control {
+      display: inline-flex;
+      align-items: center;
+      background-color: white;
+      border-radius: 4px;
+      padding: 4px 8px;
+      margin-right: 5px;
+      border: 1px solid #e5e7eb;
+    }
+    
+    .control-icon {
+      width: 16px;
+      height: 16px;
+      margin-right: 4px;
+    }
+    
+    .control-label {
+      font-size: 11px;
+      color: #666;
+    }
+    
+    .control-status {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-left: 4px;
+    }
+    
+    .status-on {
+      background-color: #10b981;
+    }
+    
+    .status-off {
+      background-color: #e5e7eb;
+    }
+    
+    .farm-info {
+      font-size: 12px;
+      margin-bottom: 8px;
     }
     
     .farm-alerts {
       background-color: #fee2e2;
-      border-radius: 8px;
-      padding: 10px;
-      margin-top: 10px;
+      border-radius: 6px;
+      padding: 8px;
+      margin-top: 8px;
     }
     
     .alert-title {
       font-weight: bold;
       color: #b91c1c;
-      margin-bottom: 5px;
+      margin-bottom: 4px;
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 4px;
+      font-size: 12px;
     }
     
     .alert-message {
-      font-size: 13px;
+      font-size: 11px;
       color: #b91c1c;
     }
     
     .last-updated {
-      font-size: 12px;
+      font-size: 11px;
       color: #666;
-      margin-top: 10px;
+      margin-top: 8px;
     }
-
+    
+    .search-bar {
+      display: flex;
+      margin-bottom: 15px;
+    }
+    
+    .search-input {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    
     .filter-buttons {
       display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
+      gap: 8px;
+      margin-bottom: 15px;
     }
     
     .filter-button {
-      padding: 8px 15px;
+      padding: 6px 12px;
       border: none;
-      border-radius: 8px;
+      border-radius: 6px;
       background-color: #f3f4f6;
       cursor: pointer;
-      font-size: 14px;
+      font-size: 13px;
     }
     
     .filter-button.active {
@@ -209,6 +279,12 @@
         grid-template-columns: 1fr;
       }
     }
+    
+    @media (max-width: 480px) {
+      .farm-sensors {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
@@ -217,7 +293,11 @@
       <h1>스마트팜 관리 대시보드</h1>
       <p>모든 농장의 상태를 한눈에 확인하세요</p>
     </div>
-
+    
+    <div class="search-bar">
+      <input type="text" id="search-input" class="search-input" placeholder="농장 검색...">
+    </div>
+    
     <div class="filter-buttons">
       <button id="filter-all" class="filter-button active">전체</button>
       <button id="filter-critical" class="filter-button filter-button-critical">위험</button>
@@ -239,9 +319,19 @@
         location: "경기도 화성시",
         status: "healthy",
         crops: "토마토, 상추",
-        temperature: 24,
-        humidity: 65,
-        light: 8500,
+        sensors: {
+          temperature: 24,
+          humidity: 65,
+          soilMoisture: 42,
+          co2: 450
+        },
+        controls: {
+          led: true,
+          water: false,
+          fan: false,
+          heater: false,
+          cooler: false
+        },
         lastUpdated: "2023-05-15 14:30:22"
       },
       {
@@ -250,12 +340,23 @@
         location: "전라남도 나주시",
         status: "warning",
         crops: "딸기, 파프리카",
-        temperature: 29,
-        humidity: 75,
-        light: 9200,
+        sensors: {
+          temperature: 29,
+          humidity: 75,
+          soilMoisture: 28,
+          co2: 520
+        },
+        controls: {
+          led: true,
+          water: true,
+          fan: true,
+          heater: false,
+          cooler: true
+        },
         lastUpdated: "2023-05-15 14:25:10",
         alerts: [
-          { type: "온도 경고", message: "온도가 적정 범위를 벗어났습니다 (29°C)" }
+          { type: "온도 경고", message: "온도가 적정 범위를 벗어났습니다 (29°C)" },
+          { type: "토양수분 경고", message: "토양이 건조합니다 (28%)" }
         ]
       },
       {
@@ -264,14 +365,25 @@
         location: "강원도 춘천시",
         status: "critical",
         crops: "오이, 가지",
-        temperature: 32,
-        humidity: 25,
-        light: 11500,
+        sensors: {
+          temperature: 32,
+          humidity: 25,
+          soilMoisture: 15,
+          co2: 850
+        },
+        controls: {
+          led: false,
+          water: true,
+          fan: true,
+          heater: false,
+          cooler: true
+        },
         lastUpdated: "2023-05-15 14:15:45",
         alerts: [
           { type: "온도 경고", message: "온도가 너무 높습니다 (32°C)" },
           { type: "습도 경고", message: "습도가 너무 낮습니다 (25%)" },
-          { type: "광도 경고", message: "광도가 너무 높습니다 (11500 lux)" }
+          { type: "토양수분 경고", message: "토양이 매우 건조합니다 (15%)" },
+          { type: "CO2 경고", message: "CO2 농도가 너무 높습니다 (850ppm)" }
         ]
       },
       {
@@ -280,9 +392,19 @@
         location: "충청북도 청주시",
         status: "healthy",
         crops: "상추, 바질",
-        temperature: 22,
-        humidity: 60,
-        light: 7500,
+        sensors: {
+          temperature: 22,
+          humidity: 60,
+          soilMoisture: 45,
+          co2: 420
+        },
+        controls: {
+          led: true,
+          water: false,
+          fan: false,
+          heater: false,
+          cooler: false
+        },
         lastUpdated: "2023-05-15 14:28:33"
       },
       {
@@ -291,13 +413,22 @@
         location: "경상북도 안동시",
         status: "warning",
         crops: "방울토마토, 고추",
-        temperature: 18,
-        humidity: 85,
-        light: 4500,
+        sensors: {
+          temperature: 18,
+          humidity: 85,
+          soilMoisture: 60,
+          co2: 380
+        },
+        controls: {
+          led: true,
+          water: false,
+          fan: true,
+          heater: true,
+          cooler: false
+        },
         lastUpdated: "2023-05-15 14:20:18",
         alerts: [
-          { type: "습도 경고", message: "습도가 너무 높습니다 (85%)" },
-          { type: "광도 경고", message: "광도가 적정 범위보다 낮습니다 (4500 lux)" }
+          { type: "습도 경고", message: "습도가 너무 높습니다 (85%)" }
         ]
       },
       {
@@ -306,9 +437,19 @@
         location: "제주특별자치도 서귀포시",
         status: "healthy",
         crops: "감귤, 한라봉",
-        temperature: 23,
-        humidity: 55,
-        light: 9000,
+        sensors: {
+          temperature: 23,
+          humidity: 55,
+          soilMoisture: 40,
+          co2: 410
+        },
+        controls: {
+          led: true,
+          water: false,
+          fan: false,
+          heater: false,
+          cooler: false
+        },
         lastUpdated: "2023-05-15 14:22:41"
       }
     ];
@@ -331,6 +472,153 @@
       }[status];
     }
 
+    // 센서 상태 확인
+    function getSensorStatus(type, value) {
+      switch(type) {
+        case 'temperature':
+          return value > 30 || value < 15 
+            ? 'critical' 
+            : value > 28 || value < 18 
+              ? 'warning' 
+              : '';
+        case 'humidity':
+          return value < 30 
+            ? 'critical' 
+            : value > 80 
+              ? 'warning' 
+              : '';
+        case 'soilMoisture':
+          return value < 20 
+            ? 'critical' 
+            : value < 30 
+              ? 'warning' 
+              : '';
+        case 'co2':
+          return value > 800 
+            ? 'critical' 
+            : value > 600 
+              ? 'warning' 
+              : '';
+        default:
+          return '';
+      }
+    }
+
+    // 센서 아이콘 가져오기
+    function getSensorIcon(type) {
+      switch(type) {
+        case 'temperature':
+          return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"></path>
+          </svg>`;
+        case 'humidity':
+          return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"></path>
+          </svg>`;
+        case 'soilMoisture':
+          return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M8 16a5 5 0 0 0 10 0c0-6-5-12-5-12s-5 6-5 12z"></path>
+          </svg>`;
+        case 'co2':
+          return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M8 7H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h4"></path>
+            <path d="M6 11h.01"></path>
+            <path d="M18 7h2a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1h-2"></path>
+            <path d="M10 7h4a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1z"></path>
+          </svg>`;
+        default:
+          return '';
+      }
+    }
+
+    // 제어장치 아이콘 가져오기
+    function getControlIcon(type) {
+      switch(type) {
+        case 'led':
+          return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"></circle>
+            <path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"></path>
+          </svg>`;
+        case 'water':
+          return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"></path>
+          </svg>`;
+        case 'fan':
+          return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 12c-3-2.5-3-6.5 0-9 1.5 2.5 1.5 6.5 0 9"></path>
+            <path d="M12 12c2.5-3 6.5-3 9 0-2.5 1.5-6.5 1.5-9 0"></path>
+            <path d="M12 12c3 2.5 3 6.5 0 9-1.5-2.5-1.5-6.5 0-9"></path>
+            <path d="M12 12c-2.5 3-6.5 3-9 0 2.5-1.5 6.5-1.5 9 0"></path>
+          </svg>`;
+        case 'heater':
+          return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M8 15a5 5 0 1 0 8 0H8Z"></path>
+            <path d="M2 12h2"></path>
+            <path d="M20 12h2"></path>
+            <path d="M12 2v2"></path>
+            <path d="m4.93 4.93 1.41 1.41"></path>
+            <path d="m17.66 4.93-1.41 1.41"></path>
+            <path d="M12 10v4"></path>
+          </svg>`;
+        case 'cooler':
+          return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="m2 12 10 10V2L2 12Z"></path>
+            <path d="m12 2 10 10-10 10V2Z"></path>
+          </svg>`;
+        default:
+          return '';
+      }
+    }
+
+    // 센서 값 단위 가져오기
+    function getSensorUnit(type) {
+      switch(type) {
+        case 'temperature':
+          return '°C';
+        case 'humidity':
+        case 'soilMoisture':
+          return '%';
+        case 'co2':
+          return 'ppm';
+        default:
+          return '';
+      }
+    }
+
+    // 센서 이름 가져오기
+    function getSensorName(type) {
+      switch(type) {
+        case 'temperature':
+          return '온도';
+        case 'humidity':
+          return '습도';
+        case 'soilMoisture':
+          return '토양수분';
+        case 'co2':
+          return 'CO2';
+        default:
+          return '';
+      }
+    }
+
+    // 제어장치 이름 가져오기
+    function getControlName(type) {
+      switch(type) {
+        case 'led':
+          return 'LED';
+        case 'water':
+          return '급수';
+        case 'fan':
+          return '환기';
+        case 'heater':
+          return '히터';
+        case 'cooler':
+          return '쿨러';
+        default:
+          return '';
+      }
+    }
+
     // 농장 카드 렌더링
     function renderFarmCards(filteredFarms = farms) {
       const container = document.getElementById('farm-grid');
@@ -345,33 +633,45 @@
         const card = document.createElement('div');
         card.className = `farm-card ${farm.status === 'critical' ? 'critical' : ''}`;
         
-        // 온도 상태 확인
-        const tempStatus = farm.temperature > 30 || farm.temperature < 15 
-          ? 'critical' 
-          : farm.temperature > 28 || farm.temperature < 18 
-            ? 'warning' 
-            : '';
+        // 센서 HTML 생성
+        let sensorsHtml = '<div class="farm-sensors">';
+        Object.entries(farm.sensors).forEach(([key, value]) => {
+          const status = getSensorStatus(key, value);
+          sensorsHtml += `
+            <div class="sensor">
+              <div class="sensor-icon">
+                ${getSensorIcon(key)}
+              </div>
+              <div class="sensor-info">
+                <div class="sensor-label">${getSensorName(key)}</div>
+                <div class="sensor-value ${status}">${value}${getSensorUnit(key)}</div>
+              </div>
+            </div>
+          `;
+        });
+        sensorsHtml += '</div>';
         
-        // 습도 상태 확인
-        const humidityStatus = farm.humidity < 30 
-          ? 'critical' 
-          : farm.humidity > 80 
-            ? 'warning' 
-            : '';
-        
-        // 광도 상태 확인
-        const lightStatus = farm.light < 2000 || farm.light > 12000 
-          ? 'critical' 
-          : farm.light < 3000 || farm.light > 10000 
-            ? 'warning' 
-            : '';
+        // 제어장치 HTML 생성
+        let controlsHtml = '<div class="farm-controls">';
+        Object.entries(farm.controls).forEach(([key, value]) => {
+          controlsHtml += `
+            <div class="control">
+              <div class="control-icon">
+                ${getControlIcon(key)}
+              </div>
+              <div class="control-label">${getControlName(key)}</div>
+              <div class="control-status ${value ? 'status-on' : 'status-off'}"></div>
+            </div>
+          `;
+        });
+        controlsHtml += '</div>';
         
         // 경고 HTML 생성
         let alertsHtml = '';
         if (farm.alerts && farm.alerts.length > 0) {
           alertsHtml = '<div class="farm-alerts">';
           alertsHtml += `<div class="alert-title">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
               <line x1="12" y1="9" x2="12" y2="13"></line>
               <line x1="12" y1="17" x2="12.01" y2="17"></line>
@@ -395,45 +695,9 @@
             <div class="status ${getStatusClass(farm.status)}">${getStatusText(farm.status)}</div>
           </div>
           
-          <div class="farm-metrics">
-            <div class="metric">
-              <div class="metric-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"></path>
-                </svg>
-              </div>
-              <div class="metric-label">온도</div>
-              <div class="metric-value ${tempStatus}">${farm.temperature}°C</div>
-            </div>
-            
-            <div class="metric">
-              <div class="metric-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"></path>
-                </svg>
-              </div>
-              <div class="metric-label">습도</div>
-              <div class="metric-value ${humidityStatus}">${farm.humidity}%</div>
-            </div>
-            
-            <div class="metric">
-              <div class="metric-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="5"></circle>
-                  <line x1="12" y1="1" x2="12" y2="3"></line>
-                  <line x1="12" y1="21" x2="12" y2="23"></line>
-                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                  <line x1="1" y1="12" x2="3" y2="12"></line>
-                  <line x1="21" y1="12" x2="23" y2="12"></line>
-                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                </svg>
-              </div>
-              <div class="metric-label">광도</div>
-              <div class="metric-value ${lightStatus}">${farm.light} lux</div>
-            </div>
-          </div>
+          ${sensorsHtml}
+          
+          ${controlsHtml}
           
           <div class="farm-info">
             <strong>작물:</strong> ${farm.crops}
@@ -454,7 +718,17 @@
     document.addEventListener('DOMContentLoaded', function() {
       // 초기 렌더링
       renderFarmCards();
-
+      
+      // 검색 기능
+      document.getElementById('search-input').addEventListener('input', function(e) {
+        const searchQuery = e.target.value.toLowerCase();
+        const filteredFarms = farms.filter(farm => 
+          farm.name.toLowerCase().includes(searchQuery) || 
+          farm.location.toLowerCase().includes(searchQuery) ||
+          farm.crops.toLowerCase().includes(searchQuery)
+        );
+        renderFarmCards(filteredFarms);
+      });
       
       // 필터 버튼
       document.getElementById('filter-all').addEventListener('click', function() {

@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>스마트팜 관리 대시보드</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .card {
+      background-color: white;
+      border-radius: 0.5rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      padding: 1rem;
+    }
+    
+    .badge {
+      padding: 0.25rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+    
+    .badge-healthy {
+      background-color: #dcfce7;
+      color: #15803d;
+      border: 1px solid #86efac;
+    }
+    
+    .badge-warning {
+      background-color: #fef9c3;
+      color: #a16207;
+      border: 1px solid #fde047;
+    }
+    
+    .badge-critical {
+      background-color: #fee2e2;
+      color: #b91c1c;
+      border: 1px solid #fca5a5;
+    }
+    
+    .farm-card {
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .farm-card:hover {
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .farm-card.selected {
+      box-shadow: 0 0 0 2px #3b82f6;
+    }
+    
+    .farm-card.critical {
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.8;
+      }
+      100% {
+        opacity: 1;
+      }
+    }
+    
+    .sensor-box {
+      background-color: #f3f4f6;
+      border-radius: 0.375rem;
+      padding: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    .tab {
+      cursor: pointer;
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      font-weight: 500;
+    }
+    
+    .tab.active {
+      background-color: #3b82f6;
+      color: white;
+    }
+    
+    .alert-item {
+      padding: 0.5rem;
+      border-radius: 0.375rem;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .alert-warning {
+      background-color: #fef9c3;
+      color: #a16207;
+    }
+    
+    .alert-critical {
+      background-color: #fee2e2;
+      color: #b91c1c;
+    }
+    
+    .filter-button {
+      padding: 0.25rem 0.75rem;
+      border-radius: 0.375rem;
+      font-size: 0.875rem;
+      cursor: pointer;
+      border: 1px solid #e5e7eb;
+    }
+    
+    .filter-button.active {
+      background-color: #3b82f6;
+      color: white;
+      border-color: #3b82f6;
+    }
+    
+    .filter-button-healthy {
+      background-color: #dcfce7;
+      color: #15803d;
+      border-color: #86efac;
+    }
+    
+    .filter-button-warning {
+      background-color: #fef9c3;
+      color: #a16207;
+      border-color: #fde047;
+    }
+    
+    .filter-button-critical {
+      background-color: #fee2e2;
+      color: #b91c1c;
+      border-color: #fca5a5;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen p-4 md:p-8">
+  <div class="max-w-7xl mx-auto space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div>
+        <h1 class="text-3xl font-bold tracking-tight">스마트팜 관리 대시보드</h1>
+        <p class="text-gray-500">모든 농장의 상태를 한눈에 확인하세요</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button class="p-2 rounded-md border border-gray-300">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-settings"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        </button>
+        <button class="p-2 rounded-md border border-gray-300 relative">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bell"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>
+          <span id="alert-badge" class="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs bg-red-500 text-white rounded-full">3</span>
+        </button>
+      </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Farm Overview -->
+      <div class="card md:col-span-2">
+        <div class="pb-3 border-b border-gray-200 mb-4">
+          <h2 class="text-xl font-bold">농장 현황</h2>
+          <p class="text-sm text-gray-500">
+            총 <span id="total-farms">6</span>개 농장 중 
+            <span id="healthy-count">3</span>개 정상,
+            <span id="warning-count">2</span>개 주의,
+            <span id="critical-count">1</span>개 위험
+          </p>
+        </div>
+        
+        <div class="flex flex-col md:flex-row gap-4 mb-6">
+          <div class="relative flex-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search absolute left-2.5 top-2.5 text-gray-400"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+            <input type="search" id="farm-search" placeholder="농장 검색..." class="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-md">
+          </div>
+          <div class="flex gap-2">
+            <button id="filter-all" class="filter-button active">전체</button>
+            <button id="filter-critical" class="filter-button filter-button-critical">위험</button>
+            <button id="filter-warning" class="filter-button filter-button-warning">주의</button>
+            <button id="filter-healthy" class="filter-button filter-button-healthy">정상</button>
+          </div>
+        </div>
+        
+        <div id="farm-cards-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Farm cards will be inserted here by JavaScript -->
+        </div>
+      </div>
+      
+      <!-- Sidebar -->
+      <div class="space-y-6">
+        <!-- Weather Widget -->
+        <div class="card">
+          <div class="pb-2 border-b border-gray-200 mb-2">
+            <h2 class="text-sm font-medium">날씨 정보</h2>
+          </div>
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="font-medium">서울특별시</h3>
+              <p class="text-2xl font-bold">22°C</p>
+              <p class="text-sm text-gray-500">맑음 | 습도 45%</p>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun text-yellow-500"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+          </div>
+          
+          <div class="mt-4 grid grid-cols-3 gap-2 text-center text-sm">
+            <div class="flex flex-col items-center">
+              <span class="text-gray-500">오늘</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun my-1"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+              <span class="font-medium">22°C</span>
+            </div>
+            <div class="flex flex-col items-center">
+              <span class="text-gray-500">내일</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-cloud my-1"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path></svg>
+              <span class="font-medium">20°C</span>
+            </div>
+            <div class="flex flex-col items-center">
+              <span class="text-gray-500">모레</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-cloud-rain my-1"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="M16 14v6"></path><path d="M8 14v6"></path><path d="M12 16v6"></path></svg>
+              <span class="font-medium">18°C</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Alerts Panel -->
+        <div class="card">
+          <div class="pb-2 border-b border-gray-200 mb-2">
+            <h2 class="text-sm font-medium">경고 및 알림</h2>
+          </div>
+          <div id="alerts-container">
+            <!-- Alerts will be inserted here by JavaScript -->
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Farm Detail View (Hidden by default) -->
+    <div id="farm-detail" class="card mt-6 hidden">
+      <div class="flex flex-row items-center justify-between pb-2 border-b border-gray-200 mb-4">
+        <div>
+          <h2 id="detail-farm-name" class="text-xl font-bold flex items-center gap-2">
+            스마트팜 A
+            <span id="detail-farm-status" class="badge badge-healthy">정상</span>
+          </h2>
+          <p id="detail-farm-info" class="text-sm text-gray-500">경기도 화성시 | 토마토, 상추</p>
+        </div>
+        <button id="close-detail" class="p-2 rounded-md hover:bg-gray-100">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+        </button>
+      </div>
+      
+      <!-- Tabs -->
+      <div class="mb-4">
+        <div class="flex border-b border-gray-200">
+          <div class="tab active" data-tab="overview">개요</div>
+          <div class="tab" data-tab="sensors">센서 데이터</div>
+          <div class="tab" data-tab="alerts">경고</div>
+        </div>
+      </div>
+      
+      <!-- Tab Contents -->
+      <div id="tab-overview" class="tab-content active space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="card">
+            <div class="pb-2 border-b border-gray-200 mb-2">
+              <h3 class="text-sm font-medium flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-thermometer"><path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"></path></svg>
+                온도
+              </h3>
+            </div>
+            <div>
+              <div id="detail-temperature" class="text-2xl font-bold">24°C</div>
+              <p class="text-xs text-gray-500">적정 범위: 18°C ~ 28°C</p>
+              <p id="temp-warning" class="text-xs text-red-600 mt-1 hidden">정상 범위를 벗어났습니다</p>
+            </div>
+          </div>
+          
+          <div class="card">
+            <div class="pb-2 border-b border-gray-200 mb-2">
+              <h3 class="text-sm font-medium flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-droplets"><path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"></path><path d="M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a6.98 6.98 0 0 1-11.91 4.97"></path></svg>
+                습도
+              </h3>
+            </div>
+            <div>
+              <div id="detail-humidity" class="text-2xl font-bold">65%</div>
+              <p class="text-xs text-gray-500">적정 범위: 40% ~ 70%</p>
+              <p id="humidity-warning" class="text-xs text-red-600 mt-1 hidden">정상 범위를 벗어났습니다</p>
+            </div>
+          </div>
+          
+          <div class="card">
+            <div class="pb-2 border-b border-gray-200 mb-2">
+              <h3 class="text-sm font-medium flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+                광도
+              </h3>
+            </div>
+            <div>
+              <div id="detail-light" class="text-2xl font-bold">8500 lux</div>
+              <p class="text-xs text-gray-500">적정 범위: 3000 ~ 10000 lux</p>
+              <p id="light-warning" class="text-xs text-red-600 mt-1 hidden">정상 범위를 벗어났습니다</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="pb-2 border-b border-gray-200 mb-2">
+            <h3 class="text-sm font-medium">최근 24시간 온도 변화</h3>
+          </div>
+          <div>
+            <canvas id="temperature-chart" height="200"></canvas>
+          </div>
+        </div>
+        
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2 text-sm text-gray-500">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <span id="detail-last-updated">마지막 업데이트: 2023-05-15 14:30:22</span>
+          </div>
+          
+          <button class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">원격 제어</button>
+        </div>
+      </div>
+      
+      <div id="tab-sensors" class="tab-content space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="card">
+            <div class="pb-2 border-b border-gray-200 mb-2">
+              <h3 class="text-sm font-medium">온도 (°C)</h3>
+            </div>
+            <div>
+              <canvas id="temperature-detail-chart" height="200"></canvas>
+            </div>
+          </div>
+          
+          <div class="card">
+            <div class="pb-2 border-b border-gray-200 mb-2">
+              <h3 class="text-sm font-medium">습도 (%)</h3>
+            </div>
+            <div>
+              <canvas id="humidity-chart" height="200"></canvas>
+            </div>
+          </div>
+          
+          <div class="card">
+            <div class="pb-2 border-b border-gray-200 mb-2">
+              <h3 class="text-sm font-medium">광도 (lux)</h3>
+            </div>
+            <div>
+              <canvas id="light-chart" height="200"></canvas>
+            </div>
+          </div>
+          
+          <div class="card">
+            <div class="pb-2 border-b border-gray-200 mb-2">
+              <h3 class="text-sm font-medium">센서 상태</h3>
+            </div>
+            <div class="space-y-4">
+              <div class="flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-thermometer"><path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"></path></svg>
+                  <span>온도 센서</span>
+                </div>
+                <span class="badge badge-healthy">정상</span>
+              </div>
+              
+              <div class="flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-droplets"><path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"></path><path d="M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a6.98 6.98 0 0 1-11.91 4.97"></path></svg>
+                  <span>습도 센서</span>
+                </div>
+                <span class="badge badge-healthy">정상</span>
+              </div>
+              
+              <div class="flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+                  <span>광도 센서</span>
+                </div>
+                <span class="badge badge-healthy">정상</span>
+              </div>
+              
+              <div class="flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-wind"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"></path><path d="M9.6 4.6A2 2 0 1 1 11 8H2"></path><path d="M12.6 19.4A2 2 0 1 0 14 16H2"></path></svg>
+                  <span>환기 시스템</span>
+                </div>
+                <span class="badge badge-healthy">정상</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div id="tab-alerts" class="tab-content space-y-4">
+        <div id="detail-alerts-container">
+          <!-- Detail alerts will be inserted here by JavaScript -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Farm data
+    const farms = [
+      {
+        id: "farm-1",
+        name: "스마트팜 A",
+        location: "경기도 화성시",
+        status: "healthy",
+        crops: "토마토, 상추",
+        temperature: 24,
+        humidity: 65,
+        light: 8500,
+        lastUpdated: "2023-05-15 14:30:22"
+      },
+      {
+        id: "farm-2",
+        name: "스마트팜 B",
+        location: "전라남도 나주시",
+        status: "warning",
+        crops: "딸기, 파프리카",
+        temperature: 29,
+        humidity: 75,
+        light: 9200,
+        lastUpdated: "2023-05-15 14:25:10",
+        alerts: [
+          { type: "온도 경고", message: "온도가 적정 범위를 벗어났습니다 (29°C)" }
+        ]
+      },
+      {
+        id: "farm-3",
+        name: "스마트팜 C",
+        location: "강원도 춘천시",
+        status: "critical",
+        crops: "오이, 가지",
+        temperature: 32,
+        humidity: 25,
+        light: 11500,
+        lastUpdated: "2023-05-15 14:15:45",
+        alerts: [
+          { type: "온도 경고", message: "온도가 너무 높습니다 (32°C)" },
+          { type: "습도 경고", message: "습도가 너무 낮습니다 (25%)" },
+          { type: "광도 경고", message: "광도가 너무 높습니다 (11500 lux)" }
+        ]
+      },
+      {
+        id: "farm-4",
+        name: "스마트팜 D",
+        location: "충청북도 청주시",
+        status: "healthy",
+        crops: "상추, 바질",
+        temperature: 22,
+        humidity: 60,
+        light: 7500,
+        lastUpdated: "2023-05-15 14:28:33"
+      },
+      {
+        id: "farm-5",
+        name: "스마트팜 E",
+        location: "경상북도 안동시",
+        status: "warning",
+        crops: "방울토마토, 고추",
+        temperature: 18,
+        humidity: 85,
+        light: 4500,
+        lastUpdated: "2023-05-15 14:20:18",
+        alerts: [
+          { type: "습도 경고", message: "습도가 너무 높습니다 (85%)" },
+          { type: "광도 경고", message: "광도가 적정 범위보다 낮습니다 (4500 lux)" }
+        ]
+      },
+      {
+        id: "farm-6",
+        name: "스마트팜 F",
+        location: "제주특별자치도 서귀포시",
+        status: "healthy",
+        crops: "감귤, 한라봉",
+        temperature: 23,
+        humidity: 55,
+        light: 9000,
+        lastUpdated: "2023-05-15 14:22:41"
+      }
+    ];
+
+    // Helper functions
+    function getStatusText(status) {
+      return {
+        healthy: "정상",
+        warning: "주의",
+        critical: "위험"
+      }[status];
+    }
+
+    function getStatusClass(status) {
+      return {
+        healthy: "badge-healthy",
+        warning: "badge-warning",
+        critical: "badge-critical"
+      }[status];
+    }
+
+    function getAlertIcon(type) {
+      if (type.includes("온도")) {
+        return '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-thermometer"><path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"></path></svg>';
+      } else if (type.includes("습도")) {
+        return '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-droplets"><path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"></path><path d="M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a6.98 6.98 0 0 1-11.91 4.97"></path></svg>';
+      } else if (type.includes("광도")) {
+        return '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>';
+      } else {
+        return '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-alert-triangle"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>';
+      }
+    }
+
+    // Generate random data for charts
+    function generateMockData(baseValue, variance, count) {
+      return Array.from({ length: count }, (_, i) => ({
+        time: `${i}:00`,
+        value: baseValue + (Math.random() * variance * 2) - variance
+      }));
+    }
+
+    // Render farm cards
+    function renderFarmCards(filteredFarms = farms) {
+      const container = document.getElementById('farm-cards-container');
+      container.innerHTML = '';
+      
+      if (filteredFarms.length === 0) {
+        container.innerHTML = '<div class="col-span-2 py-12 text-center text-gray-500">검색 결과가 없습니다</div>';
+        return;
+      }
+      
+      filteredFarms.forEach(farm => {
+        const card = document.createElement('div');
+        card.className = `farm-card card ${farm.status === 'critical' ? 'critical' : ''}`;
+        card.dataset.farmId = farm.id;
+        
+        let alertsHtml = '';
+        if (farm.alerts && farm.alerts.length > 0) {
+          alertsHtml = `
+            <div class="mt-2 text-sm text-red-600 flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-alert-triangle"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>
+              <span>${farm.alerts.length}개의 경고</span>
+            </div>
+          `;
+        }
+        
+        const tempClass = farm.temperature > 30 || farm.temperature < 15 ? 'text-red-600' : '';
+        const humidityClass = farm.humidity < 30 ? 'text-red-600' : farm.humidity > 80 ? 'text-yellow-600' : '';
+        
+        card.innerHTML = `
+          <div class="flex justify-between items-start">
+            <div>
+              <h3 class="font-medium text-lg">${farm.name}</h3>
+              <p class="text-sm text-gray-500">${farm.location}</p>
+            </div>
+            <span class="badge ${getStatusClass(farm.status)}">
+              ${getStatusText(farm.status)}
+            </span>
+          </div>
+          
+          <div class="mt-4 grid grid-cols-3 gap-2">
+            <div class="sensor-box">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-thermometer mb-1"><path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"></path></svg>
+              <span class="text-xs text-gray-500">온도</span>
+              <span class="font-medium ${tempClass}">${farm.temperature}°C</span>
+            </div>
+            
+            <div class="sensor-box">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-droplets mb-1"><path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"></path><path d="M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a6.98 6.98 0 0 1-11.91 4.97"></path></svg>
+              <span class="text-xs text-gray-500">습도</span>
+              <span class="font-medium ${humidityClass}">${farm.humidity}%</span>
+            </div>
+            
+            <div class="sensor-box">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun mb-1"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+              <span class="text-xs text-gray-500">광도</span>
+              <span class="font-medium">${farm.light} lux</span>
+            </div>
+          </div>
+          
+          <div class="mt-4">
+            <p class="text-sm">
+              <span class="font-medium">작물:</span> ${farm.crops}
+            </p>
+            
+            ${alertsHtml}
+            
+            <p class="text-xs text-gray-500 mt-2">
+              마지막 업데이트: ${farm.lastUpdated}
+            </p>
+          </div>
+        `;
+        
+        card.addEventListener('click', () => showFarmDetail(farm.id));
+        container.appendChild(card);
+      });
+    }
+
+    // Render alerts
+    function renderAlerts() {
+      const container = document.getElementById('alerts-container');
+      const alertFarms = farms.filter(farm => 
+        farm.status === "warning" || farm.status === "critical" || (farm.alerts && farm.alerts.length > 0)
+      );
+      
+      if (alertFarms.length === 0) {
+        container.innerHTML = `
+          <div class="py-6 text-center text-gray-500">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-activity mx-auto mb-2 text-green-500"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+            <p class="text-sm">모든 농장이 정상 작동 중입니다</p>
+          </div>
+        `;
+        return;
+      }
+      
+      let alertsHtml = '<div class="space-y-3">';
+      
+      alertFarms.forEach(farm => {
+        alertsHtml += `
+          <div class="space-y-2">
+            <div class="flex justify-between items-center">
+              <h3 class="font-medium text-sm">${farm.name}</h3>
+              <button class="px-2 py-1 text-xs bg-gray-100 rounded-md hover:bg-gray-200" onclick="showFarmDetail('${farm.id}')">
+                상세보기
+              </button>
+            </div>
+        `;
+        
+        if (farm.alerts) {
+          farm.alerts.forEach(alert => {
+            const alertClass = farm.status === "critical" ? "alert-critical" : "alert-warning";
+            alertsHtml += `
+              <div class="alert-item ${alertClass}">
+                ${getAlertIcon(alert.type)}
+                <span class="text-xs">${alert.message}</span>
+              </div>
+            `;
+          });
+        }
+        
+        alertsHtml += '</div>';
+      });
+      
+      alertsHtml += '</div>';
+      container.innerHTML = alertsHtml;
+    }
+
+    // Show farm detail
+    function showFarmDetail(farmId) {
+      const farm = farms.find(f => f.id === farmId);
+      if (!farm) return;
+      
+      // Update selected card
+      document.querySelectorAll('.farm-card').forEach(card => {
+        card.classList.remove('selected');
+        if (card.dataset.farmId === farmId) {
+          card.classList.add('selected');
+        }
+      });
+      
+      // Update detail view
+      document.getElementById('detail-farm-name').innerHTML = `
+        ${farm.name}
+        <span class="badge ${getStatusClass(farm.status)}">${getStatusText(farm.status)}</span>
+      `;
+      document.getElementById('detail-farm-info').textContent = `${farm.location} | ${farm.crops}`;
+      document.getElementById('detail-temperature').textContent = `${farm.temperature}°C`;
+      document.getElementById('detail-humidity').textContent = `${farm.humidity}%`;
+      document.getElementById('detail-light').textContent = `${farm.light} lux`;
+      document.getElementById('detail-last-updated').textContent = `마지막 업데이트: ${farm.lastUpdated}`;
+      
+      // Show/hide warnings
+      document.getElementById('temp-warning').style.display = 
+        (farm.temperature < 15 || farm.temperature > 30) ? 'block' : 'none';
+      document.getElementById('humidity-warning').style.display = 
+        (farm.humidity < 30 || farm.humidity > 80) ? 'block' : 'none';
+      document.getElementById('light-warning').style.display = 
+        (farm.light < 2000 || farm.light > 12000) ? 'block' : 'none';
+      
+      // Render alerts in detail view
+      const alertsContainer = document.getElementById('detail-alerts-container');
+      if (farm.alerts && farm.alerts.length > 0) {
+        let alertsHtml = '<div class="space-y-2">';
+        farm.alerts.forEach(alert => {
+          alertsHtml += `
+            <div class="card bg-red-50">
+              <div class="p-4">
+                <div class="flex items-start gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-alert-triangle text-red-600 mt-0.5"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>
+                  <div>
+                    <h4 class="font-medium text-red-700">${alert.type}</h4>
+                    <p class="text-sm text-red-600">${alert.message}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+        alertsHtml += '</div>';
+        alertsContainer.innerHTML = alertsHtml;
+      } else {
+        alertsContainer.innerHTML = `
+          <div class="py-8 text-center text-gray-500">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-activity mx-auto mb-4 text-green-500"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+            <h3 class="text-lg font-medium">모든 시스템이 정상 작동 중입니다</h3>
+            <p class="text-sm">현재 이 농장에는 경고가 없습니다</p>
+          </div>
+        `;
+      }
+      
+      // Show detail view
+      document.getElementById('farm-detail').classList.remove('hidden');
+      
+      // Initialize charts
+      initCharts(farm);
+    }
+
+    // Initialize charts
+    function initCharts(farm) {
+      const temperatureData = generateMockData(farm.temperature, 5, 24);
+      const humidityData = generateMockData(farm.humidity, 10, 24);
+      const lightData = generateMockData(farm.light, 200, 24);
+      
+      // Overview temperature chart
+      const tempCtx = document.getElementById('temperature-chart').getContext('2d');
+      new Chart(tempCtx, {
+        type: 'line',
+        data: {
+          labels: temperatureData.map(d => d.time),
+          datasets: [{
+            label: '온도 (°C)',
+            data: temperatureData.map(d => d.value),
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            tension: 0.4,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+      
+      // Detail temperature chart
+      const tempDetailCtx = document.getElementById('temperature-detail-chart').getContext('2d');
+      new Chart(tempDetailCtx, {
+        type: 'line',
+        data: {
+          labels: temperatureData.map(d => d.time),
+          datasets: [{
+            label: '온도 (°C)',
+            data: temperatureData.map(d => d.value),
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            tension: 0.4,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+      
+      // Humidity chart
+      const humidityCtx = document.getElementById('humidity-chart').getContext('2d');
+      new Chart(humidityCtx, {
+        type: 'line',
+        data: {
+          labels: humidityData.map(d => d.time),
+          datasets: [{
+            label: '습도 (%)',
+            data: humidityData.map(d => d.value),
+            borderColor: '#10b981',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            tension: 0.4,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+      
+      // Light chart
+      const lightCtx = document.getElementById('light-chart').getContext('2d');
+      new Chart(lightCtx, {
+        type: 'line',
+        data: {
+          labels: lightData.map(d => d.time),
+          datasets: [{
+            label: '광도 (lux)',
+            data: lightData.map(d => d.value),
+            borderColor: '#f59e0b',
+            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+            tension: 0.4,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+    }
+
+    // Event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initial render
+      renderFarmCards();
+      renderAlerts();
+      
+      // Search functionality
+      document.getElementById('farm-search').addEventListener('input', function(e) {
+        const searchQuery = e.target.value.toLowerCase();
+        const filteredFarms = farms.filter(farm => 
+          farm.name.toLowerCase().includes(searchQuery) || 
+          farm.location.toLowerCase().includes(searchQuery) ||
+          farm.crops.toLowerCase().includes(searchQuery)
+        );
+        renderFarmCards(filteredFarms);
+      });
+      
+      // Filter buttons
+      document.getElementById('filter-all').addEventListener('click', function() {
+        setActiveFilter('all');
+        renderFarmCards(farms);
+      });
+      
+      document.getElementById('filter-critical').addEventListener('click', function() {
+        setActiveFilter('critical');
+        renderFarmCards(farms.filter(farm => farm.status === 'critical'));
+      });
+      
+      document.getElementById('filter-warning').addEventListener('click', function() {
+        setActiveFilter('warning');
+        renderFarmCards(farms.filter(farm => farm.status === 'warning'));
+      });
+      
+      document.getElementById('filter-healthy').addEventListener('click', function() {
+        setActiveFilter('healthy');
+        renderFarmCards(farms.filter(farm => farm.status === 'healthy'));
+      });
+      
+      // Close detail view
+      document.getElementById('close-detail').addEventListener('click', function() {
+        document.getElementById('farm-detail').classList.add('hidden');
+        document.querySelectorAll('.farm-card').forEach(card => {
+          card.classList.remove('selected');
+        });
+      });
+      
+      // Tab switching
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+          const tabId = this.dataset.tab;
+          
+          // Update active tab
+          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+          this.classList.add('active');
+          
+          // Show active content
+          document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+          });
+          document.getElementById(`tab-${tabId}`).classList.add('active');
+        });
+      });
+      
+      // Update counts
+      updateCounts();
+    });
+
+    // Helper to set active filter
+    function setActiveFilter(filter) {
+      document.querySelectorAll('.filter-button').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      
+      if (filter === 'all') {
+        document.getElementById('filter-all').classList.add('active');
+      } else {
+        document.getElementById(`filter-${filter}`).classList.add('active');
+      }
+    }
+
+    // Update counts
+    function updateCounts() {
+      document.getElementById('total-farms').textContent = farms.length;
+      document.getElementById('healthy-count').textContent = farms.filter(f => f.status === 'healthy').length;
+      document.getElementById('warning-count').textContent = farms.filter(f => f.status === 'warning').length;
+      document.getElementById('critical-count').textContent = farms.filter(f => f.status === 'critical').length;
+      
+      // Update alert badge
+      const alertCount = farms.filter(farm => farm.status === "critical" || farm.status === "warning").length;
+      const alertBadge = document.getElementById('alert-badge');
+      if (alertCount > 0) {
+        alertBadge.textContent = alertCount;
+        alertBadge.classList.remove('hidden');
+      } else {
+        alertBadge.classList.add('hidden');
+      }
+    }
+  </script>
+</body>
+</html>
