@@ -336,6 +336,7 @@
   </div>
 
   <script>
+    const API_BASE_URL = "https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app";
     // 전역 변수
     let allFarms = [];
     let farmSensors = {};
@@ -725,7 +726,7 @@
         }
         
         // 농장 목록 불러오기
-        const farmsResponse = await fetch(`/getFarms?user_id=${userId}`);
+        const farmsResponse = await fetch(`${API_BASE_URL}/getFarms?user_id=${userId}`);
         if (!farmsResponse.ok) {
           throw new Error('농장 목록을 불러오는데 실패했습니다.');
         }
@@ -737,14 +738,14 @@
         await Promise.all(allFarms.map(async (farm) => {
           try {
             // 센서 데이터 불러오기
-            const sensorsResponse = await fetch(`/sensors/status?farm_id=${farm.farm_id}`);
+            const sensorsResponse = await fetch(`${API_BASE_URL}/sensors/status?farm_id=${farm.farm_id}`);
             if (sensorsResponse.ok) {
               const sensorData = await sensorsResponse.json();
               farmSensors[farm.farm_id] = sensorData;
             }
             
             // 제어장치 데이터 불러오기
-            const devicesResponse = await fetch(`/devices/status?farm_id=${farm.farm_id}`);
+            const devicesResponse = await fetch(`${API_BASE_URL}/devices/status?farm_id=${farm.farm_id}`);
             if (devicesResponse.ok) {
               const deviceData = await devicesResponse.json();
               farmDevices[farm.farm_id] = deviceData;
