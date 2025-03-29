@@ -38,6 +38,11 @@
       color: #666;
     }
     
+    .header-buttons {
+      display: flex;
+      gap: 10px;
+    }
+    
     .add-farm-btn {
       background-color: #10b981;
       color: white;
@@ -53,6 +58,57 @@
     
     .add-farm-btn:hover {
       background-color: #059669;
+    }
+    
+    .delete-farms-btn {
+      background-color: #ef4444;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .delete-farms-btn:hover {
+      background-color: #dc2626;
+    }
+    
+    .cancel-delete-mode-btn {
+      background-color: #6b7280;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .cancel-delete-mode-btn:hover {
+      background-color: #4b5563;
+    }
+    
+    .confirm-delete-btn {
+      background-color: #ef4444;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .confirm-delete-btn:hover {
+      background-color: #dc2626;
     }
     
     .farm-grid {
@@ -435,27 +491,41 @@
       background-color: #e5e7eb;
     }
     
-    .delete-farm-btn {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background-color: #ef4444;
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 24px;
-      height: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      z-index: 10;
-      opacity: 0.7;
-      transition: opacity 0.2s;
+    /* 삭제 모드 스타일 */
+    .delete-mode .farm-card {
+      position: relative;
+      padding-left: 40px;
     }
     
-    .delete-farm-btn:hover {
-      opacity: 1;
+    .farm-checkbox {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+    
+    .delete-mode-actions {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    
+    .delete-mode-info {
+      background-color: #f3f4f6;
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .delete-mode-info-text {
+      font-size: 14px;
+      color: #4b5563;
     }
     
     /* 삭제 확인 모달 */
@@ -515,8 +585,12 @@
         gap: 10px;
       }
       
-      .add-farm-btn {
-        align-self: flex-start;
+      .header-buttons {
+        width: 100%;
+      }
+      
+      .add-farm-btn, .delete-farms-btn {
+        flex: 1;
       }
     }
     
@@ -532,6 +606,10 @@
       .filter-buttons {
         flex-wrap: wrap;
       }
+      
+      .delete-mode-actions {
+        flex-direction: column;
+      }
     }
   </style>
 </head>
@@ -542,15 +620,41 @@
         <h1>스마트팜 관리 대시보드</h1>
         <p>모든 농장의 상태를 한눈에 확인하세요</p>
       </div>
-      <button id="add-farm-btn" class="add-farm-btn">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M12 5v14M5 12h14"></path>
-        </svg>
-        농장 추가
-      </button>
+      <div class="header-buttons">
+        <button id="add-farm-btn" class="add-farm-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14M5 12h14"></path>
+          </svg>
+          농장 추가
+        </button>
+        <button id="delete-farms-btn" class="delete-farms-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path>
+            <line x1="10" y1="11" x2="10" y2="17"></line>
+            <line x1="14" y1="11" x2="14" y2="17"></line>
+          </svg>
+          농장 삭제
+        </button>
+      </div>
     </div>
     
     <div id="message-container"></div>
+    
+    <!-- 삭제 모드 정보 및 액션 -->
+    <div id="delete-mode-container" style="display: none;">
+      <div class="delete-mode-info">
+        <div class="delete-mode-info-text">삭제할 농장을 선택하세요. <span id="selected-count">0</span>개 선택됨</div>
+        <div class="delete-mode-actions">
+          <button id="cancel-delete-mode-btn" class="cancel-delete-mode-btn">취소</button>
+          <button id="confirm-delete-selected-btn" class="confirm-delete-btn" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path>
+            </svg>
+            선택 삭제
+          </button>
+        </div>
+      </div>
+    </div>
     
     <div class="search-bar">
       <input type="text" id="search-input" class="search-input" placeholder="농장 검색...">
@@ -604,7 +708,7 @@
   <div id="confirm-delete-modal" class="confirm-modal">
     <div class="confirm-modal-content">
       <div class="confirm-modal-title">농장 삭제</div>
-      <div class="confirm-modal-message">정말로 이 농장을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.</div>
+      <div class="confirm-modal-message">선택한 <span id="delete-count">0</span>개의 농장을 정말로 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.</div>
       <div class="confirm-modal-actions">
         <button id="cancel-delete-btn" class="cancel-btn">취소</button>
         <button id="confirm-delete-btn" class="submit-btn" style="background-color: #ef4444;">삭제</button>
@@ -614,12 +718,12 @@
 
   <script>
     const API_BASE_URL = "https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app";
-
     // 전역 변수
     let allFarms = [];
     let farmSensors = {};
     let farmDevices = {};
-    let farmToDelete = null;
+    let isDeleteMode = false;
+    let selectedFarmIds = [];
     
     // 상태 텍스트 가져오기
     function getStatusText(status) {
@@ -872,6 +976,13 @@
         return;
       }
       
+      // 삭제 모드일 때 클래스 추가
+      if (isDeleteMode) {
+        container.classList.add('delete-mode');
+      } else {
+        container.classList.remove('delete-mode');
+      }
+      
       filteredFarms.forEach(farm => {
         const sensors = farmSensors[farm.farm_id];
         const devices = farmDevices[farm.farm_id];
@@ -882,25 +993,38 @@
         card.className = `farm-card ${status === 'critical' ? 'critical' : ''}`;
         card.dataset.farmId = farm.farm_id;
         
-        // 삭제 버튼 추가
-        const deleteBtn = document.createElement('button');
-        deleteBtn.className = 'delete-farm-btn';
-        deleteBtn.innerHTML = '×';
-        deleteBtn.title = '농장 삭제';
-        deleteBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          openDeleteConfirmModal(farm);
-        });
-        card.appendChild(deleteBtn);
+        // 삭제 모드일 때 체크박스 추가
+        if (isDeleteMode) {
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.className = 'farm-checkbox';
+          checkbox.dataset.farmId = farm.farm_id;
+          checkbox.checked = selectedFarmIds.includes(farm.farm_id);
+          checkbox.addEventListener('change', function() {
+            if (this.checked) {
+              if (!selectedFarmIds.includes(farm.farm_id)) {
+                selectedFarmIds.push(farm.farm_id);
+              }
+            } else {
+              selectedFarmIds = selectedFarmIds.filter(id => id !== farm.farm_id);
+            }
+            updateSelectedCount();
+          });
+          card.appendChild(checkbox);
+        }
         
         // 카드 내용 컨테이너 추가
         const cardContent = document.createElement('div');
         cardContent.className = 'farm-card-content';
-        cardContent.addEventListener('click', () => {
-          sessionStorage.setItem('farm_id', farm.farm_id);
-          alert(`${farm.farm_name} 농장을 선택했습니다.`);
-          window.location.href = 'Farm Details.html';
-        });
+        
+        // 삭제 모드가 아닐 때만 클릭 이벤트 추가
+        if (!isDeleteMode) {
+          cardContent.addEventListener('click', () => {
+            sessionStorage.setItem('farm_id', farm.farm_id);
+            alert(`${farm.farm_name} 농장을 선택했습니다.`);
+            window.location.href = 'Farm Details.html';
+          });
+        }
         
         // 센서 HTML 생성
         let sensorsHtml = '<div class="farm-sensors">';
@@ -1094,7 +1218,7 @@
     }
     
     // 농장 삭제하기
-    async function deleteFarm(farmId) {
+    async function deleteFarms(farmIds) {
       try {
         const response = await fetch(`${API_BASE_URL}/delFarm`, {
           method: 'POST',
@@ -1102,7 +1226,7 @@
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            farm_ids: [farmId]
+            farm_ids: farmIds
           }),
         });
         
@@ -1137,15 +1261,46 @@
     }
     
     // 삭제 확인 모달 열기
-    function openDeleteConfirmModal(farm) {
-      farmToDelete = farm;
+    function openDeleteConfirmModal() {
+      document.getElementById('delete-count').textContent = selectedFarmIds.length;
       document.getElementById('confirm-delete-modal').classList.add('active');
     }
     
     // 삭제 확인 모달 닫기
     function closeDeleteConfirmModal() {
       document.getElementById('confirm-delete-modal').classList.remove('active');
-      farmToDelete = null;
+    }
+    
+    // 삭제 모드 활성화
+    function enableDeleteMode() {
+      isDeleteMode = true;
+      selectedFarmIds = [];
+      document.getElementById('delete-mode-container').style.display = 'block';
+      document.getElementById('add-farm-btn').style.display = 'none';
+      document.getElementById('delete-farms-btn').style.display = 'none';
+      updateSelectedCount();
+      renderFarmCards();
+    }
+    
+    // 삭제 모드 비활성화
+    function disableDeleteMode() {
+      isDeleteMode = false;
+      selectedFarmIds = [];
+      document.getElementById('delete-mode-container').style.display = 'none';
+      document.getElementById('add-farm-btn').style.display = 'block';
+      document.getElementById('delete-farms-btn').style.display = 'block';
+      renderFarmCards();
+    }
+    
+    // 선택된 농장 수 업데이트
+    function updateSelectedCount() {
+      document.getElementById('selected-count').textContent = selectedFarmIds.length;
+      const confirmDeleteBtn = document.getElementById('confirm-delete-selected-btn');
+      if (selectedFarmIds.length > 0) {
+        confirmDeleteBtn.disabled = false;
+      } else {
+        confirmDeleteBtn.disabled = true;
+      }
     }
 
     // 이벤트 리스너 설정
@@ -1197,6 +1352,19 @@
       // 농장 추가 버튼
       document.getElementById('add-farm-btn').addEventListener('click', openModal);
       
+      // 농장 삭제 버튼
+      document.getElementById('delete-farms-btn').addEventListener('click', enableDeleteMode);
+      
+      // 삭제 모드 취소 버튼
+      document.getElementById('cancel-delete-mode-btn').addEventListener('click', disableDeleteMode);
+      
+      // 선택 삭제 버튼
+      document.getElementById('confirm-delete-selected-btn').addEventListener('click', function() {
+        if (selectedFarmIds.length > 0) {
+          openDeleteConfirmModal();
+        }
+      });
+      
       // 모달 닫기 버튼
       document.querySelector('.close-modal').addEventListener('click', closeModal);
       document.querySelector('.cancel-btn').addEventListener('click', closeModal);
@@ -1239,10 +1407,11 @@
       document.getElementById('cancel-delete-btn').addEventListener('click', closeDeleteConfirmModal);
       
       document.getElementById('confirm-delete-btn').addEventListener('click', async function() {
-        if (farmToDelete) {
-          const success = await deleteFarm(farmToDelete.farm_id);
+        if (selectedFarmIds.length > 0) {
+          const success = await deleteFarms(selectedFarmIds);
           if (success) {
             closeDeleteConfirmModal();
+            disableDeleteMode();
           }
         }
       });
