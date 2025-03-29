@@ -101,11 +101,17 @@
       100% { opacity: 1; }
     }
     
-    .farm-sensors {
+    .farm-data {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
       margin-bottom: 10px;
+    }
+    
+    .farm-sensors {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
     
     .sensor {
@@ -148,22 +154,20 @@
     }
     
     .farm-controls {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 5px;
-      margin-bottom: 10px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
       background-color: #f9fafb;
       border-radius: 6px;
       padding: 8px;
     }
     
     .control {
-      display: inline-flex;
+      display: flex;
       align-items: center;
       background-color: white;
       border-radius: 4px;
-      padding: 4px 8px;
-      margin-right: 5px;
+      padding: 4px 6px;
       border: 1px solid #e5e7eb;
     }
     
@@ -274,6 +278,21 @@
       color: #b91c1c;
     }
     
+    .loading {
+      text-align: center;
+      padding: 50px;
+      color: #666;
+      grid-column: 1/-1;
+    }
+    
+    .error-message {
+      background-color: #fee2e2;
+      color: #b91c1c;
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 15px;
+    }
+    
     @media (max-width: 768px) {
       .farm-grid {
         grid-template-columns: 1fr;
@@ -281,8 +300,12 @@
     }
     
     @media (max-width: 480px) {
-      .farm-sensors {
+      .farm-data {
         grid-template-columns: 1fr;
+      }
+      
+      .farm-controls {
+        grid-template-columns: 1fr 1fr;
       }
     }
   </style>
@@ -293,6 +316,8 @@
       <h1>스마트팜 관리 대시보드</h1>
       <p>모든 농장의 상태를 한눈에 확인하세요</p>
     </div>
+    
+    <div id="error-container"></div>
     
     <div class="search-bar">
       <input type="text" id="search-input" class="search-input" placeholder="농장 검색...">
@@ -306,154 +331,16 @@
     </div>
     
     <div id="farm-grid" class="farm-grid">
-      <!-- 농장 카드가 여기에 동적으로 추가됩니다 -->
+      <div class="loading">데이터를 불러오는 중입니다...</div>
     </div>
   </div>
 
   <script>
-    // 농장 데이터
-    const farms = [
-      {
-        id: "farm-1",
-        name: "스마트팜 A",
-        location: "경기도 화성시",
-        status: "healthy",
-        crops: "토마토, 상추",
-        sensors: {
-          temperature: 24,
-          humidity: 65,
-          soilMoisture: 42,
-          co2: 450
-        },
-        controls: {
-          led: true,
-          water: false,
-          fan: false,
-          heater: false,
-          cooler: false
-        },
-        lastUpdated: "2023-05-15 14:30:22"
-      },
-      {
-        id: "farm-2",
-        name: "스마트팜 B",
-        location: "전라남도 나주시",
-        status: "warning",
-        crops: "딸기, 파프리카",
-        sensors: {
-          temperature: 29,
-          humidity: 75,
-          soilMoisture: 28,
-          co2: 520
-        },
-        controls: {
-          led: true,
-          water: true,
-          fan: true,
-          heater: false,
-          cooler: true
-        },
-        lastUpdated: "2023-05-15 14:25:10",
-        alerts: [
-          { type: "온도 경고", message: "온도가 적정 범위를 벗어났습니다 (29°C)" },
-          { type: "토양수분 경고", message: "토양이 건조합니다 (28%)" }
-        ]
-      },
-      {
-        id: "farm-3",
-        name: "스마트팜 C",
-        location: "강원도 춘천시",
-        status: "critical",
-        crops: "오이, 가지",
-        sensors: {
-          temperature: 32,
-          humidity: 25,
-          soilMoisture: 15,
-          co2: 850
-        },
-        controls: {
-          led: false,
-          water: true,
-          fan: true,
-          heater: false,
-          cooler: true
-        },
-        lastUpdated: "2023-05-15 14:15:45",
-        alerts: [
-          { type: "온도 경고", message: "온도가 너무 높습니다 (32°C)" },
-          { type: "습도 경고", message: "습도가 너무 낮습니다 (25%)" },
-          { type: "토양수분 경고", message: "토양이 매우 건조합니다 (15%)" },
-          { type: "CO2 경고", message: "CO2 농도가 너무 높습니다 (850ppm)" }
-        ]
-      },
-      {
-        id: "farm-4",
-        name: "스마트팜 D",
-        location: "충청북도 청주시",
-        status: "healthy",
-        crops: "상추, 바질",
-        sensors: {
-          temperature: 22,
-          humidity: 60,
-          soilMoisture: 45,
-          co2: 420
-        },
-        controls: {
-          led: true,
-          water: false,
-          fan: false,
-          heater: false,
-          cooler: false
-        },
-        lastUpdated: "2023-05-15 14:28:33"
-      },
-      {
-        id: "farm-5",
-        name: "스마트팜 E",
-        location: "경상북도 안동시",
-        status: "warning",
-        crops: "방울토마토, 고추",
-        sensors: {
-          temperature: 18,
-          humidity: 85,
-          soilMoisture: 60,
-          co2: 380
-        },
-        controls: {
-          led: true,
-          water: false,
-          fan: true,
-          heater: true,
-          cooler: false
-        },
-        lastUpdated: "2023-05-15 14:20:18",
-        alerts: [
-          { type: "습도 경고", message: "습도가 너무 높습니다 (85%)" }
-        ]
-      },
-      {
-        id: "farm-6",
-        name: "스마트팜 F",
-        location: "제주특별자치도 서귀포시",
-        status: "healthy",
-        crops: "감귤, 한라봉",
-        sensors: {
-          temperature: 23,
-          humidity: 55,
-          soilMoisture: 40,
-          co2: 410
-        },
-        controls: {
-          led: true,
-          water: false,
-          fan: false,
-          heater: false,
-          cooler: false
-        },
-        lastUpdated: "2023-05-15 14:22:41"
-      }
-    ];
-
+    // 전역 변수
+    let allFarms = [];
+    let farmSensors = {};
+    let farmDevices = {};
+    
     // 상태 텍스트 가져오기
     function getStatusText(status) {
       return {
@@ -474,6 +361,8 @@
 
     // 센서 상태 확인
     function getSensorStatus(type, value) {
+      if (value === null || value === undefined) return '';
+      
       switch(type) {
         case 'temperature':
           return value > 30 || value < 15 
@@ -487,7 +376,7 @@
             : value > 80 
               ? 'warning' 
               : '';
-        case 'soilMoisture':
+        case 'soil_moisture':
           return value < 20 
             ? 'critical' 
             : value < 30 
@@ -515,7 +404,7 @@
           return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"></path>
           </svg>`;
-        case 'soilMoisture':
+        case 'soil_moisture':
           return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M8 16a5 5 0 0 0 10 0c0-6-5-12-5-12s-5 6-5 12z"></path>
           </svg>`;
@@ -576,7 +465,7 @@
         case 'temperature':
           return '°C';
         case 'humidity':
-        case 'soilMoisture':
+        case 'soil_moisture':
           return '%';
         case 'co2':
           return 'ppm';
@@ -592,7 +481,7 @@
           return '온도';
         case 'humidity':
           return '습도';
-        case 'soilMoisture':
+        case 'soil_moisture':
           return '토양수분';
         case 'co2':
           return 'CO2';
@@ -619,8 +508,82 @@
       }
     }
 
+    // 농장 상태 계산
+    function calculateFarmStatus(sensors) {
+      if (!sensors) return 'healthy';
+      
+      const criticalCount = Object.entries(sensors).filter(([key, value]) => {
+        if (key === 'id' || key === 'farm_id' || key === 'created_at') return false;
+        return getSensorStatus(key, value) === 'critical';
+      }).length;
+      
+      const warningCount = Object.entries(sensors).filter(([key, value]) => {
+        if (key === 'id' || key === 'farm_id' || key === 'created_at') return false;
+        return getSensorStatus(key, value) === 'warning';
+      }).length;
+      
+      if (criticalCount > 0) return 'critical';
+      if (warningCount > 0) return 'warning';
+      return 'healthy';
+    }
+
+    // 경고 메시지 생성
+    function generateAlerts(sensors) {
+      if (!sensors) return [];
+      
+      const alerts = [];
+      
+      if (sensors.temperature !== null && sensors.temperature !== undefined) {
+        if (sensors.temperature > 30) {
+          alerts.push({ type: "온도 경고", message: `온도가 너무 높습니다 (${sensors.temperature}°C)` });
+        } else if (sensors.temperature < 15) {
+          alerts.push({ type: "온도 경고", message: `온도가 너무 낮습니다 (${sensors.temperature}°C)` });
+        } else if (sensors.temperature > 28 || sensors.temperature < 18) {
+          alerts.push({ type: "온도 경고", message: `온도가 적정 범위를 벗어났습니다 (${sensors.temperature}°C)` });
+        }
+      }
+      
+      if (sensors.humidity !== null && sensors.humidity !== undefined) {
+        if (sensors.humidity < 30) {
+          alerts.push({ type: "습도 경고", message: `습도가 너무 낮습니다 (${sensors.humidity}%)` });
+        } else if (sensors.humidity > 80) {
+          alerts.push({ type: "습도 경고", message: `습도가 너무 높습니다 (${sensors.humidity}%)` });
+        }
+      }
+      
+      if (sensors.soil_moisture !== null && sensors.soil_moisture !== undefined) {
+        if (sensors.soil_moisture < 20) {
+          alerts.push({ type: "토양수분 경고", message: `토양이 매우 건조합니다 (${sensors.soil_moisture}%)` });
+        } else if (sensors.soil_moisture < 30) {
+          alerts.push({ type: "토양수분 경고", message: `토양이 건조합니다 (${sensors.soil_moisture}%)` });
+        }
+      }
+      
+      if (sensors.co2 !== null && sensors.co2 !== undefined) {
+        if (sensors.co2 > 800) {
+          alerts.push({ type: "CO2 경고", message: `CO2 농도가 너무 높습니다 (${sensors.co2}ppm)` });
+        } else if (sensors.co2 > 600) {
+          alerts.push({ type: "CO2 경고", message: `CO2 농도가 높습니다 (${sensors.co2}ppm)` });
+        }
+      }
+      
+      return alerts;
+    }
+
+    // 에러 메시지 표시
+    function showError(message) {
+      const errorContainer = document.getElementById('error-container');
+      errorContainer.innerHTML = `<div class="error-message">${message}</div>`;
+    }
+
+    // 에러 메시지 초기화
+    function clearError() {
+      const errorContainer = document.getElementById('error-container');
+      errorContainer.innerHTML = '';
+    }
+
     // 농장 카드 렌더링
-    function renderFarmCards(filteredFarms = farms) {
+    function renderFarmCards(filteredFarms = allFarms) {
       const container = document.getElementById('farm-grid');
       container.innerHTML = '';
       
@@ -630,45 +593,77 @@
       }
       
       filteredFarms.forEach(farm => {
+        const sensors = farmSensors[farm.farm_id];
+        const devices = farmDevices[farm.farm_id];
+        const status = calculateFarmStatus(sensors);
+        const alerts = generateAlerts(sensors);
+        
         const card = document.createElement('div');
-        card.className = `farm-card ${farm.status === 'critical' ? 'critical' : ''}`;
+        card.className = `farm-card ${status === 'critical' ? 'critical' : ''}`;
         
         // 센서 HTML 생성
         let sensorsHtml = '<div class="farm-sensors">';
-        Object.entries(farm.sensors).forEach(([key, value]) => {
-          const status = getSensorStatus(key, value);
-          sensorsHtml += `
-            <div class="sensor">
-              <div class="sensor-icon">
-                ${getSensorIcon(key)}
-              </div>
-              <div class="sensor-info">
-                <div class="sensor-label">${getSensorName(key)}</div>
-                <div class="sensor-value ${status}">${value}${getSensorUnit(key)}</div>
-              </div>
-            </div>
-          `;
-        });
+        if (sensors) {
+          const sensorFields = [
+            { key: 'temperature', value: sensors.temperature },
+            { key: 'humidity', value: sensors.humidity },
+            { key: 'soil_moisture', value: sensors.soil_moisture },
+            { key: 'co2', value: sensors.co2 }
+          ];
+          
+          sensorFields.forEach(({ key, value }) => {
+            if (value !== null && value !== undefined) {
+              const status = getSensorStatus(key, value);
+              sensorsHtml += `
+                <div class="sensor">
+                  <div class="sensor-icon">
+                    ${getSensorIcon(key)}
+                  </div>
+                  <div class="sensor-info">
+                    <div class="sensor-label">${getSensorName(key)}</div>
+                    <div class="sensor-value ${status}">${value}${getSensorUnit(key)}</div>
+                  </div>
+                </div>
+              `;
+            }
+          });
+        } else {
+          sensorsHtml += '<div style="padding: 10px; text-align: center; color: #666;">센서 데이터 없음</div>';
+        }
         sensorsHtml += '</div>';
         
         // 제어장치 HTML 생성
         let controlsHtml = '<div class="farm-controls">';
-        Object.entries(farm.controls).forEach(([key, value]) => {
-          controlsHtml += `
-            <div class="control">
-              <div class="control-icon">
-                ${getControlIcon(key)}
-              </div>
-              <div class="control-label">${getControlName(key)}</div>
-              <div class="control-status ${value ? 'status-on' : 'status-off'}"></div>
-            </div>
-          `;
-        });
+        if (devices) {
+          const controlFields = [
+            { key: 'led', value: devices.led },
+            { key: 'water', value: devices.water },
+            { key: 'fan', value: devices.fan },
+            { key: 'heater', value: devices.heater },
+            { key: 'cooler', value: devices.cooler }
+          ];
+          
+          controlFields.forEach(({ key, value }) => {
+            if (value !== null && value !== undefined) {
+              controlsHtml += `
+                <div class="control">
+                  <div class="control-icon">
+                    ${getControlIcon(key)}
+                  </div>
+                  <div class="control-label">${getControlName(key)}</div>
+                  <div class="control-status ${value ? 'status-on' : 'status-off'}"></div>
+                </div>
+              `;
+            }
+          });
+        } else {
+          controlsHtml += '<div style="padding: 10px; text-align: center; color: #666;">제어장치 데이터 없음</div>';
+        }
         controlsHtml += '</div>';
         
         // 경고 HTML 생성
         let alertsHtml = '';
-        if (farm.alerts && farm.alerts.length > 0) {
+        if (alerts && alerts.length > 0) {
           alertsHtml = '<div class="farm-alerts">';
           alertsHtml += `<div class="alert-title">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -676,37 +671,40 @@
               <line x1="12" y1="9" x2="12" y2="13"></line>
               <line x1="12" y1="17" x2="12.01" y2="17"></line>
             </svg>
-            ${farm.alerts.length}개의 경고
+            ${alerts.length}개의 경고
           </div>`;
           
-          farm.alerts.forEach(alert => {
+          alerts.forEach(alert => {
             alertsHtml += `<div class="alert-message">${alert.message}</div>`;
           });
           
           alertsHtml += '</div>';
         }
         
+        const lastUpdated = sensors ? new Date(sensors.created_at).toLocaleString() : '데이터 없음';
+        
         card.innerHTML = `
           <div class="farm-header">
             <div>
-              <div class="farm-name">${farm.name}</div>
-              <div class="farm-location">${farm.location}</div>
+              <div class="farm-name">${farm.farm_name}</div>
+              <div class="farm-location">${farm.farm_location}</div>
             </div>
-            <div class="status ${getStatusClass(farm.status)}">${getStatusText(farm.status)}</div>
+            <div class="status ${getStatusClass(status)}">${getStatusText(status)}</div>
           </div>
           
-          ${sensorsHtml}
-          
-          ${controlsHtml}
+          <div class="farm-data">
+            ${sensorsHtml}
+            ${controlsHtml}
+          </div>
           
           <div class="farm-info">
-            <strong>작물:</strong> ${farm.crops}
+            <strong>유형:</strong> ${farm.farm_type || '일반'}
           </div>
           
           ${alertsHtml}
           
           <div class="last-updated">
-            마지막 업데이트: ${farm.lastUpdated}
+            마지막 업데이트: ${lastUpdated}
           </div>
         `;
         
@@ -714,18 +712,69 @@
       });
     }
 
+    // 농장 데이터 불러오기
+    async function loadFarmData() {
+      clearError();
+      
+      try {
+        // 세션스토리지에서 user_id 가져오기
+        const userId = sessionStorage.getItem('user_id');
+        if (!userId) {
+          showError('사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.');
+          return;
+        }
+        
+        // 농장 목록 불러오기
+        const farmsResponse = await fetch(`/getFarms?user_id=${userId}`);
+        if (!farmsResponse.ok) {
+          throw new Error('농장 목록을 불러오는데 실패했습니다.');
+        }
+        
+        const farmsData = await farmsResponse.json();
+        allFarms = farmsData.farms;
+        
+        // 각 농장별 센서 및 제어장치 데이터 불러오기
+        await Promise.all(allFarms.map(async (farm) => {
+          try {
+            // 센서 데이터 불러오기
+            const sensorsResponse = await fetch(`/sensors/status?farm_id=${farm.farm_id}`);
+            if (sensorsResponse.ok) {
+              const sensorData = await sensorsResponse.json();
+              farmSensors[farm.farm_id] = sensorData;
+            }
+            
+            // 제어장치 데이터 불러오기
+            const devicesResponse = await fetch(`/devices/status?farm_id=${farm.farm_id}`);
+            if (devicesResponse.ok) {
+              const deviceData = await devicesResponse.json();
+              farmDevices[farm.farm_id] = deviceData;
+            }
+          } catch (err) {
+            console.error(`농장 ID ${farm.farm_id}의 데이터를 불러오는데 실패했습니다:`, err);
+          }
+        }));
+        
+        // 농장 카드 렌더링
+        renderFarmCards();
+        
+      } catch (err) {
+        console.error('데이터 로딩 오류:', err);
+        showError('데이터를 불러오는데 실패했습니다: ' + err.message);
+      }
+    }
+
     // 이벤트 리스너 설정
     document.addEventListener('DOMContentLoaded', function() {
-      // 초기 렌더링
-      renderFarmCards();
+      // 초기 데이터 로딩
+      loadFarmData();
       
       // 검색 기능
       document.getElementById('search-input').addEventListener('input', function(e) {
         const searchQuery = e.target.value.toLowerCase();
-        const filteredFarms = farms.filter(farm => 
-          farm.name.toLowerCase().includes(searchQuery) || 
-          farm.location.toLowerCase().includes(searchQuery) ||
-          farm.crops.toLowerCase().includes(searchQuery)
+        const filteredFarms = allFarms.filter(farm => 
+          farm.farm_name.toLowerCase().includes(searchQuery) || 
+          farm.farm_location.toLowerCase().includes(searchQuery) ||
+          (farm.farm_type && farm.farm_type.toLowerCase().includes(searchQuery))
         );
         renderFarmCards(filteredFarms);
       });
@@ -733,22 +782,31 @@
       // 필터 버튼
       document.getElementById('filter-all').addEventListener('click', function() {
         setActiveFilter('all');
-        renderFarmCards(farms);
+        renderFarmCards(allFarms);
       });
       
       document.getElementById('filter-critical').addEventListener('click', function() {
         setActiveFilter('critical');
-        renderFarmCards(farms.filter(farm => farm.status === 'critical'));
+        const filteredFarms = allFarms.filter(farm => 
+          calculateFarmStatus(farmSensors[farm.farm_id]) === 'critical'
+        );
+        renderFarmCards(filteredFarms);
       });
       
       document.getElementById('filter-warning').addEventListener('click', function() {
         setActiveFilter('warning');
-        renderFarmCards(farms.filter(farm => farm.status === 'warning'));
+        const filteredFarms = allFarms.filter(farm => 
+          calculateFarmStatus(farmSensors[farm.farm_id]) === 'warning'
+        );
+        renderFarmCards(filteredFarms);
       });
       
       document.getElementById('filter-healthy').addEventListener('click', function() {
         setActiveFilter('healthy');
-        renderFarmCards(farms.filter(farm => farm.status === 'healthy'));
+        const filteredFarms = allFarms.filter(farm => 
+          calculateFarmStatus(farmSensors[farm.farm_id]) === 'healthy'
+        );
+        renderFarmCards(filteredFarms);
       });
     });
 
