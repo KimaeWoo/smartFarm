@@ -24,15 +24,35 @@
     
     .header {
       margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
     
-    .header h1 {
+    .header-left h1 {
       font-size: 24px;
       margin-bottom: 5px;
     }
     
-    .header p {
+    .header-left p {
       color: #666;
+    }
+    
+    .add-farm-btn {
+      background-color: #10b981;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .add-farm-btn:hover {
+      background-color: #059669;
     }
     
     .farm-grid {
@@ -47,12 +67,16 @@
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       padding: 12px;
-      cursor: pointer;
       transition: transform 0.2s;
+      position: relative;
     }
     
     .farm-card:hover {
       transform: translateY(-3px);
+    }
+    
+    .farm-card-content {
+      cursor: pointer;
     }
     
     .farm-header {
@@ -293,9 +317,206 @@
       margin-bottom: 15px;
     }
     
+    .success-message {
+      background-color: #d1fae5;
+      color: #047857;
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 15px;
+    }
+    
+    /* 모달 스타일 */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .modal.active {
+      display: flex;
+    }
+    
+    .modal-content {
+      background-color: white;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 500px;
+      padding: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    
+    .modal-title {
+      font-size: 18px;
+      font-weight: bold;
+    }
+    
+    .close-modal {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: #666;
+    }
+    
+    .form-group {
+      margin-bottom: 15px;
+    }
+    
+    .form-label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 14px;
+      color: #333;
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    
+    .form-select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      background-color: white;
+    }
+    
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    
+    .cancel-btn {
+      background-color: #f3f4f6;
+      color: #333;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    
+    .submit-btn {
+      background-color: #10b981;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    
+    .submit-btn:hover {
+      background-color: #059669;
+    }
+    
+    .cancel-btn:hover {
+      background-color: #e5e7eb;
+    }
+    
+    .delete-farm-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: #ef4444;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 10;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+    
+    .delete-farm-btn:hover {
+      opacity: 1;
+    }
+    
+    /* 삭제 확인 모달 */
+    .confirm-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .confirm-modal.active {
+      display: flex;
+    }
+    
+    .confirm-modal-content {
+      background-color: white;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 400px;
+      padding: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .confirm-modal-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #ef4444;
+    }
+    
+    .confirm-modal-message {
+      margin-bottom: 20px;
+      font-size: 14px;
+      color: #333;
+    }
+    
+    .confirm-modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    
     @media (max-width: 768px) {
       .farm-grid {
         grid-template-columns: 1fr;
+      }
+      
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      
+      .add-farm-btn {
+        align-self: flex-start;
       }
     }
     
@@ -307,17 +528,29 @@
       .farm-controls {
         grid-template-columns: 1fr 1fr;
       }
+      
+      .filter-buttons {
+        flex-wrap: wrap;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <h1>스마트팜 관리 대시보드</h1>
-      <p>모든 농장의 상태를 한눈에 확인하세요</p>
+      <div class="header-left">
+        <h1>스마트팜 관리 대시보드</h1>
+        <p>모든 농장의 상태를 한눈에 확인하세요</p>
+      </div>
+      <button id="add-farm-btn" class="add-farm-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 5v14M5 12h14"></path>
+        </svg>
+        농장 추가
+      </button>
     </div>
     
-    <div id="error-container"></div>
+    <div id="message-container"></div>
     
     <div class="search-bar">
       <input type="text" id="search-input" class="search-input" placeholder="농장 검색...">
@@ -334,13 +567,59 @@
       <div class="loading">데이터를 불러오는 중입니다...</div>
     </div>
   </div>
+  
+  <!-- 농장 추가 모달 -->
+  <div id="add-farm-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">새 농장 추가</h3>
+        <button class="close-modal">&times;</button>
+      </div>
+      <form id="add-farm-form">
+        <div class="form-group">
+          <label for="farm-name" class="form-label">농장 이름</label>
+          <input type="text" id="farm-name" class="form-input" required placeholder="농장 이름을 입력하세요">
+        </div>
+        <div class="form-group">
+          <label for="farm-location" class="form-label">위치</label>
+          <input type="text" id="farm-location" class="form-input" required placeholder="농장 위치를 입력하세요">
+        </div>
+        <div class="form-group">
+          <label for="farm-type" class="form-label">작물 종류</label>
+          <select id="farm-type" class="form-select" required>
+            <option value="">작물을 선택하세요</option>
+            <option value="방울토마토">방울토마토</option>
+            <option value="상추">상추</option>
+          </select>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="cancel-btn">취소</button>
+          <button type="submit" class="submit-btn">추가</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <!-- 삭제 확인 모달 -->
+  <div id="confirm-delete-modal" class="confirm-modal">
+    <div class="confirm-modal-content">
+      <div class="confirm-modal-title">농장 삭제</div>
+      <div class="confirm-modal-message">정말로 이 농장을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.</div>
+      <div class="confirm-modal-actions">
+        <button id="cancel-delete-btn" class="cancel-btn">취소</button>
+        <button id="confirm-delete-btn" class="submit-btn" style="background-color: #ef4444;">삭제</button>
+      </div>
+    </div>
+  </div>
 
   <script>
     const API_BASE_URL = "https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app";
+
     // 전역 변수
     let allFarms = [];
     let farmSensors = {};
     let farmDevices = {};
+    let farmToDelete = null;
     
     // 상태 텍스트 가져오기
     function getStatusText(status) {
@@ -571,16 +850,16 @@
       return alerts;
     }
 
-    // 에러 메시지 표시
-    function showError(message) {
-      const errorContainer = document.getElementById('error-container');
-      errorContainer.innerHTML = `<div class="error-message">${message}</div>`;
-    }
-
-    // 에러 메시지 초기화
-    function clearError() {
-      const errorContainer = document.getElementById('error-container');
-      errorContainer.innerHTML = '';
+    // 메시지 표시
+    function showMessage(message, type = 'error') {
+      const messageContainer = document.getElementById('message-container');
+      const className = type === 'success' ? 'success-message' : 'error-message';
+      messageContainer.innerHTML = `<div class="${className}">${message}</div>`;
+      
+      // 3초 후 메시지 사라짐
+      setTimeout(() => {
+        messageContainer.innerHTML = '';
+      }, 3000);
     }
 
     // 농장 카드 렌더링
@@ -601,6 +880,27 @@
         
         const card = document.createElement('div');
         card.className = `farm-card ${status === 'critical' ? 'critical' : ''}`;
+        card.dataset.farmId = farm.farm_id;
+        
+        // 삭제 버튼 추가
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-farm-btn';
+        deleteBtn.innerHTML = '×';
+        deleteBtn.title = '농장 삭제';
+        deleteBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openDeleteConfirmModal(farm);
+        });
+        card.appendChild(deleteBtn);
+        
+        // 카드 내용 컨테이너 추가
+        const cardContent = document.createElement('div');
+        cardContent.className = 'farm-card-content';
+        cardContent.addEventListener('click', () => {
+          sessionStorage.setItem('farm_id', farm.farm_id);
+          alert(`${farm.farm_name} 농장을 선택했습니다.`);
+          window.location.href = 'Farm Details.html';
+        });
         
         // 센서 HTML 생성
         let sensorsHtml = '<div class="farm-sensors">';
@@ -684,7 +984,7 @@
         
         const lastUpdated = sensors ? new Date(sensors.created_at).toLocaleString() : '데이터 없음';
         
-        card.innerHTML = `
+        cardContent.innerHTML = `
           <div class="farm-header">
             <div>
               <div class="farm-name">${farm.farm_name}</div>
@@ -699,7 +999,7 @@
           </div>
           
           <div class="farm-info">
-            <strong>유형:</strong> ${farm.farm_type || '일반'}
+            <strong>작물:</strong> ${farm.farm_type || '일반'}
           </div>
           
           ${alertsHtml}
@@ -709,19 +1009,18 @@
           </div>
         `;
         
+        card.appendChild(cardContent);
         container.appendChild(card);
       });
     }
 
     // 농장 데이터 불러오기
     async function loadFarmData() {
-      clearError();
-      
       try {
         // 세션스토리지에서 user_id 가져오기
         const userId = sessionStorage.getItem('user_id');
         if (!userId) {
-          showError('사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.');
+          showMessage('사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.');
           return;
         }
         
@@ -760,8 +1059,93 @@
         
       } catch (err) {
         console.error('데이터 로딩 오류:', err);
-        showError('데이터를 불러오는데 실패했습니다: ' + err.message);
+        showMessage('데이터를 불러오는데 실패했습니다: ' + err.message);
       }
+    }
+
+    // 농장 추가하기
+    async function addFarm(farmData) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/addFarm`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(farmData),
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || '농장 추가에 실패했습니다.');
+        }
+        
+        const result = await response.json();
+        showMessage(result.message || '농장이 성공적으로 추가되었습니다.', 'success');
+        
+        // 농장 목록 새로고침
+        await loadFarmData();
+        
+        return true;
+      } catch (err) {
+        console.error('농장 추가 오류:', err);
+        showMessage('농장 추가에 실패했습니다: ' + err.message);
+        return false;
+      }
+    }
+    
+    // 농장 삭제하기
+    async function deleteFarm(farmId) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/delFarm`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            farm_ids: [farmId]
+          }),
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || '농장 삭제에 실패했습니다.');
+        }
+        
+        const result = await response.json();
+        showMessage(result.message || '농장이 성공적으로 삭제되었습니다.', 'success');
+        
+        // 농장 목록 새로고침
+        await loadFarmData();
+        
+        return true;
+      } catch (err) {
+        console.error('농장 삭제 오류:', err);
+        showMessage('농장 삭제에 실패했습니다: ' + err.message);
+        return false;
+      }
+    }
+
+    // 모달 열기
+    function openModal() {
+      document.getElementById('add-farm-modal').classList.add('active');
+    }
+
+    // 모달 닫기
+    function closeModal() {
+      document.getElementById('add-farm-modal').classList.remove('active');
+      document.getElementById('add-farm-form').reset();
+    }
+    
+    // 삭제 확인 모달 열기
+    function openDeleteConfirmModal(farm) {
+      farmToDelete = farm;
+      document.getElementById('confirm-delete-modal').classList.add('active');
+    }
+    
+    // 삭제 확인 모달 닫기
+    function closeDeleteConfirmModal() {
+      document.getElementById('confirm-delete-modal').classList.remove('active');
+      farmToDelete = null;
     }
 
     // 이벤트 리스너 설정
@@ -808,6 +1192,66 @@
           calculateFarmStatus(farmSensors[farm.farm_id]) === 'healthy'
         );
         renderFarmCards(filteredFarms);
+      });
+      
+      // 농장 추가 버튼
+      document.getElementById('add-farm-btn').addEventListener('click', openModal);
+      
+      // 모달 닫기 버튼
+      document.querySelector('.close-modal').addEventListener('click', closeModal);
+      document.querySelector('.cancel-btn').addEventListener('click', closeModal);
+      
+      // 모달 외부 클릭 시 닫기
+      document.getElementById('add-farm-modal').addEventListener('click', function(e) {
+        if (e.target === this) {
+          closeModal();
+        }
+      });
+      
+      // 농장 추가 폼 제출
+      document.getElementById('add-farm-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const userId = sessionStorage.getItem('user_id');
+        if (!userId) {
+          showMessage('사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.');
+          return;
+        }
+        
+        const farmName = document.getElementById('farm-name').value;
+        const farmLocation = document.getElementById('farm-location').value;
+        const farmType = document.getElementById('farm-type').value;
+        
+        const farmData = {
+          user_id: userId,
+          farm_name: farmName,
+          farm_location: farmLocation,
+          farm_type: farmType
+        };
+        
+        const success = await addFarm(farmData);
+        if (success) {
+          closeModal();
+        }
+      });
+      
+      // 삭제 확인 모달 이벤트
+      document.getElementById('cancel-delete-btn').addEventListener('click', closeDeleteConfirmModal);
+      
+      document.getElementById('confirm-delete-btn').addEventListener('click', async function() {
+        if (farmToDelete) {
+          const success = await deleteFarm(farmToDelete.farm_id);
+          if (success) {
+            closeDeleteConfirmModal();
+          }
+        }
+      });
+      
+      // 삭제 확인 모달 외부 클릭 시 닫기
+      document.getElementById('confirm-delete-modal').addEventListener('click', function(e) {
+        if (e.target === this) {
+          closeDeleteConfirmModal();
+        }
       });
     });
 
