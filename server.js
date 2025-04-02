@@ -485,23 +485,23 @@ app.get('/history-data', async (req, res) => {
 
 app.get('/getAlarm', async (req, res) => {
   const { farm_id } = req.query;
-  const query = `SELECT content, type, created_at, device FROM alarms 
-                 WHERE farm_id = ? AND created_at BETWEEN ? AND ?`;
+  const query = `SELECT  type,content, created_at, device FROM alarms 
+                 WHERE farm_id = ?`;
   let conn;
 
   // 현재 날짜 가져오기 (한국 시간 기준)
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0'); // 월은 0부터 시작
-  const day = String(now.getDate()).padStart(2, '0');
+  // const now = new Date();
+  // const year = now.getFullYear();
+  // const month = String(now.getMonth() + 1).padStart(2, '0'); // 월은 0부터 시작
+  // const day = String(now.getDate()).padStart(2, '0');
 
-  const formattedDate = `${year}-${month}-${day}`;
+  // const formattedDate = `${year}-${month}-${day}`;
 
-  const start = new Date(formattedDate);
-  start.setHours(0, 0, 0, 0);
+  // const start = new Date(formattedDate);
+  // start.setHours(0, 0, 0, 0);
 
-  const end = new Date(formattedDate);
-  end.setHours(23, 59, 59, 999);
+  // const end = new Date(formattedDate);
+  // end.setHours(23, 59, 59, 999);
 
   try {
     conn = await db.getConnection();
