@@ -461,7 +461,7 @@ app.get('/history-data', async (req, res) => {
 
 app.get('/getAlarm', async (req, res) => {
   const { farm_id } = req.query;
-  const query = `SELECT  tpye,content, created_at, device FROM alarms 
+  const query = `SELECT  type, content, created_at, device FROM alarms 
                  WHERE farm_id = ?`;
   let conn;
 
