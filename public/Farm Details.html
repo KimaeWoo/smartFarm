@@ -1509,8 +1509,8 @@
 
             farmName.textContent = farm_name;
             farmType.textContent = farm_type;
-            sessionStorage.setItem('farmName', farm_name);
-            sessionStorage.setItem('farmType', farm_type);
+            sessionStorage.setItem('farm_Name', farm_name);
+            sessionStorage.setItem('farm_Type', farm_type);
 
             // farmActive가 1일 경우, startButton 숨기고 cropInfo 표시
             if (farmActive === 1) {
@@ -1609,8 +1609,9 @@
 
       // 센서별 최적 수치 불러오기
       async function fetchCropOptimalValues() {
+        farm_Type = sessionStorage.getItem('farm_Type');
         try {
-          const response = await fetch(`${API_BASE_URL}/get-Crop-OptimalValues?farm_type=${farmType}`, {
+          const response = await fetch(`${API_BASE_URL}/get-Crop-OptimalValues?farm_type=${farm_Type}`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json'
