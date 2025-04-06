@@ -665,7 +665,7 @@ app.get('/devices/status', async(req, res) => {
 });
 
 // 센서별 최적 수치 불러오기
-app.get('/getCropOptimalValues', async(req, res) => {
+app.get('/get-Crop-OptimalValues', async(req, res) => {
   const {farm_type} = req.query;
 
   if (!farm_type) {
@@ -697,7 +697,7 @@ app.get('/getCropOptimalValues', async(req, res) => {
     });
 
     console.log('[GET /get-Crop-OptimalValues] 제어장치 조회 성공:');
-    res.json(conditions);
+    return res.json(conditions);
   } catch (err) {
     console.error('[GET /get-Crop-OptimalValues] DB 오류:', err);
     return res.status(500).json({ message: 'DB 오류' });
