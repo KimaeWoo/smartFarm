@@ -459,6 +459,7 @@ app.get('/history-data', async (req, res) => {
   }
 });
 
+// 알림 리스트 불러오기
 app.get('/getAlarm', async (req, res) => {
   const { farm_id } = req.query;
   const query = `SELECT  type, content, created_at, device FROM alarms 
@@ -684,7 +685,6 @@ app.get('/get-Crop-OptimalValues', async(req, res) => {
     const [results] = await conn.query(query, [farm_type]);
 
     if (results.length === 0) {
-      await connection.end();
       return res.status(404).json({ error: `${farm_type}에 대한 데이터가 없습니다` });
     }
 
