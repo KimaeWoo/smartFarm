@@ -1404,7 +1404,11 @@
           tabContents.forEach(content => content.classList.remove('active'));
           document.getElementById(`${tabId}-tab`).classList.add('active');
 
-          updateChartData(); // 실시간 차트 가져오기
+          if (tabId == 'history'){
+            updateChartData(); // 실시간 차트 가져오기
+            updateHistoryChartData(); // 기록 차트 가져오기
+            updateSummaryChart(); // 요약 차트 가져오기
+          }
         });
       });
       
