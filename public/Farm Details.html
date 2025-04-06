@@ -489,7 +489,7 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 300px;
+      width: 400px;
       background-color: var(--card-bg);
       padding: 20px;
       border-radius: 10px;
@@ -507,26 +507,73 @@
 
     .settings-content h2{
       color: var(--text-color);
+      margin-bottom: 20px;
     }
+    
     .setting-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      margin-bottom: 15px;
+    }
+    
+    .setting-item label {
+      font-weight: bold;
+      color: var(--text-color);
+    }
+    
+    .setting-inputs {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    
+    .setting-inputs input {
+      width: 60px;
+      padding: 5px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      text-align: center;
+    }
+    
+    .setting-icon {
+      color: var(--text-color);
+      font-size: 1.2rem;
+      margin-right: 10px;
     }
 
     /* 닫기 버튼 스타일 */
-    #closeSettings {
-      margin-top: 10px;
-      padding: 10px;
-      background-color: #007bff;
-      color: white;
+    .settings-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    
+    #closeSettings, #saveSettings {
+      padding: 10px 20px;
       border: none;
       cursor: pointer;
       border-radius: 5px;
+      font-weight: bold;
     }
-
+    
+    #closeSettings {
+      background-color: #e5e7eb;
+      color: #4b5563;
+    }
+    
+    #saveSettings {
+      background-color: #10b981;
+      color: white;
+    }
+    
     #closeSettings:hover {
-      background-color: #0056b3;
+      background-color: #d1d5db;
+    }
+    
+    #saveSettings:hover {
+      background-color: #059669;
     }
 
     /* 다크 모드 */
@@ -871,9 +918,57 @@
   <div class="settings-panel" id="settingsPanel">
     <div class="settings-content">
         <h2>설정</h2>
+        
+        <!-- 최적 수치 설정 -->
+        <div class="setting-item">
+            <div class="setting-label">
+                <i class="fas fa-temperature-high setting-icon" style="color: var(--temp-color);"></i>
+                <label>온도 최적 수치</label>
+            </div>
+            <div class="setting-inputs">
+                <input type="number" id="temp-min" min="0" max="40" step="1"> ~
+                <input type="number" id="temp-max" min="0" max="40" step="1"> °C
+            </div>
+        </div>
+        
+        <div class="setting-item">
+            <div class="setting-label">
+                <i class="fas fa-tint setting-icon" style="color: var(--humidity-color);"></i>
+                <label>습도 최적 수치</label>
+            </div>
+            <div class="setting-inputs">
+                <input type="number" id="humid-min" min="0" max="100" step="1"> ~
+                <input type="number" id="humid-max" min="0" max="100" step="1"> %
+            </div>
+        </div>
+        
+        <div class="setting-item">
+            <div class="setting-label">
+                <i class="fas fa-leaf setting-icon" style="color: var(--soil-color);"></i>
+                <label>토양 수분 최적 수치</label>
+            </div>
+            <div class="setting-inputs">
+                <input type="number" id="soil-min" min="0" max="100" step="1"> ~
+                <input type="number" id="soil-max" min="0" max="100" step="1"> %
+            </div>
+        </div>
+        
+        <div class="setting-item">
+            <div class="setting-label">
+                <i class="fas fa-wind setting-icon" style="color: var(--co2-color);"></i>
+                <label>CO2 최적 수치</label>
+            </div>
+            <div class="setting-inputs">
+                <input type="number" id="co2-min" min="0" max="2000" step="10"> ~
+                <input type="number" id="co2-max" min="0" max="2000" step="10"> ppm
+            </div>
+        </div>
 
-        <!-- 닫기 버튼 -->
-        <button id="closeSettings">닫기</button>
+        <!-- 버튼 영역 -->
+        <div class="settings-buttons">
+            <button id="closeSettings">취소</button>
+            <button id="saveSettings">저장</button>
+        </div>
     </div>
   </div>
 
@@ -1359,8 +1454,6 @@
     });
 
     document.addEventListener('DOMContentLoaded', async () => {
-
-
       // 현재 날짜 설정
       const today = new Date();
       let currentDate = new Date();
@@ -1497,7 +1590,7 @@
       });
 
       function fetchFarmStatus() {
-        fetch(`/get-farm-status/${farmId}`)
+        fetch(`${API_BASE_URL}/get-farm-status/${farmId}`)
           .then(response => {
             if (!response.ok) {
               throw new Error('농장 정보를 가져오는 데 실패했습니다.');
@@ -1599,7 +1692,7 @@
       
         // 단계 표시(active 클래스 업데이트)
         stageElements.forEach((el, idx) => {
-          if (idx === stageIndex) {
+          if (idx <= stageIndex) {
             el.classList.add("active");
           } else {
             el.classList.remove("active");
@@ -1610,7 +1703,7 @@
       // 센서별 최적 수치 불러오기
       async function fetchCropOptimalValues() {
         const farmType = sessionStorage.getItem('farmType');
-        console.log("작몰 종류" + farmType);
+        console.log("작물 종류" + farmType);
         try {
           const response = await fetch(`${API_BASE_URL}/get-Crop-OptimalValues?farm_type=${farmType}`, {
             method: 'GET',
@@ -1638,8 +1731,126 @@
           soilOptimal.textContent = `${soilMin} ~ ${soilMax}`;
           co2Optimal.textContent = `${co2Min} ~ ${co2Max}`;
 
+          // 설정 패널에 현재 최적 수치 설정
+          document.getElementById('temp-min').value = tempMin;
+          document.getElementById('temp-max').value = tempMax;
+          document.getElementById('humid-min').value = humidMin;
+          document.getElementById('humid-max').value = humidMax;
+          document.getElementById('soil-min').value = soilMin;
+          document.getElementById('soil-max').value = soilMax;
+          document.getElementById('co2-min').value = co2Min;
+          document.getElementById('co2-max').value = co2Max;
+
+          // 로컬 스토리지에 저장된 사용자 정의 값이 있으면 불러오기
+          loadCustomOptimalValues();
+
         } catch (error) {
           console.error("작물 최적 수치 불러오기 실패:", error);
+        }
+      }
+
+      // 사용자 정의 최적 수치 저장하기
+      async function saveCustomOptimalValues() {
+        const tempMin = document.getElementById('temp-min').value;
+        const tempMax = document.getElementById('temp-max').value;
+        const humidMin = document.getElementById('humid-min').value;
+        const humidMax = document.getElementById('humid-max').value;
+        const soilMin = document.getElementById('soil-min').value;
+        const soilMax = document.getElementById('soil-max').value;
+        const co2Min = document.getElementById('co2-min').value;
+        const co2Max = document.getElementById('co2-max').value;
+
+        // 유효성 검사
+        if (parseInt(tempMin) > parseInt(tempMax) || 
+            parseInt(humidMin) > parseInt(humidMax) || 
+            parseInt(soilMin) > parseInt(soilMax) || 
+            parseInt(co2Min) > parseInt(co2Max)) {
+          alert('최소값은 최대값보다 작아야 합니다.');
+          return false;
+        }
+
+        // 로컬 스토리지에 저장
+        const customValues = {
+          temperature: { optimal_min: tempMin, optimal_max: tempMax },
+          humidity: { optimal_min: humidMin, optimal_max: humidMax },
+          soil_moisture: { optimal_min: soilMin, optimal_max: soilMax },
+          co2: { optimal_min: co2Min, optimal_max: co2Max }
+        };
+
+        localStorage.setItem(`customOptimalValues_${farmId}`, JSON.stringify(customValues));
+
+        // UI 업데이트
+        tempOptimal.textContent = `${tempMin} ~ ${tempMax}`;
+        humidOptimal.textContent = `${humidMin} ~ ${humidMax}`;
+        soilOptimal.textContent = `${soilMin} ~ ${soilMax}`;
+        co2Optimal.textContent = `${co2Min} ~ ${co2Max}`;
+
+        // 서버에 저장
+        try {
+          const farmType = sessionStorage.getItem('farmType');
+          const response = await fetch(`${API_BASE_URL}/change-Crop-OptimalValues`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              farm_type: farmType,
+              temperature: {
+                optimal_min: parseInt(tempMin),
+                optimal_max: parseInt(tempMax)
+              },
+              humidity: {
+                optimal_min: parseInt(humidMin),
+                optimal_max: parseInt(humidMax)
+              },
+              soil_moisture: {
+                optimal_min: parseInt(soilMin),
+                optimal_max: parseInt(soilMax)
+              },
+              co2: {
+                optimal_min: parseInt(co2Min),
+                optimal_max: parseInt(co2Max)
+              }
+            })
+          });
+
+          if (!response.ok) {
+            throw new Error('서버 응답 오류: ' + response.statusText);
+          }
+
+          const result = await response.json();
+          console.log('최적 수치 업데이트 결과:', result);
+          
+        } catch (error) {
+          console.error('최적 수치 서버 저장 실패:', error);
+          alert('서버에 최적 수치 저장 중 오류가 발생했습니다.');
+        }
+
+        return true;
+      }
+
+      // 사용자 정의 최적 수치 불러오기
+      function loadCustomOptimalValues() {
+        const savedValues = localStorage.getItem(`customOptimalValues_${farmId}`);
+        
+        if (savedValues) {
+          const customValues = JSON.parse(savedValues);
+          
+          // UI 업데이트
+          tempOptimal.textContent = `${customValues.temperature.optimal_min} ~ ${customValues.temperature.optimal_max}`;
+          humidOptimal.textContent = `${customValues.humidity.optimal_min} ~ ${customValues.humidity.optimal_max}`;
+          soilOptimal.textContent = `${customValues.soil_moisture.optimal_min} ~ ${customValues.soil_moisture.optimal_max}`;
+          co2Optimal.textContent = `${customValues.co2.optimal_min} ~ ${customValues.co2.optimal_max}`;
+          
+          // 설정 패널 입력 필드 업데이트
+          document.getElementById('temp-min').value = customValues.temperature.optimal_min;
+          document.getElementById('temp-max').value = customValues.temperature.optimal_max;
+          document.getElementById('humid-min').value = customValues.humidity.optimal_min;
+          document.getElementById('humid-max').value = customValues.humidity.optimal_max;
+          document.getElementById('soil-min').value = customValues.soil_moisture.optimal_min;
+          document.getElementById('soil-max').value = customValues.soil_moisture.optimal_max;
+          document.getElementById('co2-min').value = customValues.co2.optimal_min;
+          document.getElementById('co2-max').value = customValues.co2.optimal_max;
         }
       }
 
@@ -2453,6 +2664,7 @@
       const settingsBtn = document.getElementById("settingsBtn");
       const settingsPanel = document.getElementById("settingsPanel");
       const closeSettings = document.getElementById("closeSettings");
+      const saveSettings = document.getElementById("saveSettings");
 
       // 설정 버튼 클릭 시 패널 표시
       settingsBtn.addEventListener("click", function () {
@@ -2462,6 +2674,14 @@
       // 닫기 버튼 클릭 시 패널 숨김
       closeSettings.addEventListener("click", function () {
           settingsPanel.style.display = "none";
+      });
+
+      // 저장 버튼 클릭 시 설정 저장
+      saveSettings.addEventListener("click", function () {
+          if (saveCustomOptimalValues()) {
+              settingsPanel.style.display = "none";
+              alert("최적 수치가 저장되었습니다.");
+          }
       });
 
       // 전체 알림 데이터 저장용
@@ -2602,9 +2822,6 @@
       updateDateDisplay(); // 날짜 표시 업데이트
       fetchSensorData(); // 센서 데이터 가져오기
       fetchDevicesStatus(); // 장치 상태 가져오기
-      //updateChartData(); // 실시간 차트 가져오기
-      //updateHistoryChartData(); // 기록 차트 가져오기
-      //updateSummaryChart(); // 요약 차트 가져오기
       fetchAlarm(); // 알림 가져오기
       fetchFarmStatus(); // D-DAY 가져오기
       fetchCropOptimalValues(); // 작물의 최적 수치 가져오기

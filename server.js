@@ -706,6 +706,55 @@ app.get('/get-Crop-OptimalValues', async(req, res) => {
   }
 });
 
+// 센서별 최적 수치 업데이트
+app.post('/change-Crop-OptimalValues', async (req, res) => {
+  const {
+    farm_type,
+    temperature: { optimal_min: tempMin, optimal_max: tempMax },
+    humidity: { optimal_min: humidMin, optimal_max: humidMax },
+    soil_moisture: { optimal_min: soilMin, optimal_max: soilMax },
+    co2: { optimal_min: co2Min, optimal_max: co2Max }
+  } = req.body;
+
+  if (!farm_type || !tempMin || !tempMax || !humidMin || !humidMax || !soilMin || !soilMax || !co2Min || !co2Max) {
+    return res.status(400).json({ error: '모든 필드가 필요합니다' });
+  }
+
+  const updateQuery = `
+    UPDATE crop_conditions 
+    SET optimal_min = ?, optimal_max = ?
+    WHERE crop_type = ? AND condition_type = ?
+  `;
+
+  const values = {
+    temperature: [tempMin, tempMax],
+    humidity: [humidMin, humidMax],
+    soil_moisture: [soilMin, soilMax],
+    co2: [co2Min, co2Max]
+  };
+
+  let conn;
+  try {
+    conn = await db.getConnection();
+
+    for (const [type, [min, max]] of Object.entries(values)) {
+      const [result] = await conn.query(updateQuery, [min, max, farm_type, type]);
+
+      if (result.affectedRows === 0) {
+        console.warn(`[POST /change-Crop-OptimalValues] 데이터터 없음: ${farm_type} - ${type} (업데이트 안 됨)`);
+      }
+    }
+
+    console.log(`[POST /change-Crop-OptimalValues] ${farm_type} 최적 수치 업데이트 완료`);
+    return res.json({ message: `${farm_type}의 최적 수치가 성공적으로 업데이트되었습니다` });
+  } catch (err) {
+    console.error('[POST /change-Crop-OptimalValues] DB 오류:', err);
+    return res.status(500).json({ error: 'DB 오류' });
+  } finally {
+    if (conn) conn.release();
+  }
+});
+
 app.listen(PORT, '0.0.0.0', () => {
   console.log('서버가 실행 중입니다.');
 });
