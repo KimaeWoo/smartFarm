@@ -833,6 +833,7 @@
         <img id="mode-toggle" src="images/lightmode2.png" alt="Mode Toggle" onclick="toggleMode()" style="width: 25px; cursor: pointer;">
       </div>      
       <div class="header-right">
+        <p i="farm-type">작물 종류</p>
         <a href="Farm Dashboard.html" id="farmname">New 스마트팜</a>
         <span id="username">홍길동님</span>
         <button class="logout-btn" id="logout-btn">로그아웃</button>
@@ -1392,6 +1393,8 @@
       const userId = sessionStorage.getItem('user_id');
       const farmId = sessionStorage.getItem('farm_id');
 
+      const farmName = document.getElementById('farmname');
+      const farmType = document.getElementById('farm-type');
       const startButton = document.getElementById('start-farm-btn');
       const cropInfo = document.getElementById('crop-info');
       const growthCircle = document.getElementById('growth-circle');
@@ -1443,8 +1446,11 @@
             return response.json();
           })
           .then(data => {
-            const { growthRate, harvestDays, startDate, farmActive } = data;
+            const { farm_name, farm_type, growthRate, harvestDays, startDate, farmActive } = data;
 
+            farmName.textContent = farm_name;
+            farmType.textContent = farm_type;
+            
             // farmActive가 1일 경우, startButton 숨기고 cropInfo 표시
             if (farmActive === 1) {
               startButton.style.display = 'none'; // startButton 숨기기
@@ -1541,26 +1547,26 @@
       }
       
       // 농장 이름 불러오기
-      async function fetchFarmName() {
-        try {
-          const response = await fetch(`${API_BASE_URL}/getFarmName?farm_id=${farmId}`, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          });
-          const data = await response.json();
+      //async function fetchFarmName() {
+      //  try {
+      //    const response = await fetch(`${API_BASE_URL}/getFarmName?farm_id=${farmId}`, {
+      //      method: 'GET',
+      //      headers: {
+      //        'Content-Type': 'application/json'
+      //      }
+      //    });
+      //    const data = await response.json();
 
-          if (response.ok) {
-            const farmname = data.farmname;
-            document.getElementById('farmname').textContent = `${farmname}`;
-          } else {
-            console.error('스마트팜 이름을 불러오지 못했습니다:', data.message);
-          }
-        } catch (error) {
-          console.error("스마트팜 이름 불러오기 실패:", error);
-        }
-      }
+      //    if (response.ok) {
+      //      const farmname = data.farmname;
+      //      document.getElementById('farmname').textContent = `${farmname}`;
+      //    } else {
+      //      console.error('스마트팜 이름을 불러오지 못했습니다:', data.message);
+      //    }
+      //  } catch (error) {
+      //    console.error("스마트팜 이름 불러오기 실패:", error);
+      //  }
+      //}
 
       // 이름 불러오기
       async function fetchName() {
