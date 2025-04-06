@@ -738,10 +738,10 @@ app.post('/change-Crop-OptimalValues', async (req, res) => {
     conn = await db.getConnection();
 
     for (const [type, [min, max]] of Object.entries(values)) {
-      const [result] = await conn.query(updateQuery, [min, max, farm_type, type]);
+      const result = await conn.query(updateQuery, [min, max, farm_type, type]);
 
       if (result.affectedRows === 0) {
-        console.warn(`[POST /change-Crop-OptimalValues] 데이터터 없음: ${farm_type} - ${type} (업데이트 안 됨)`);
+        console.warn(`[POST /change-Crop-OptimalValues] 데이터 없음: ${farm_type} - ${type} (업데이트 안 됨)`);
       }
     }
 
