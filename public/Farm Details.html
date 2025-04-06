@@ -1609,7 +1609,7 @@
 
       // 센서별 최적 수치 불러오기
       async function fetchCropOptimalValues() {
-        farm_Type = sessionStorage.getItem('farm_Type');
+        const farm_Type = sessionStorage.getItem('farm_Type');
         try {
           const response = await fetch(`${API_BASE_URL}/get-Crop-OptimalValues?farm_type=${farm_Type}`, {
             method: 'GET',
