@@ -682,7 +682,7 @@ app.get('/get-Crop-OptimalValues', async(req, res) => {
 
   try {
     conn = await db.getConnection();
-    const [results] = await conn.query(query, [farm_type]);
+    const results = await conn.query(query, [farm_type]);
 
     if (results.length === 0) {
       return res.status(404).json({ error: `${farm_type}에 대한 데이터가 없습니다` });
