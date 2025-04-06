@@ -1403,6 +1403,8 @@
           // 탭 컨텐츠 활성화
           tabContents.forEach(content => content.classList.remove('active'));
           document.getElementById(`${tabId}-tab`).classList.add('active');
+
+          updateChartData(); // 실시간 차트 가져오기
         });
       });
       
@@ -1458,7 +1460,7 @@
         startButton.style.display = 'none';
         cropInfo.classList.add('visible');
         
-        fetch('/start-farm', {
+        fetch(`${API_BASE_URL}/start-farm`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -1918,7 +1920,7 @@
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
-            },
+            }
           });
       
           const data = await response.json();
@@ -2594,9 +2596,9 @@
       updateDateDisplay(); // 날짜 표시 업데이트
       fetchSensorData(); // 센서 데이터 가져오기
       fetchDevicesStatus(); // 장치 상태 가져오기
-      updateChartData(); // 실시간 차트 가져오기
-      updateHistoryChartData(); // 기록 차트 가져오기
-      updateSummaryChart(); // 요약 차트 가져오기
+      //updateChartData(); // 실시간 차트 가져오기
+      //updateHistoryChartData(); // 기록 차트 가져오기
+      //updateSummaryChart(); // 요약 차트 가져오기
       fetchAlarm(); // 알림 가져오기
       fetchFarmStatus(); // D-DAY 가져오기
       fetchCropOptimalValues(); // 작물의 최적 수치 가져오기
