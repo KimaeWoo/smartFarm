@@ -963,7 +963,7 @@
                 0<span class="sensor-unit">°C</span>
               </div>
               <p class="text-sm text-muted">
-                최적 수치: <span class="font-medium">0 ~ 0</span>
+                최적 수치: <span class="font-medium" id="temp-optimal">0 ~ 0</span>
               </p>
               <div class="mt-2">
                 <div class="progress-container">
@@ -988,7 +988,7 @@
                 0<span class="sensor-unit">%</span>
               </div>
               <p class="text-sm text-muted">
-                최적 수치: <span class="font-medium">0 ~ 0</span>
+                최적 수치: <span class="font-medium" id="humid-optimal">0 ~ 0</span>
               </p>
               <div class="mt-2">
                 <div class="progress-container">
@@ -1013,7 +1013,7 @@
                 0<span class="sensor-unit">%</span>
               </div>
               <p class="text-sm text-muted">
-                최적 수치: <span class="font-medium">0 ~ 0</span>
+                최적 수치: <span class="font-medium" id="soil-optimal">0 ~ 0</span>
               </p>
               <div class="mt-2">
                 <div class="progress-container">
@@ -1038,7 +1038,7 @@
                 0<span class="sensor-unit">ppm</span>
               </div>
               <p class="text-sm text-muted">
-                최적 수치: <span class="font-medium">0 ~ 0</span>
+                최적 수치: <span class="font-medium" id="co2-optimal">0 ~ 0</span>
               </p>
               <div class="mt-2">
                 <div class="progress-container">
@@ -1449,11 +1449,15 @@
       const growthCircle = document.getElementById('growth-circle');
       const growthText = document.getElementById('growth-rate');
 
+      const tempOptimal = document.getElementById('temp-optimal');
+      const humidOptimal = document.getElementById('humid-optimal');
+      const soilOptimal = document.getElementById('soil-optimal');
+      const co2Optimal = document.getElementById('co2-optimal');
       // 시작 버튼 클릭 시 농장 상태 가져오기
       document.getElementById('start-farm-btn').addEventListener('click', () => {
         startButton.style.display = 'none';
         cropInfo.classList.add('visible');
-
+        
         fetch('/start-farm', {
           method: 'POST',
           headers: {
@@ -1597,9 +1601,10 @@
         });
       }
 
+      // 센서별 최적 수치 불러오기
       async function fetchCropOptimalValues() {
         try {
-          const response = await fetch(`${API_BASE_URL}/getCropOptimalValues?farm_type=${farmType}`, {
+          const response = await fetch(`${API_BASE_URL}/get-Crop-OptimalValues?farm_type=${farmType}`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json'
@@ -1610,6 +1615,20 @@
           if (!response.ok) {
             throw new Error('네트워크 응답 오류: ' + response.statusText);
           }
+
+          // data (conditions)에서 값 추출
+          const {
+            temperature: { optimal_min: tempMin, optimal_max: tempMax },
+            humidity: { optimal_min: humidMin, optimal_max: humidMax },
+            soil_moisture: { optimal_min: soilMin, optimal_max: soilMax },
+            co2: { optimal_min: co2Min, optimal_max: co2Max }
+          } = data;
+
+          // HTML 요소에 값 적용
+          tempOptimal.textContent = `${tempMin} ~ ${tempMax}`;
+          humidOptimal.textContent = `${humidMin} ~ ${humidMax}`;
+          soilOptimal.textContent = `${soilMin} ~ ${soilMax}`;
+          co2Optimal.textContent = `${co2Min} ~ ${co2Max}`;
 
         } catch (error) {
           console.error("작물 최적 수치 불러오기 실패:", error);

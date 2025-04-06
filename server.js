@@ -461,7 +461,7 @@ app.get('/history-data', async (req, res) => {
 
 app.get('/getAlarm', async (req, res) => {
   const { farm_id } = req.query;
-  const query = `SELECT  type,content, created_at, device FROM alarms 
+  const query = `SELECT  tpye,content, created_at, device FROM alarms 
                  WHERE farm_id = ?`;
   let conn;
 
@@ -664,7 +664,48 @@ app.get('/devices/status', async(req, res) => {
   }
 });
 
-app.get('/get')
+// 센서별 최적 수치 불러오기
+app.get('/getCropOptimalValues', async(req, res) => {
+  const {farm_type} = req.query;
+
+  if (!farm_type) {
+    return res.status(400).json({ error: 'farm_type 파라미터가 필요합니다' });
+  }
+
+  const query = `
+    SELECT condition_type, optimal_min, optimal_max 
+    FROM crop_conditions 
+    WHERE crop_type = ?
+  `;
+  let conn;
+
+  try {
+    conn = await db.getConnection();
+    const [results] = await conn.query(query, [farm_type]);
+
+    if (results.length === 0) {
+      await connection.end();
+      return res.status(404).json({ error: `${farm_type}에 대한 데이터가 없습니다` });
+    }
+
+    const conditions = {};
+    results.forEach(row => {
+      conditions[row.condition_type] = {
+        optimal_min: row.optimal_min,
+        optimal_max: row.optimal_max
+      };
+    });
+
+    console.log('[GET /get-Crop-OptimalValues] 제어장치 조회 성공:');
+    res.json(conditions);
+  } catch (err) {
+    console.error('[GET /get-Crop-OptimalValues] DB 오류:', err);
+    return res.status(500).json({ message: 'DB 오류' });
+  } finally {
+    conn.release();
+  }
+});
+
 app.listen(PORT, '0.0.0.0', () => {
   console.log('서버가 실행 중입니다.');
 });
