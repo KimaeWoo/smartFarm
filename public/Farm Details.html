@@ -1448,8 +1448,8 @@
       const userId = sessionStorage.getItem('user_id');
       const farmId = sessionStorage.getItem('farm_id');
 
-      const farmName = document.getElementById('farmname');
-      const farmType = document.getElementById('farm-type');
+      const farmNameText = document.getElementById('farmname');
+      const farmTypeText = document.getElementById('farm-type');
       const startButton = document.getElementById('start-farm-btn');
       const cropInfo = document.getElementById('crop-info');
       const growthCircle = document.getElementById('growth-circle');
@@ -1507,10 +1507,10 @@
           .then(data => {
             const { farm_name, farm_type, growthRate, harvestDays, startDate, farmActive } = data;
 
-            farmName.textContent = farm_name;
-            farmType.textContent = farm_type;
-            sessionStorage.setItem('farm_Name', farm_name);
-            sessionStorage.setItem('farm_Type', farm_type);
+            farmNameText.textContent = farm_name;
+            farmTypeText.textContent = farm_type;
+            sessionStorage.setItem('farmName', farm_name);
+            sessionStorage.setItem('farmType', farm_type);
 
             // farmActive가 1일 경우, startButton 숨기고 cropInfo 표시
             if (farmActive === 1) {
@@ -1609,9 +1609,10 @@
 
       // 센서별 최적 수치 불러오기
       async function fetchCropOptimalValues() {
-        const farm_Type = sessionStorage.getItem('farm_Type');
+        const farmType = sessionStorage.getItem('farmType');
+        console.log("작몰 종류" + farmType);
         try {
-          const response = await fetch(`${API_BASE_URL}/get-Crop-OptimalValues?farm_type=${farm_Type}`, {
+          const response = await fetch(`${API_BASE_URL}/get-Crop-OptimalValues?farm_type=${farmType}`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json'
