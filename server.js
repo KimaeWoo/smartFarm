@@ -696,7 +696,7 @@ app.get('/get-Crop-OptimalValues', async(req, res) => {
       };
     });
 
-    console.log('[GET /get-Crop-OptimalValues] 제어장치 조회 성공:');
+    console.log('[GET /get-Crop-OptimalValues] 제어장치 조회 성공:' + farm_type);
     return res.json(conditions);
   } catch (err) {
     console.error('[GET /get-Crop-OptimalValues] DB 오류:', err);
