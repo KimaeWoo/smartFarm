@@ -823,6 +823,27 @@
     .growth-rate {
       color: #4ade80;
     }
+
+    .flex-col {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .gap-2 {
+      gap: 0.5rem;
+    }
+
+    .text-sm {
+      font-size: 0.875rem;
+    }
+
+    .text-muted {
+      color: #6b7280;
+    }
+
+    .mt-2 {
+      margin-top: 0.5rem;
+    }
   </style>
 </head>
 <body>
@@ -937,11 +958,18 @@
             </div>
           </div>
           <div class="card-content">
-            <div class="sensor-value temp">
-              0<span class="sensor-unit">°C</span>
-            </div>
-            <div class="progress-container">
-              <div class="progress-bar temp" style="width: 63%;"></div>
+            <div class="flex-col gap-2">
+              <div class="sensor-value temp">
+                0<span class="sensor-unit">°C</span>
+              </div>
+              <p class="text-sm text-muted">
+                최적 수치: <span class="font-medium">0 ~ 0</span>
+              </p>
+              <div class="mt-2">
+                <div class="progress-container">
+                  <div class="progress-bar temp" style="width: 63%;"></div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -955,11 +983,18 @@
             </div>
           </div>
           <div class="card-content">
-            <div class="sensor-value humidity">
-              0<span class="sensor-unit">%</span>
-            </div>
-            <div class="progress-container">
-              <div class="progress-bar humidity" style="width: 62%;"></div>
+            <div class="flex-col gap-2">
+              <div class="sensor-value humidity">
+                0<span class="sensor-unit">%</span>
+              </div>
+              <p class="text-sm text-muted">
+                최적 수치: <span class="font-medium">0 ~ 0</span>
+              </p>
+              <div class="mt-2">
+                <div class="progress-container">
+                  <div class="progress-bar humidity" style="width: 62%;"></div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -973,11 +1008,18 @@
             </div>
           </div>
           <div class="card-content">
-            <div class="sensor-value soil">
-              0<span class="sensor-unit">%</span>
-            </div>
-            <div class="progress-container">
-              <div class="progress-bar soil" style="width: 55%;"></div>
+            <div class="flex-col gap-2">
+              <div class="sensor-value soil">
+                0<span class="sensor-unit">%</span>
+              </div>
+              <p class="text-sm text-muted">
+                최적 수치: <span class="font-medium">0 ~ 0</span>
+              </p>
+              <div class="mt-2">
+                <div class="progress-container">
+                  <div class="progress-bar soil" style="width: 55%;"></div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -991,11 +1033,18 @@
             </div>
           </div>
           <div class="card-content">
-            <div class="sensor-value co2">
-              0<span class="sensor-unit">ppm</span>
-            </div>
-            <div class="progress-container">
-              <div class="progress-bar co2" style="width: 42%;"></div>
+            <div class="flex-col gap-2">
+              <div class="sensor-value co2">
+                0<span class="sensor-unit">ppm</span>
+              </div>
+              <p class="text-sm text-muted">
+                최적 수치: <span class="font-medium">0 ~ 0</span>
+              </p>
+              <div class="mt-2">
+                <div class="progress-container">
+                  <div class="progress-bar co2" style="width: 42%;"></div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1437,7 +1486,7 @@
         .catch(error => alert('오류 발생'));
       });
 
-      function getFarmStatus() {
+      function fetchFarmStatus() {
         fetch(`/get-farm-status/${farmId}`)
           .then(response => {
             if (!response.ok) {
@@ -1450,7 +1499,9 @@
 
             farmName.textContent = farm_name;
             farmType.textContent = farm_type;
-            
+            sessionStorage.setItem('farmName', farm_name);
+            sessionStorage.setItem('farmType', farm_type);
+
             // farmActive가 1일 경우, startButton 숨기고 cropInfo 표시
             if (farmActive === 1) {
               startButton.style.display = 'none'; // startButton 숨기기
@@ -1545,28 +1596,25 @@
           }
         });
       }
-      
-      // 농장 이름 불러오기
-      //async function fetchFarmName() {
-      //  try {
-      //    const response = await fetch(`${API_BASE_URL}/getFarmName?farm_id=${farmId}`, {
-      //      method: 'GET',
-      //      headers: {
-      //        'Content-Type': 'application/json'
-      //      }
-      //    });
-      //    const data = await response.json();
 
-      //    if (response.ok) {
-      //      const farmname = data.farmname;
-      //      document.getElementById('farmname').textContent = `${farmname}`;
-      //    } else {
-      //      console.error('스마트팜 이름을 불러오지 못했습니다:', data.message);
-      //    }
-      //  } catch (error) {
-      //    console.error("스마트팜 이름 불러오기 실패:", error);
-      //  }
-      //}
+      async function fetchCropOptimalValues() {
+        try {
+          const response = await fetch(`${API_BASE_URL}/getCropOptimalValues?farm_type=${farmType}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error('네트워크 응답 오류: ' + response.statusText);
+          }
+
+        } catch (error) {
+          console.error("작물 최적 수치 불러오기 실패:", error);
+        }
+      }
 
       // 이름 불러오기
       async function fetchName() {
@@ -2523,8 +2571,6 @@
         document.getElementById('alarm-tab').classList.add('active');
       });
     
-
-      //fetchFarmName() // 스마트팜 이름 가져오기
       fetchName(); // 사용자 이름 가져오기
       updateDateDisplay(); // 날짜 표시 업데이트
       fetchSensorData(); // 센서 데이터 가져오기
@@ -2533,7 +2579,8 @@
       updateHistoryChartData(); // 기록 차트 가져오기
       updateSummaryChart(); // 요약 차트 가져오기
       fetchAlarm(); // 알림 가져오기
-      getFarmStatus() // D-DAY 가져오기
+      fetchFarmStatus(); // D-DAY 가져오기
+      fetchCropOptimalValues(); // 작물의 최적 수치 가져오기
       //setInterval(fetchSensorData, 5000);
       //setInterval(updateChartData, 300000);
     });

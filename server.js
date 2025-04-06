@@ -141,30 +141,6 @@ app.get('/getName', async (req,res) => {
   }
 });
 
-// 스마트팜 이름 불러오기
-app.get('/getFarmName', async (req,res) => {
-  const farm_id = req.query.farm_id;
-  const query = `SELECT farm_name from farms where farm_id = ?`;
-  let conn;
-
-  try {
-    conn = await db.getConnection();
-    const results = await conn.query(query, [farm_id]);
-
-    if (results.length > 0) {
-      console.log('[GET /getFarmName] 스마트팜 이름:',results[0].farm_name);
-      return res.json({ farmname: results[0].farm_name });
-    }
-    console.log('[GET /getFarmName] 스마트팜 정보를 찾을 수 없습니다.')
-    return res.status(404).json({ message:'사용자 정보를 찾을 수 없습니다.' });
-  } catch (err) {
-    console.error('[GET /getFarmName] DB 오류:', err);
-    return res.status(500).json({ message: 'DB 오류' });
-  } finally {
-    conn.release();
-  }
-});
-
 // 농장 목록 불러오기
 app.get('/getFarms', async(req, res) => {
   const user_id = req.query.user_id;
@@ -665,6 +641,26 @@ app.get('/get-farm-status/:farmId', async (req, res) => {
     return res.status(500).json({ message: 'DB 오류' });
   } finally {
     if (conn) conn.release();
+  }
+});
+
+// 제어장치 상태 가져오기
+app.get('/devices/status', async(req, res) => {
+  const { farm_id } = req.query;
+  const query = `SELECT * FROM devices WHERE farm_id = ?`
+  let conn;
+
+  try {
+    conn = await db.getConnection();
+    const results = await conn.query(query, [farm_id]);
+
+    console.log('[GET /devices/status] 제어장치 조회 성공:');
+    return res.json(results[0]);
+  } catch (err) {
+    console.error('[GET /devices/status] DB 오류:', err);
+    return res.status(500).json({ message: 'DB 오류' });
+  } finally {
+    conn.release();
   }
 });
 
