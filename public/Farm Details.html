@@ -1598,12 +1598,11 @@
             return response.json();
           })
           .then(data => {
-            const { farm_name, farm_type, growthRate, harvestDays, startDate, farmActive } = data;
+            const { farm_name, growthRate, harvestDays, startDate, farmActive } = data;
 
             farmNameText.textContent = farm_name;
             farmTypeText.textContent = farm_type;
             sessionStorage.setItem('farmName', farm_name);
-            sessionStorage.setItem('farmType', farm_type);
 
             // farmActive가 1일 경우, startButton 숨기고 cropInfo 표시
             if (farmActive === 1) {

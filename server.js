@@ -556,7 +556,7 @@ app.get('/get-farm-status/:farmId', async (req, res) => {
   const farmId = req.params.farmId;
 
   const query = `
-    SELECT f.farm_name, f.farm_type, f.growth_rate, c.harvest_days, f.start_date, f.farm_active
+    SELECT f.farm_name, f.growth_rate, c.harvest_days, f.start_date, f.farm_active
     FROM farms f
     JOIN crops c ON f.farm_type = c.name
     WHERE f.farm_id = ?
@@ -572,10 +572,10 @@ app.get('/get-farm-status/:farmId', async (req, res) => {
       return res.status(404).send('농장 정보가 없습니다.');
     }
 
-    const { farm_name, farm_type, growth_rate, harvest_days, start_date, farm_active } = results[0];
+    const { farm_name, growth_rate, harvest_days, start_date, farm_active } = results[0];
 
     // 값이 없으면 처리
-    if (farm_name === null || farm_type === null || growth_rate === null || harvest_days === null || start_date === null || farm_active === null) {
+    if (farm_name === null || growth_rate === null || harvest_days === null || start_date === null || farm_active === null) {
       return res.status(400).json({ message: '농장 정보에 누락된 값이 있습니다.' });
     }
 
@@ -621,7 +621,6 @@ app.get('/get-farm-status/:farmId', async (req, res) => {
         success: true,
         message: '성장률 업데이트 완료',
         farm_name: farm_name,
-        farm_type: farm_type,
         growthRate: newGrowthRate,
         harvestDays: harvest_days,
         startDate: start_date,
@@ -631,7 +630,6 @@ app.get('/get-farm-status/:farmId', async (req, res) => {
       console.log(`[GET /get-farm-status] ${farmId} 농장 D-DAY 조회 성공(비활성화)`);
       res.json({
         farm_name: farm_name,
-        farm_type: farm_type,
         growthRate: newGrowthRate,
         harvestDays: harvest_days,
         startDate: start_date,
