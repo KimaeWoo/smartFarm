@@ -43,7 +43,7 @@
     logoutButton.addEventListener("click", () => {
       sessionStorage.removeItem("user_id");
       alert("로그아웃");
-      window.location.href = "Login.html";
+      window.location.href = "login.html";
     });
 
     document.addEventListener('DOMContentLoaded', async () => {
@@ -469,17 +469,17 @@
       // 센서 데이터를 가져와 화면에 업데이트하는 함수
       async function fetchSensorData() {
         try {
-          //if (!userId) {
-          //  alert("사용자 정보를 확인할 수 없습니다. 로그인 후 다시 시도해주세요.");
-          //  window.location.href = "Login.html";
-          //  return;
-          //}
+          if (!userId) {
+            alert("사용자 정보를 확인할 수 없습니다. 로그인 후 다시 시도해주세요.");
+            window.location.href = "login.html";
+            return;
+          }
 
-          //if (!farmId) {
-          //  alert("스마트팜 정보를 확인할 수 없습니다. 스마트팜 추가가 후 다시 시도해주세요.");
-          //  window.location.href = "farm.html";
-          //  return;
-          //}
+          if (!farmId) {
+            alert("스마트팜 정보를 확인할 수 없습니다. 스마트팜 추가가 후 다시 시도해주세요.");
+            window.location.href = "dashboard.html";
+            return;
+          }
 
           const response = await fetch(`${API_BASE_URL}/sensors/status?farm_id=${farmId}`, {
             method: 'GET',

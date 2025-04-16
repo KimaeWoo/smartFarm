@@ -306,7 +306,7 @@
             console.log(farm.farm_id,farm.farm_type);
             sessionStorage.setItem('farmType', farm.farm_type);
             alert(`${farm.farm_name} 농장을 선택했습니다.`);
-            window.location.href = 'Farm Details.html';
+            window.location.href = 'details.html';
           });
         }
         
