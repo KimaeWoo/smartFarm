@@ -99,7 +99,7 @@ async function login() {
         // 로그인 성공 시 user_id와 JWT 토큰을 저장
         //sessionStorage.setItem('token', data.token);  
         sessionStorage.setItem('user_id', user_id);
-        window.location.href = "Farm Dashboard.html";
+        window.location.href = "dashboard.html";
     } else {
         alert(data.message || '로그인 실패');
     }
