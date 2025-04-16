@@ -16,13 +16,10 @@ signupToggle.addEventListener('click', () => {
     signupToggle.classList.add('active');
     loginToggle.classList.remove('active');
 });
-        
+
 let isUserIdChecked = false;
 let isPasswordMatched = false;
 let isUsernameChecked = false;
-
-// 로그인 버튼
-document.getElementById("login-submit").addEventListener("submit", login);
 
 document.getElementById("signup-email").addEventListener("input", () => {
     isUserIdChecked = false;
@@ -102,7 +99,7 @@ async function login() {
         // 로그인 성공 시 user_id와 JWT 토큰을 저장
         //sessionStorage.setItem('token', data.token);  
         sessionStorage.setItem('user_id', user_id);
-        window.location.href = "dashboard.html";
+        window.location.href = "Farm Dashboard.html";
     } else {
         alert(data.message || '로그인 실패');
     }
@@ -122,7 +119,7 @@ async function signup() {
     });
 
     const data = await response.json();
-    
+
     if (response.ok) {
         alert('회원가입 성공!');
         toggleForm(); // 가입 후 로그인 화면으로 이동
