@@ -1,4 +1,3 @@
-
 const API_BASE_URL = "https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app";
 // 전역 변수
 let allFarms = [];

@@ -1,73 +1,77 @@
 <!DOCTYPE html>
 
 <html lang="ko">
+
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>로그인 / 회원가입</title>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>로그인 / 회원가입</title>
 
-<link href="login.css" rel="stylesheet"/></head>
+    <link href="login.css" rel="stylesheet" />
+</head>
+
 <body>
-<div class="container">
-<div class="forms-container">
-<!-- 로그인 폼 -->
-<div class="login-form">
-<h2>로그인</h2>
-<form>
-<div class="input-field">
-<label for="login-email">이메일</label>
-<input id="login-email" required="" type="email"/>
-</div>
-<div class="input-field">
-<label for="login-password">비밀번호</label>
-<input id="login-password" required="" type="password"/>
-</div>
-<form id="login-form">
-    <button class="btn" type="submit">로그인</button>
-</form>
-<div class="forgot-password">
-<a href="#">비밀번호를 잊으셨나요?</a>
-</div>
-</form>
-</div>
-<!-- 회원가입 폼 -->
-<div class="signup-form">
-<h2>회원가입</h2>
-<form id="signup-form">
-<div class="input-field">
-<label for="signup-email">이메일</label>
-<div class="input-with-button">
-<input id="signup-email" required="" type="email"/>
-<button class="check-btn" onclick="checkUserId()" type="button">중복확인</button>
-</div>
-<div class="result-message" id="email-result"></div>
-</div>
-<div class="input-field">
-<label for="signup-name">이름</label>
-<div class="input-with-button">
-<input id="signup-name" required="" type="text"/>
-</div>
-<div class="result-message" id="name-result"></div>
-</div>
-<div class="input-field">
-<label for="signup-password">비밀번호 </label>
-<input id="signup-password" oninput="checkPasswordMatch()" required="" type="password"/>
-</div>
-<div class="input-field">
-<label for="signup-confirm-password">비밀번호 확인</label>
-<input id="signup-confirm-password" oninput="checkPasswordMatch()" required="" type="password"/>
-<div class="result-message" id="confirm-password-result"></div>
-</div>
-<button class="btn" id="signupBtn" onclick="signup()" type="submit">회원가입</button>
-</form>
-</div>
-</div>
-<!-- 하단 토글 버튼 -->
-<div class="toggle-container">
-<button class="toggle-btn active" id="login-toggle">로그인</button>
-<button class="toggle-btn" id="signup-toggle">회원가입</button>
-</div>
-</div>
+    <div class="container">
+        <div class="forms-container">
+            <!-- 로그인 폼 -->
+            <div class="login-form">
+                <h2>로그인</h2>
+                <form>
+                    <div class="input-field">
+                        <label for="login-email">이메일</label>
+                        <input id="login-email" required="" type="email" />
+                    </div>
+                    <div class="input-field">
+                        <label for="login-password">비밀번호</label>
+                        <input id="login-password" required="" type="password" />
+                    </div>
+                    <button class="btn" id="login-submit" type="submit">로그인</button>
+                    <div class="forgot-password">
+                        <a href="#">비밀번호를 잊으셨나요?</a>
+                    </div>
+                </form>
+            </div>
+            <!-- 회원가입 폼 -->
+            <div class="signup-form">
+                <h2>회원가입</h2>
+                <form id="signup-form">
+                    <div class="input-field">
+                        <label for="signup-email">이메일</label>
+                        <div class="input-with-button">
+                            <input id="signup-email" required="" type="email" />
+                            <button class="check-btn" onclick="checkUserId()" type="button">중복확인</button>
+                        </div>
+                        <div class="result-message" id="email-result"></div>
+                    </div>
+                    <div class="input-field">
+                        <label for="signup-name">이름</label>
+                        <div class="input-with-button">
+                            <input id="signup-name" required="" type="text" />
+                        </div>
+                        <div class="result-message" id="name-result"></div>
+                    </div>
+                    <div class="input-field">
+                        <label for="signup-password">비밀번호 </label>
+                        <input id="signup-password" oninput="checkPasswordMatch()" required="" type="password" />
+                    </div>
+                    <div class="input-field">
+                        <label for="signup-confirm-password">비밀번호 확인</label>
+                        <input id="signup-confirm-password" oninput="checkPasswordMatch()" required=""
+                            type="password" />
+                        <div class="result-message" id="confirm-password-result"></div>
+                    </div>
+                    <button class="btn" id="signupBtn" onclick="signup()" type="submit">회원가입</button>
+                </form>
+            </div>
+        </div>
+        <!-- 하단 토글 버튼 -->
+        <div class="toggle-container">
+            <button class="toggle-btn active" id="login-toggle">로그인</button>
+            <button class="toggle-btn" id="signup-toggle">회원가입</button>
+        </div>
+    </div>
 
-<script src="login.js"></script></body>
+    <script src="login.js"></script>
+</body>
+
 </html>

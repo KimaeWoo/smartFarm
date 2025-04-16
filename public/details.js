@@ -1,4 +1,3 @@
-
 const API_BASE_URL = "https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app";
 
 const growthStages = [
@@ -28,18 +27,18 @@ function toggleMode() {
   const modeToggleImg = document.getElementById('mode-toggle');
 
   if (htmlElement.classList.contains('dark-theme')) {
-      htmlElement.classList.remove('dark-theme');
-      htmlElement.classList.add('light-theme');
-      modeToggleImg.src = 'images/lightmode2.png'; // 라이트 모드 이미지
+    htmlElement.classList.remove('dark-theme');
+    htmlElement.classList.add('light-theme');
+    modeToggleImg.src = 'images/lightmode2.png'; // 라이트 모드 이미지
   } else {
-      htmlElement.classList.remove('light-theme');
-      htmlElement.classList.add('dark-theme');
-      modeToggleImg.src = 'images/darkmode2.png'; // 다크 모드 이미지
+    htmlElement.classList.remove('light-theme');
+    htmlElement.classList.add('dark-theme');
+    modeToggleImg.src = 'images/darkmode2.png'; // 다크 모드 이미지
   }
 }
 
 // 로그아웃 처리 
-const logoutButton = document.getElementById("logout-btn");       
+const logoutButton = document.getElementById("logout-btn");
 logoutButton.addEventListener("click", () => {
   sessionStorage.removeItem("user_id");
   alert("로그아웃");
@@ -67,7 +66,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   function updateDateDisplay() {
     // 날짜 표시 업데이트
     const formattedDate = formatDate(currentDate);
-    
+
     // 'currentDate'와 'history-date'에 날짜만 표시
     //document.getElementById('currentDate').textContent = formattedDate.split(' (')[0];
     document.getElementById('history-date').textContent = formattedDate;
@@ -77,51 +76,51 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 탭 전환 기능
   const tabs = document.querySelectorAll('.tab');
   const tabContents = document.querySelectorAll('.tab-content');
-  
+
   tabs.forEach(tab => {
     tab.addEventListener('click', () => {
       const tabId = tab.getAttribute('data-tab');
-      
+
       // 탭 활성화
       tabs.forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
-      
+
       // 탭 컨텐츠 활성화
       tabContents.forEach(content => content.classList.remove('active'));
       document.getElementById(`${tabId}-tab`).classList.add('active');
 
-      if (tabId == 'history'){
+      if (tabId == 'history') {
         updateChartData(); // 실시간 차트 가져오기
         updateHistoryChartData(); // 기록 차트 가져오기
         updateSummaryChart(); // 요약 차트 가져오기
       }
     });
   });
-  
+
   // 센서 탭 전환 기능
   const sensorTabs = document.querySelectorAll('.sensor-tab');
   const sensorCharts = document.querySelectorAll('.sensor-chart');
-  
+
   sensorTabs.forEach(tab => {
     tab.addEventListener('click', () => {
       const sensorId = tab.getAttribute('data-sensor');
-      
+
       // 센서 탭 활성화
       sensorTabs.forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
-      
+
       // 센서 차트 활성화
       sensorCharts.forEach(chart => chart.classList.remove('active'));
       document.getElementById(`${sensorId}-chart`).classList.add('active');
     });
   });
-  
+
   document.getElementById('prev-date').addEventListener('click', async () => {
     currentDate.setDate(currentDate.getDate() - 1);
     updateDateDisplay();
     await updateAllCharts(); // 데이터를 기다리고 차트 업데이트
   });
-  
+
   document.getElementById('next-date').addEventListener('click', async () => {
     if (currentDate < today) {
       currentDate.setDate(currentDate.getDate() + 1);
@@ -148,7 +147,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('start-farm-btn').addEventListener('click', () => {
     startButton.style.display = 'none';
     cropInfo.classList.add('visible');
-    
+
     fetch(`${API_BASE_URL}/start-farm`, {
       method: 'POST',
       headers: {
@@ -156,29 +155,29 @@ document.addEventListener('DOMContentLoaded', async () => {
       },
       body: JSON.stringify({ farmId })
     })
-    .then(response => response.json())
-    .then(data => {
-      if (data.harvestDays) {
-        const harvestDays = data.harvestDays;
-        const today = new Date();
-        const startDate = new Date();
-        const harvestDate = new Date(startDate);
-        harvestDate.setDate(harvestDate.getDate() + harvestDays); // 수확일 계산
+      .then(response => response.json())
+      .then(data => {
+        if (data.harvestDays) {
+          const harvestDays = data.harvestDays;
+          const today = new Date();
+          const startDate = new Date();
+          const harvestDate = new Date(startDate);
+          harvestDate.setDate(harvestDate.getDate() + harvestDays); // 수확일 계산
 
-        const timeDiff = harvestDate - today;
-        const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24)); // 남은 일수 계산
+          const timeDiff = harvestDate - today;
+          const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24)); // 남은 일수 계산
 
-        // D-Day 출력
-        document.getElementById('d-day').textContent = `D-Day: ${daysLeft > 0 ? daysLeft + '일 남음' : '수확 가능'}`;
+          // D-Day 출력
+          document.getElementById('d-day').textContent = `D-Day: ${daysLeft > 0 ? daysLeft + '일 남음' : '수확 가능'}`;
 
-        // 원형 바 업데이트
-        const growthRate = ((harvestDays - daysLeft) / harvestDays) * 100; // 성장률 계산
+          // 원형 바 업데이트
+          const growthRate = ((harvestDays - daysLeft) / harvestDays) * 100; // 성장률 계산
 
-        growthCircle.style.background = `conic-gradient(#10b981 ${growthRate}%, #e5e7eb ${growthRate}%)`;
-        growthText.textContent = `${Math.round(growthRate)}%`;
-      }
-    })
-    .catch(error => alert('오류 발생'));
+          growthCircle.style.background = `conic-gradient(#10b981 ${growthRate}%, #e5e7eb ${growthRate}%)`;
+          growthText.textContent = `${Math.round(growthRate)}%`;
+        }
+      })
+      .catch(error => alert('오류 발생'));
   });
 
   function fetchFarmStatus() {
@@ -203,7 +202,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           startButton.style.display = 'block'; // startButton 보이기
           cropInfo.classList.remove('visible'); // cropInfo 숨기기
         }
-        
+
         // 성장률과 날짜 정보 업데이트
         updateGrowthStatus(growthRate, harvestDays, startDate);
       })
@@ -223,24 +222,24 @@ document.addEventListener('DOMContentLoaded', async () => {
   function updateGrowthStatus(growthRate, harvestDays, startDate) {
     // 성장률 100%를 넘지 않도록 보정
     growthRate = Math.min(growthRate, 100);
-  
+
     // 성장률 표시 및 원형 프로그래스 바 업데이트
     document.getElementById('growth-rate').textContent = `${growthRate}%`;
     growthCircle.style.background = `conic-gradient(#10b981 ${growthRate}%, #e5e7eb ${growthRate}%)`;
-  
+
     // 시작일 표시
     const formattedStartDate = formatDateYMD(startDate);
     document.getElementById('start-date').textContent = `시작일: ${formattedStartDate}`;
-  
+
     // D-Day 계산 및 표시
     const today = new Date();
     const startDateObj = new Date(startDate);
     const harvestDate = new Date(startDateObj);
     harvestDate.setDate(harvestDate.getDate() + harvestDays);
-  
+
     const timeDiff = harvestDate - today;
     let daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
-  
+
     if (daysLeft > 0) {
       document.getElementById('d-day').textContent = `D-Day: ${daysLeft}일 남음`;
     } else if (daysLeft === 0) {
@@ -248,19 +247,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     } else {
       document.getElementById('d-day').textContent = `D-Day: 수확 완료`;
     }
-  
+
     // 성장 상태, 이미지, 단계 표시 업데이트
     updateGrowthStageByRate(growthRate);
   }
-  
+
   function updateGrowthStageByRate(growthRate) {
     const plantImage = document.getElementById("plantImage");
     const growthText = document.getElementById("growthText");
     const stageElements = document.querySelectorAll(".stage");
-  
+
     let stageText = "";
     let stageIndex = 0;
-  
+
     // 성장률에 따라 상태 결정
     if (growthRate <= 10) {
       stageText = "씨앗";
@@ -275,11 +274,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       stageText = "열매";
       stageIndex = 3;
     }
-  
+
     // 이미지 및 텍스트 업데이트
     plantImage.src = growthStages[stageIndex].image;
     growthText.textContent = `현재 성장 단계: ${stageText}`;
-  
+
     // 단계 표시(active 클래스 업데이트)
     stageElements.forEach((el, idx) => {
       if (idx <= stageIndex) {
@@ -351,10 +350,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const co2Max = document.getElementById('co2-max').value;
 
     // 유효성 검사
-    if (parseInt(tempMin) > parseInt(tempMax) || 
-        parseInt(humidMin) > parseInt(humidMax) || 
-        parseInt(soilMin) > parseInt(soilMax) || 
-        parseInt(co2Min) > parseInt(co2Max)) {
+    if (parseInt(tempMin) > parseInt(tempMax) ||
+      parseInt(humidMin) > parseInt(humidMax) ||
+      parseInt(soilMin) > parseInt(soilMax) ||
+      parseInt(co2Min) > parseInt(co2Max)) {
       alert('최소값은 최대값보다 작아야 합니다.');
       return false;
     }
@@ -410,7 +409,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       const result = await response.json();
       console.log('최적 수치 업데이트 결과:', result);
-      
+
     } catch (error) {
       console.error('최적 수치 서버 저장 실패:', error);
       alert('서버에 최적 수치 저장 중 오류가 발생했습니다.');
@@ -422,16 +421,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 사용자 정의 최적 수치 불러오기
   function loadCustomOptimalValues() {
     const savedValues = localStorage.getItem(`customOptimalValues_${farmId}`);
-    
+
     if (savedValues) {
       const customValues = JSON.parse(savedValues);
-      
+
       // UI 업데이트
       tempOptimal.textContent = `${customValues.temperature.optimal_min} ~ ${customValues.temperature.optimal_max}`;
       humidOptimal.textContent = `${customValues.humidity.optimal_min} ~ ${customValues.humidity.optimal_max}`;
       soilOptimal.textContent = `${customValues.soil_moisture.optimal_min} ~ ${customValues.soil_moisture.optimal_max}`;
       co2Optimal.textContent = `${customValues.co2.optimal_min} ~ ${customValues.co2.optimal_max}`;
-      
+
       // 설정 패널 입력 필드 업데이트
       document.getElementById('temp-min').value = customValues.temperature.optimal_min;
       document.getElementById('temp-max').value = customValues.temperature.optimal_max;
@@ -594,14 +593,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 실시간 차트 데이터 업데이트
   async function updateChartData() {
     const realtimeData = await fetchRealtimeData();
-    
+
     // 차트 데이터 갱신
     realtimeChart.data.labels = realtimeData.map(item => item.time);
     realtimeChart.data.datasets[0].data = realtimeData.map(item => item.temperature);
     realtimeChart.data.datasets[1].data = realtimeData.map(item => item.humidity);
     realtimeChart.data.datasets[2].data = realtimeData.map(item => item.soil);
     realtimeChart.data.datasets[3].data = realtimeData.map(item => item.co2);
-    
+
     realtimeChart.update();
   }
 
@@ -626,7 +625,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             tension: 0.4,
             pointRadius: 4,
             pointHoverRadius: 6,
-            yAxisID: 'y1', 
+            yAxisID: 'y1',
           },
           {
             label: '습도 (%)',
@@ -636,7 +635,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             tension: 0.4,
             pointRadius: 4,
             pointHoverRadius: 6,
-            yAxisID: 'y1',  
+            yAxisID: 'y1',
           },
           {
             label: '토양 수분 (%)',
@@ -646,7 +645,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             tension: 0.4,
             pointRadius: 4,
             pointHoverRadius: 6,
-            yAxisID: 'y1', 
+            yAxisID: 'y1',
           },
           {
             label: 'CO2 (ppm)',
@@ -656,7 +655,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             tension: 0.4,
             pointRadius: 4,
             pointHoverRadius: 6,
-            yAxisID: 'y2',  
+            yAxisID: 'y2',
           }
         ]
       },
@@ -683,8 +682,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             beginAtZero: false,
             position: 'left',
             ticks: {
-              max: 80, 
-              min: 0, 
+              max: 80,
+              min: 0,
               color: '#000000'
             }
           },
@@ -693,10 +692,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             beginAtZero: false,
             position: 'right',
             grid: {
-              drawOnChartArea: false, 
+              drawOnChartArea: false,
             },
             ticks: {
-              max: 1000, 
+              max: 1000,
               min: 0,
               color: '#000000'
             }
@@ -705,15 +704,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
   );
-  
+
   // 기록 데이터 가져오기
   async function fetchHistoryData() {
     // "2025년 02월 27일 (목요일)"에서 "2025년 02월 27일"만 추출
     const selectedDate = document.getElementById('history-date').innerText.split(' (')[0];
-  
+
     // 날짜 변환: "2025년 02월 27일" -> "2025-02-27"
     let formattedDate = selectedDate.replace('년', '-').replace('월', '-').replace('일', '').replace(/\s+/g, '').trim();
-  
+
     // '2025-02-27' 형식인지 확인하고, 아니면 오류 처리
     const datePattern = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -721,7 +720,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.error('날짜 형식이 잘못되었습니다:', formattedDate);
       return { timeLabels: [], temperatureData: [], humidityData: [], soilData: [], co2Data: [] };
     }
-  
+
     try {
       const response = await fetch(`${API_BASE_URL}/history-data?farm_id=${farmId}&date=${formattedDate}`, {
         method: 'GET',
@@ -729,19 +728,19 @@ document.addEventListener('DOMContentLoaded', async () => {
           'Content-Type': 'application/json',
         }
       });
-  
+
       const data = await response.json();
-  
+
       if (!response.ok) {
         throw new Error('네트워크 응답 오류: ' + response.statusText);
       }
-      
+
       // 서버 응답이 배열인지 확인
       if (!Array.isArray(data)) {
         console.error('서버 응답 데이터가 배열이 아닙니다.', data);
         return { timeLabels: [], temperatureData: [], humidityData: [], soilData: [], co2Data: [] };
       }
-  
+
       // 서버 응답 데이터 가공
       const processedData = {
         timeLabels: data.map(item => new Date(item.time_interval).toLocaleString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false })),
@@ -750,7 +749,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         soilData: data.map(item => parseFloat(item.avg_soil_moisture)),
         co2Data: data.map(item => parseInt(item.avg_co2)),
       };
-  
+
       return processedData;
     } catch (error) {
       console.error('기록 데이터 가져오기 오류:', error);
@@ -768,27 +767,27 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 기록 차트 데이터 갱신
   async function updateHistoryChartData() {
     const historyData = await fetchHistoryData();
-  
+
     // 온도 차트 업데이트
     temperatureChart.data.labels = historyData.timeLabels;
     temperatureChart.data.datasets[0].data = historyData.temperatureData;
     temperatureChart.update();
-  
+
     // 습도 차트 업데이트
     humidityChart.data.labels = historyData.timeLabels;
     humidityChart.data.datasets[0].data = historyData.humidityData;
     humidityChart.update();
-  
+
     // 토양 수분 차트 업데이트
     soilChart.data.labels = historyData.timeLabels;
     soilChart.data.datasets[0].data = historyData.soilData;
     soilChart.update();
-  
+
     // CO2 차트 업데이트
     co2Chart.data.labels = historyData.timeLabels;
     co2Chart.data.datasets[0].data = historyData.co2Data;
     co2Chart.update();
-  }    
+  }
 
   // 온도 차트
   const temperatureChart = new Chart(
@@ -843,7 +842,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
   );
-  
+
   // 습도 차트
   const humidityChart = new Chart(
     document.getElementById('humidity-canvas'),
@@ -876,7 +875,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           },
           tooltip: {
             mode: 'index',
-            intersect: false,titlecolor: '#000000',
+            intersect: false, titlecolor: '#000000',
             bodycolor: '#000000'
           }
         },
@@ -896,7 +895,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
   );
-  
+
   // 토양 수분 차트
   const soilChart = new Chart(
     document.getElementById('soil-canvas'),
@@ -950,7 +949,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
   );
-  
+
   // CO2 차트
   const co2Chart = new Chart(
     document.getElementById('co2-canvas'),
@@ -1008,29 +1007,29 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 평균 데이터
   async function updateSummaryChart() {
     const historyData = await fetchHistoryData();
-    
+
     // 각 항목의 평균값 계산
     const avgTemperature = roundToTwo(average(historyData.temperatureData));
     const avgHumidity = roundToTwo(average(historyData.humidityData));
     const avgSoil = roundToTwo(average(historyData.soilData));
     const avgCo2 = roundToTwo(average(historyData.co2Data)); // CO2는 10으로 나누지 않음, 후에 차트에서 나누기
-    
+
     // 요약 차트 데이터 업데이트
     summaryChart.data.datasets[0].data = [avgTemperature]; // 온도 평균값
     summaryChart.data.datasets[1].data = [avgHumidity];   // 습도 평균값
     summaryChart.data.datasets[2].data = [avgSoil];       // 토양 수분 평균값
     summaryChart.data.datasets[3].data = [avgCo2 / 10];   // CO2 평균값 (차트에서만 나누기)
-    
+
     summaryChart.update();
   }
-  
+
   // 평균값 계산 함수
   function average(dataArray) {
     if (dataArray.length === 0) return 0;
     const sum = dataArray.reduce((acc, value) => acc + value, 0);
     return sum / dataArray.length;
   }
-  
+
   // 소수점 2자리 반올림 함수
   function roundToTwo(num) {
     return Math.round(num * 100) / 100;
@@ -1086,7 +1085,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           },
           tooltip: {
             callbacks: {
-              label: function(context) {
+              label: function (context) {
                 let label = context.dataset.label || '';
                 if (label) {
                   label += ': ';
@@ -1119,7 +1118,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
       }
     }
-  );   
+  );
 
   // 기록, 요약 차트 업데이트 함수
   async function updateAllCharts() {
@@ -1178,12 +1177,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         // 현재 토글 상태 확인
         const isChecked = document.getElementById(`${device}-switch`).checked;
         // 서버로 상태 변경 요청
-        const response = await fetch(`${API_BASE_URL}/devices/force-status`, { 
+        const response = await fetch(`${API_BASE_URL}/devices/force-status`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            farm_id: farmId, 
-            device: device, 
+            farm_id: farmId,
+            device: device,
             status: isChecked
           })
         });
@@ -1233,12 +1232,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 각 장치의 스위치 요소를 가져오기
   const devices = ['led', 'fan', 'water', 'heater', 'cooler'];
-    
+
   // 각 장치에 대해 이벤트 리스너 추가
   devices.forEach(device => {
     const switchElement = document.getElementById(`${device}-switch`);
     if (switchElement) {
-      switchElement.addEventListener('change', function() {
+      switchElement.addEventListener('change', function () {
         updateDevice(device);
       });
     } else {
@@ -1249,7 +1248,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   let panel = document.querySelector(".floating-panel");
   panel.style.top = "57.5%";
   panel.style.transform = "translateY(-50%)";
-  panel.style.position = "fixed"; 
+  panel.style.position = "fixed";
 
   const settingsBtn = document.getElementById("settingsBtn");
   const settingsPanel = document.getElementById("settingsPanel");
@@ -1258,20 +1257,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 설정 버튼 클릭 시 패널 표시
   settingsBtn.addEventListener("click", function () {
-      settingsPanel.style.display = "block";
+    settingsPanel.style.display = "block";
   });
 
   // 닫기 버튼 클릭 시 패널 숨김
   closeSettings.addEventListener("click", function () {
-      settingsPanel.style.display = "none";
+    settingsPanel.style.display = "none";
   });
 
   // 저장 버튼 클릭 시 설정 저장
   saveSettings.addEventListener("click", function () {
-      if (saveCustomOptimalValues()) {
-          settingsPanel.style.display = "none";
-          alert("최적 수치가 저장되었습니다.");
-      }
+    if (saveCustomOptimalValues()) {
+      settingsPanel.style.display = "none";
+      alert("최적 수치가 저장되었습니다.");
+    }
   });
 
   // 전체 알림 데이터 저장용
@@ -1279,44 +1278,44 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 날짜 포맷팅 함수 (년, 월, 일, 시, 분 형식)
   function formatDateTime(dateString) {
-      const date = new Date(dateString);
-      const offset = 9 * 60; // KST offset (UTC+9)
-      const kstDate = new Date(date.getTime() - offset * 60000);
-      return `${kstDate.getFullYear()}년 ${kstDate.getMonth() + 1}월 ${kstDate.getDate()}일 ${kstDate.getHours()}시 ${kstDate.getMinutes()}분`;
+    const date = new Date(dateString);
+    const offset = 9 * 60; // KST offset (UTC+9)
+    const kstDate = new Date(date.getTime() - offset * 60000);
+    return `${kstDate.getFullYear()}년 ${kstDate.getMonth() + 1}월 ${kstDate.getDate()}일 ${kstDate.getHours()}시 ${kstDate.getMinutes()}분`;
   }
 
   // 서버에서 알림 데이터 불러오기
   async function fetchAlarm() {
-      try {
-          const response = await fetch(`${API_BASE_URL}/getAlarm?farm_id=${farmId}`);
-          if (!response.ok) throw new Error('네트워크 오류:' + response.statusText);
+    try {
+      const response = await fetch(`${API_BASE_URL}/getAlarm?farm_id=${farmId}`);
+      if (!response.ok) throw new Error('네트워크 오류:' + response.statusText);
 
-          const data = await response.json();
+      const data = await response.json();
 
-          // 전체 알림 저장 및 정렬 (type 기준 정렬)
-          allAlarms = data.sort((a, b) => a.type.localeCompare(b.type) || new Date(b.created_at) - new Date(a.created_at));
+      // 전체 알림 저장 및 정렬 (type 기준 정렬)
+      allAlarms = data.sort((a, b) => a.type.localeCompare(b.type) || new Date(b.created_at) - new Date(a.created_at));
 
-          // 최신 알림 표시
-          const latestDanger = allAlarms.find(alarm => alarm.type === '위험') || { content: '알림 없음', created_at: '시간' };
-          const latestWarning = allAlarms.find(alarm => alarm.type === '경고') || { content: '알림 없음', created_at: '시간' };
-          const latestComplete = allAlarms.find(alarm => alarm.type === '완료') || { content: '알림 없음', created_at: '시간' };
+      // 최신 알림 표시
+      const latestDanger = allAlarms.find(alarm => alarm.type === '위험') || { content: '알림 없음', created_at: '시간' };
+      const latestWarning = allAlarms.find(alarm => alarm.type === '경고') || { content: '알림 없음', created_at: '시간' };
+      const latestComplete = allAlarms.find(alarm => alarm.type === '완료') || { content: '알림 없음', created_at: '시간' };
 
-          if(latestDanger.content != '알림 없음'){
-            document.getElementById('danger-head').textContent = latestDanger.content;
-            document.getElementById('danger-time').textContent = formatDateTime(latestDanger.created_at);  
-          }
-          if(latestWarning.content != '알림 없음'){
-            document.getElementById('warning-head').textContent = latestWarning.content;
-            document.getElementById('warning-time').textContent = formatDateTime(latestWarning.created_at);
-          }
-          if(latestComplete.content != '알림 없음'){
-            document.getElementById('complete-head').textContent = latestComplete.content;
-            document.getElementById('complete-time').textContent = formatDateTime(latestComplete.created_at);
-          }
-      } catch (error) {
-          console.error('알림 불러오기 실패:', error);
+      if (latestDanger.content != '알림 없음') {
+        document.getElementById('danger-head').textContent = latestDanger.content;
+        document.getElementById('danger-time').textContent = formatDateTime(latestDanger.created_at);
       }
-      fetchAlarmList();
+      if (latestWarning.content != '알림 없음') {
+        document.getElementById('warning-head').textContent = latestWarning.content;
+        document.getElementById('warning-time').textContent = formatDateTime(latestWarning.created_at);
+      }
+      if (latestComplete.content != '알림 없음') {
+        document.getElementById('complete-head').textContent = latestComplete.content;
+        document.getElementById('complete-time').textContent = formatDateTime(latestComplete.created_at);
+      }
+    } catch (error) {
+      console.error('알림 불러오기 실패:', error);
+    }
+    fetchAlarmList();
   }
 
   // 알림 리스트를 가져오는 함수
@@ -1382,28 +1381,28 @@ document.addEventListener('DOMContentLoaded', async () => {
   function getEmojiForType(type) {
     switch (type) {
       case '위험':
-        return '🔴'; 
+        return '🔴';
       case '경고':
-        return '🟡'; 
+        return '🟡';
       case '완료':
-        return '🟢'; 
+        return '🟢';
       default:
         return '';
     }
   }
 
   // 필터 변경 시 알림 리스트 갱신
-  document.querySelector('#alarm-filter').addEventListener('change', fetchAlarmList);        
+  document.querySelector('#alarm-filter').addEventListener('change', fetchAlarmList);
 
   document.querySelector('.alarm').addEventListener('click', () => {
     // 알림 탭으로 이동하는 코드
     document.querySelectorAll('.tab').forEach(tab => {
-        tab.classList.remove('active');
+      tab.classList.remove('active');
     });
     document.querySelector('[data-tab="alarm"]').classList.add('active');
 
     document.querySelectorAll('.tab-content').forEach(content => {
-        content.classList.remove('active');
+      content.classList.remove('active');
     });
     document.getElementById('alarm-tab').classList.add('active');
   });

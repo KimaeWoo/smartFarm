@@ -1,4 +1,3 @@
-
 // 토글 버튼 요소 가져오기
 const loginToggle = document.getElementById('login-toggle');
 const signupToggle = document.getElementById('signup-toggle');
@@ -23,7 +22,7 @@ let isPasswordMatched = false;
 let isUsernameChecked = false;
 
 // 로그인 버튼
-document.getElementById("login-form").addEventListener("submit", login);
+document.getElementById("login-submit").addEventListener("submit", login);
 
 document.getElementById("signup-email").addEventListener("input", () => {
     isUserIdChecked = false;
