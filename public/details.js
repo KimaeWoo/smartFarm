@@ -3,8 +3,8 @@ const API_BASE_URL = "https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app"
 const growthStages = [
   { image: "images/씨앗.png", text: "씨앗" },
   { image: "images/새싹.png", text: "새싹" },
-  { image: "images/성장.gif", text: "성장" },
-  { image: "images/열매.gif", text: "열매" }
+  { image: "images/성장.png", text: "성장" },
+  { image: "images/열매.png", text: "열매" }
 ];
 
 let currentStage = 0;
