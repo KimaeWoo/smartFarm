@@ -289,22 +289,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // 센서별 최적 수치 불러오기
-  async function fetchCropOptimalValues() {
-    const farmType = sessionStorage.getItem('farmType');
-    console.log("작물 종류" + farmType);
+  // 농장 센서 최적 수치 불러오기
+  async function fetchFarmOptimalValues() {
+    const farmId = sessionStorage.getItem('farmId');
     try {
-      const response = await fetch(`${API_BASE_URL}/get-Crop-OptimalValues?farm_type=${farmType}`, {
+      const response = await fetch(`${API_BASE_URL}/getFarmConditions/${farmId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json'
         }
       });
-      const data = await response.json();
-
+      
       if (!response.ok) {
         throw new Error('네트워크 응답 오류: ' + response.statusText);
       }
+  
+      const data = await response.json();
 
       // data (conditions)에서 값 추출
       const {
@@ -330,16 +330,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('co2-min').value = co2Min;
       document.getElementById('co2-max').value = co2Max;
 
-      // 로컬 스토리지에 저장된 사용자 정의 값이 있으면 불러오기
-      loadCustomOptimalValues();
-
     } catch (error) {
       console.error("작물 최적 수치 불러오기 실패:", error);
     }
   }
 
-  // 사용자 정의 최적 수치 저장하기
-  async function saveCustomOptimalValues() {
+  // 농장 최적 수치 업데이트하기
+  async function updateFarmOptimalValues() {
+    const farmId = sessionStorage.getItem('farmId');
+
     const tempMin = document.getElementById('temp-min').value;
     const tempMax = document.getElementById('temp-max').value;
     const humidMin = document.getElementById('humid-min').value;
@@ -358,16 +357,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       return false;
     }
 
-    // 로컬 스토리지에 저장
-    const customValues = {
-      temperature: { optimal_min: tempMin, optimal_max: tempMax },
-      humidity: { optimal_min: humidMin, optimal_max: humidMax },
-      soil_moisture: { optimal_min: soilMin, optimal_max: soilMax },
-      co2: { optimal_min: co2Min, optimal_max: co2Max }
-    };
-
-    localStorage.setItem(`customOptimalValues_${farmId}`, JSON.stringify(customValues));
-
     // UI 업데이트
     tempOptimal.textContent = `${tempMin} ~ ${tempMax}`;
     humidOptimal.textContent = `${humidMin} ~ ${humidMax}`;
@@ -377,13 +366,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 서버에 저장
     try {
       const farmType = sessionStorage.getItem('farmType');
-      const response = await fetch(`${API_BASE_URL}/change-Crop-OptimalValues`, {
+      const response = await fetch(`${API_BASE_URL}/updateFarmCondition`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          farm_type: farmType,
+          farm_id: farmId,
           temperature: {
             optimal_min: parseInt(tempMin),
             optimal_max: parseInt(tempMax)
@@ -408,39 +397,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       const result = await response.json();
-      console.log('최적 수치 업데이트 결과:', result);
 
     } catch (error) {
-      console.error('최적 수치 서버 저장 실패:', error);
       alert('서버에 최적 수치 저장 중 오류가 발생했습니다.');
     }
 
+    fetchFarmOptimalValues()
+    
     return true;
-  }
-
-  // 사용자 정의 최적 수치 불러오기
-  function loadCustomOptimalValues() {
-    const savedValues = localStorage.getItem(`customOptimalValues_${farmId}`);
-
-    if (savedValues) {
-      const customValues = JSON.parse(savedValues);
-
-      // UI 업데이트
-      tempOptimal.textContent = `${customValues.temperature.optimal_min} ~ ${customValues.temperature.optimal_max}`;
-      humidOptimal.textContent = `${customValues.humidity.optimal_min} ~ ${customValues.humidity.optimal_max}`;
-      soilOptimal.textContent = `${customValues.soil_moisture.optimal_min} ~ ${customValues.soil_moisture.optimal_max}`;
-      co2Optimal.textContent = `${customValues.co2.optimal_min} ~ ${customValues.co2.optimal_max}`;
-
-      // 설정 패널 입력 필드 업데이트
-      document.getElementById('temp-min').value = customValues.temperature.optimal_min;
-      document.getElementById('temp-max').value = customValues.temperature.optimal_max;
-      document.getElementById('humid-min').value = customValues.humidity.optimal_min;
-      document.getElementById('humid-max').value = customValues.humidity.optimal_max;
-      document.getElementById('soil-min').value = customValues.soil_moisture.optimal_min;
-      document.getElementById('soil-max').value = customValues.soil_moisture.optimal_max;
-      document.getElementById('co2-min').value = customValues.co2.optimal_min;
-      document.getElementById('co2-max').value = customValues.co2.optimal_max;
-    }
   }
 
   // 이름 불러오기
@@ -1267,7 +1231,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 저장 버튼 클릭 시 설정 저장
   saveSettings.addEventListener("click", function () {
-    if (saveCustomOptimalValues()) {
+    if (updateFarmOptimalValues()) {
       settingsPanel.style.display = "none";
       alert("최적 수치가 저장되었습니다.");
     }
@@ -1413,7 +1377,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   fetchDevicesStatus(); // 장치 상태 가져오기
   fetchAlarm(); // 알림 가져오기
   fetchFarmStatus(); // D-DAY 가져오기
-  fetchCropOptimalValues(); // 작물의 최적 수치 가져오기
+  fetchFarmOptimalValues(); // 농장의 최적 수치 가져오기
   //setInterval(fetchSensorData, 5000);
   //setInterval(updateChartData, 300000);
 });

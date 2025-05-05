@@ -62,7 +62,7 @@ app.get('/check-userid', async (req, res) => {
     console.error('[GET /check-userid] DB 오류:', err);
     return res.status(500).json({ message: 'DB 오류' });
   } finally {
-    conn.release();
+    if (conn) conn.release();
   }
 });
 
@@ -82,7 +82,7 @@ app.post('/signup', async (req, res) => {
     console.error('[POST /signup] DB 오류:', err);
     return res.status(500).json({ message: 'DB 오류' });
   } finally {
-    conn.release();
+    if (conn) conn.release();
   }
 });
 
@@ -114,7 +114,7 @@ app.post('/login', async (req, res) => {
     console.error('[POST /login] DB 오류: ' + err.stack);
     return res.status(500).json({ message: 'DB 오류' });
   } finally {
-    conn.release();
+    if (conn) conn.release();
   }
 });
 
@@ -138,7 +138,7 @@ app.get('/getName', async (req,res) => {
     console.error('[GET /getName] DB 오류:', err);
     return res.status(500).json({ message: 'DB 오류' });
   } finally {
-    conn.release();
+    if (conn) conn.release();
   }
 });
 
@@ -158,34 +158,64 @@ app.get('/getFarms', async(req, res) => {
     console.error('[GET /getFarms] DB 오류:', err);
     return res.status(500).json({ message: 'DB 오류' });
   } finally {
-    conn.release();
+    if (conn) conn.release();
   }
 });
 
 // 농장 추가하기
 app.post('/addFarm', async (req, res) => {
   const { user_id, farm_name, farm_location, farm_type } = req.body;
-  const query = `INSERT INTO farms (user_id, farm_name, farm_location, farm_type) VALUES (?, ?, ?, ?)`;
-  let conn;
+  const insertFarmQuery = `
+    INSERT INTO farms (user_id, farm_name, farm_location, farm_type)
+    VALUES (?, ?, ?, ?)
+  `;
+  const insertDeviceQuery = `
+    INSERT INTO devices (farm_id, led, fan, water, heater, cooler)
+    VALUES (?, false, false, false, false, false)
+  `;
+  const selectCropConditionsQuery = `
+    SELECT condition_type, min_value, optimal_min, optimal_max, max_value, unit
+    FROM crop_conditions
+    WHERE crop_type = ?
+  `;
+  const insertFarmConditionsQuery = `
+    INSERT INTO farm_conditions (farm_id, condition_type, min_value, optimal_min, optimal_max, max_value, unit)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `;
 
+  let conn;
   try {
     conn = await db.getConnection();
+    await conn.beginTransaction();
 
-    const results = await conn.query(query, [user_id, farm_name, farm_location, farm_type]);
-    const farm_id = results.insertId;
+    // 1. 농장 삽입
+    const farmResult = await conn.query(insertFarmQuery, [user_id, farm_name, farm_location, farm_type]);
+    const farm_id = farmResult.insertId;
     console.log('[POST /addFarm] 농장 추가 성공');
 
-    // devices 테이블에 초기값 삽입
-    const addDeviceQuery = `INSERT INTO devices (farm_id, led, fan, water, heater, cooler) VALUES (?, false, false, false, false, false)`;
-    
-    await conn.query(addDeviceQuery, [farm_id]);
+    // 2. devices 초기화
+    await conn.query(insertDeviceQuery, [farm_id]);
     console.log('[POST /addFarm] devices 초기값 추가 성공');
+
+    // 3. crop_conditions에서 조건 복사
+    const cropConditions = await conn.query(selectCropConditionsQuery, [farm_type]);
+
+    for (const row of cropConditions) {
+      const { condition_type, min_value, optimal_min, optimal_max, max_value, unit } = row;
+      await conn.query(insertFarmConditionsQuery, [
+        farm_id, condition_type, min_value, optimal_min, optimal_max, max_value, unit
+      ]);
+    }
+    console.log('[POST /addFarm] farm_conditions 복사 성공');
+
+    await conn.commit();
     return res.json({ message: '농장 추가 성공' });
   } catch (err) {
+    if (conn) await conn.rollback();
     console.error('[POST /addFarm] DB 오류:', err);
     return res.status(500).json({ message: 'DB 오류' });
   } finally {
-    conn.release();
+    if (conn) conn.release();
   }
 });
 
@@ -213,7 +243,7 @@ app.post('/delFarm', async (req, res) => {
     console.error('DB 오류:', err);
     return res.status(500).json({ message: 'DB 오류' });
   } finally {
-    conn.release();
+    if (conn) conn.release();
   }
 });
 
@@ -253,7 +283,7 @@ app.post('/sensors', async (req, res) => {
     console.error('[POST /sensors] DB 오류:', err);
     return res.status(500).json({ message: 'DB 오류' });
   } finally {
-    conn.release();
+    if (conn) conn.release();
   }
 });
 
@@ -276,7 +306,7 @@ app.get('/sensors/status', async (req, res) => {
     console.error('[GET /sensors/status] DB 오류:', err);
     return res.status(500).json({ message: 'DB 오류' });
   } finally {
-    conn.release();
+    if (conn) conn.release();
   }
 });
 
@@ -296,7 +326,7 @@ app.get('/devices/status', async(req, res) => {
     console.error('[GET /devices/status] DB 오류:', err);
     return res.status(500).json({ message: 'DB 오류' });
   } finally {
-    conn.release();
+    if (conn) conn.release();
   }
 });
 
@@ -324,7 +354,7 @@ app.post('/devices/:deviceId/status', async (req, res) => {
     console.error('[POST /devices/:deviceId/status] DB 오류:', err);
     return res.status(500).json({ message: 'DB 오류' });
   } finally {
-    conn.release();
+    if (conn) conn.release();
   }
 });
 
@@ -399,7 +429,7 @@ app.get('/realtime-data', async (req, res) => {
     console.error('[GET /realtime-data] DB 오류:', err);
     return res.status(500).json({ message: 'DB 오류' });
   } finally {
-    conn.release();
+    if (conn) conn.release();
   }
 });
 
@@ -456,7 +486,7 @@ app.get('/history-data', async (req, res) => {
     console.error('[GET /history-data] DB 오류: ', err.stack);
     return res.status(500).json({ message: 'DB 오류' });
   } finally {
-    conn.release();
+    if (conn) conn.release();
   }
 });
 
@@ -660,29 +690,23 @@ app.get('/devices/status', async(req, res) => {
     console.error('[GET /devices/status] DB 오류:', err);
     return res.status(500).json({ message: 'DB 오류' });
   } finally {
-    conn.release();
+    if (conn) conn.release();
   }
 });
 
 // 센서별 최적 수치 불러오기
-app.get('/get-Crop-OptimalValues', async(req, res) => {
-  const {farm_type} = req.query;
-
-  if (!farm_type) {
-    return res.status(400).json({ error: 'farm_type 파라미터가 필요합니다' });
-  }
-
+app.get('/getFarmConditions/:farm_id', async(req, res) => {
+  const farm_id = req.params.farm_id;
   const query = `
-    SELECT condition_type, optimal_min, optimal_max 
-    FROM crop_conditions 
-    WHERE crop_type = ?
+    SELECT condition_type, optimal_min, optimal_max
+    FROM farm_conditions
+    WHERE farm_id = ?
   `;
-  let conn;
 
+  let conn;
   try {
     conn = await db.getConnection();
-    const results = await conn.query(query, [farm_type]);
-
+    const results = await conn.query(query, [farm_id]);
     if (results.length === 0) {
       return res.status(404).json({ error: `${farm_type}에 대한 데이터가 없습니다` });
     }
@@ -695,34 +719,34 @@ app.get('/get-Crop-OptimalValues', async(req, res) => {
       };
     });
 
-    console.log('[GET /get-Crop-OptimalValues] 제어장치 조회 성공:' + farm_type);
+    console.log('[GET /getFarmConditions] 조회 성공');
     return res.json(conditions);
   } catch (err) {
-    console.error('[GET /get-Crop-OptimalValues] DB 오류:', err);
+    console.error('[GET /getFarmConditions] DB 오류:', err);
     return res.status(500).json({ message: 'DB 오류' });
   } finally {
-    conn.release();
+    if (conn) conn.release();
   }
 });
 
 // 센서별 최적 수치 업데이트
-app.post('/change-Crop-OptimalValues', async (req, res) => {
+app.post('/updateFarmCondition', async (req, res) => {
   const {
-    farm_type,
+    farm_id,
     temperature: { optimal_min: tempMin, optimal_max: tempMax },
     humidity: { optimal_min: humidMin, optimal_max: humidMax },
     soil_moisture: { optimal_min: soilMin, optimal_max: soilMax },
     co2: { optimal_min: co2Min, optimal_max: co2Max }
   } = req.body;
 
-  if (!farm_type || !tempMin || !tempMax || !humidMin || !humidMax || !soilMin || !soilMax || !co2Min || !co2Max) {
+  if (!farm_id || !tempMin || !tempMax || !humidMin || !humidMax || !soilMin || !soilMax || !co2Min || !co2Max) {
     return res.status(400).json({ error: '모든 필드가 필요합니다' });
   }
 
   const updateQuery = `
-    UPDATE crop_conditions 
+    UPDATE farm_conditions 
     SET optimal_min = ?, optimal_max = ?
-    WHERE crop_type = ? AND condition_type = ?
+    WHERE farm_id = ? AND condition_type = ?
   `;
 
   const values = {
@@ -737,17 +761,17 @@ app.post('/change-Crop-OptimalValues', async (req, res) => {
     conn = await db.getConnection();
 
     for (const [type, [min, max]] of Object.entries(values)) {
-      const result = await conn.query(updateQuery, [min, max, farm_type, type]);
+      const result = await conn.query(updateQuery, [min, max, farm_id, type]);
 
       if (result.affectedRows === 0) {
-        console.warn(`[POST /change-Crop-OptimalValues] 데이터 없음: ${farm_type} - ${type} (업데이트 안 됨)`);
+        console.warn(`[POST /updateFarmCondition] 데이터 없음: ${farm_id} - ${type} (업데이트 안 됨)`);
       }
     }
 
-    console.log(`[POST /change-Crop-OptimalValues] ${farm_type} 최적 수치 업데이트 완료`);
-    return res.json({ message: `${farm_type}의 최적 수치가 성공적으로 업데이트되었습니다` });
+    console.log(`[POST /updateFarmCondition] ${farm_id}농장 최적 수치 업데이트 완료`);
+    return res.json({ message: `${farm_id}농장의 최적 수치가 성공적으로 업데이트되었습니다` });
   } catch (err) {
-    console.error('[POST /change-Crop-OptimalValues] DB 오류:', err);
+    console.error('[POST /updateFarmCondition] DB 오류:', err);
     return res.status(500).json({ error: 'DB 오류' });
   } finally {
     if (conn) conn.release();
