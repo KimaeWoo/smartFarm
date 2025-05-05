@@ -157,7 +157,7 @@ ${date}
 최고 온도: ${sensorChanges.max_temperature.value} ℃ (시간: ${sensorChanges.max_temperature.time})
 최저 온도: ${sensorChanges.min_temperature.value} ℃ (시간: ${sensorChanges.min_temperature.time})
 최고 습도: ${sensorChanges.max_humidity.value} % (시간: ${sensorChanges.max_humidity.time})
-최저 습도: ${sensorChanges.min_humidity.value} % (시간: ${sensorChanges.max_humidity.time})
+최저 습도: ${sensorChanges.min_humidity.value} % (시간: ${sensorChanges.min_humidity.time})
 최고 토양 수분: ${sensorChanges.max_soil_moisture.value} % (시간: ${sensorChanges.max_soil_moisture.time})
 최저 토양 수분: ${sensorChanges.min_soil_moisture.value} % (시간: ${sensorChanges.min_soil_moisture.time})
 최고 CO₂ 농도: ${sensorChanges.max_co2.value} ppm (시간: ${sensorChanges.max_co2.time})
@@ -174,8 +174,12 @@ LED: ${deviceLogs.led.start ? `켜짐(시작: ${deviceLogs.led.start}, 종료: $
 ${aiAnalysis}
     `;
 
-    res.json({ reportText, reportId: result.insertId });
+    // BigInt를 Number로 변환하여 직렬화 문제 해결
+    res.json({ reportText, reportId: Number(result.insertId) });
   } catch (error) {
+    if (error.code === 'ER_DUP_ENTRY') {
+      return res.status(409).json({ error: '해당 날짜의 리포트가 이미 존재합니다.' });
+    }
     console.error('리포트 생성 오류:', error);
     res.status(500).json({ error: '리포트 생성 실패' });
   } finally {

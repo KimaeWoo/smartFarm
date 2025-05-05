@@ -237,7 +237,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const { temperature: { optimal_min: tempMin, optimal_max: tempMax }, humidity: { optimal_min: humidMin, optimal_max: humidMax }, soil_moisture: { optimal_min: soilMin, optimal_max: soilMax }, co2: { optimal_min: co2Min, optimal_max: co2Max } } = data;
       tempOptimal.textContent = `${tempMin} ~ ${tempMax}`;
       humidOptimal.textContent = `${humidMin} ~ ${humidMax}`;
-      soilOptimal.textContent = `${soilMin} ~ ${soilMax}`;
+      soilOptimal.textContent = `${soilMin} ~ ${humidMax}`;
       co2Optimal.textContent = `${co2Min} ~ ${co2Max}`;
       document.getElementById('temp-min').value = tempMin;
       document.getElementById('temp-max').value = tempMax;
@@ -803,6 +803,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
       const today = new Date();
       const formattedDate = formatDateYMD(today); // YYYY-MM-DD 형식으로 변환
+
+      // 동일한 날짜에 리포트가 이미 존재하는지 확인
+      const reportsResponse = await fetch(`${API_BASE_URL}/get-reports/${farmId}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (!reportsResponse.ok) throw new Error('리포트 조회 실패');
+      const reports = await reportsResponse.json();
+      const existingReport = reports.find(report => report.date === formattedDate);
+      if (existingReport) {
+        alert('해당 날짜의 리포트가 이미 존재합니다.');
+        return;
+      }
+
       const historyData = await fetchHistoryData(); // 기존 history-data API 사용
       if (!historyData.timeLabels.length) {
         alert('오늘의 센서 데이터가 부족합니다.');
@@ -858,13 +872,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         })
       });
 
-      if (!response.ok) throw new Error('리포트 생성 실패');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || '리포트 생성 실패');
+      }
+
       const data = await response.json();
       alert('리포트가 성공적으로 생성되었습니다.');
       fetchReports(); // 리포트 목록 새로고침
     } catch (error) {
       console.error('리포트 생성 오류:', error);
-      alert('리포트 생성 중 오류가 발생했습니다.');
+      alert(error.message || '리포트 생성 중 오류가 발생했습니다.');
     }
   }
 
@@ -886,6 +904,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           const li = document.createElement('li');
           li.textContent = `${report.date} 리포트`;
           li.style.cursor = 'pointer';
+          li.classList.add('diary-entry');
           li.addEventListener('click', () => {
             showReportModal(report);
           });
@@ -987,6 +1006,7 @@ style.textContent = `
     max-width: 800px;
     border-radius: 8px;
     position: relative;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
   }
   .modal-close {
     color: #aaa;
@@ -997,39 +1017,47 @@ style.textContent = `
   }
   .modal-close:hover,
   .modal-close:focus {
-    color: black;
+    color: #000;
     text-decoration: none;
   }
   #reportContent {
     white-space: pre-wrap;
-    font-family: monospace;
+    font-family: 'Noto Sans KR', monospace;
     font-size: 14px;
-    line-height: 1.5;
+    line-height: 1.6;
     max-height: 500px;
     overflow-y: auto;
-    padding: 10px;
+    padding: 15px;
     background-color: #f9f9f9;
     border: 1px solid #ddd;
     border-radius: 4px;
   }
-  .diary-list li {
+  .diary-entry {
     padding: 10px;
-    border-bottom: 1px solid #ddd;
-    cursor: pointer;
-  }
-  .diary-list li:hover {
-    background-color: #f0f0f0;
-  }
-  .diary-actions button {
-    background-color: #10b981;
-    color: white;
-    padding: 8px 16px;
-    border: none;
+    margin: 5px 0;
     border-radius: 4px;
-    cursor: pointer;
+    background-color: #f1f1f1;
+    transition: background-color 0.2s;
   }
-  .diary-actions button:hover {
-    background-color: #059669;
+  .diary-entry:hover {
+    background-color: #e0e0e0;
+  }
+  .dark-theme .modal-content {
+    background-color: #2d2d2d;
+    color: #ffffff;
+    border-color: #444;
+  }
+  .dark-theme #reportContent {
+    background-color: #333;
+    border-color: #555;
+    color: #ffffff;
+  }
+  .dark-theme .diary-entry {
+    background-color: #3a3a3a;
+    color: #ffffff;
+  }
+  .dark-theme .diary-entry:hover {
+    background-color: #4a4a4a;
   }
 `;
 document.head.appendChild(style);
