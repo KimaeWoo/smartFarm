@@ -201,16 +201,23 @@ app.get('/get-reports/:farmId', async (req, res) => {
     `;
     const reports = await conn.query(selectQuery, [farmId]);
 
-    const formattedReports = reports.map(report => ({
-      id: report.id,
-      farmId: report.farm_id,
-      date: report.date.toISOString().split('T')[0], // DATE 형식을 YYYY-MM-DD로 변환
-      sensorSummary: JSON.parse(report.sensor_summary),
-      sensorChanges: JSON.parse(report.sensor_changes),
-      deviceLogs: JSON.parse(report.device_logs),
-      aiAnalysis: report.ai_analysis,
-      createdAt: report.created_at
-    }));
+    const formattedReports = reports.map(report => {
+      // JSON 필드가 문자열인지 객체인지 확인
+      const sensorSummary = typeof report.sensor_summary === 'string' ? JSON.parse(report.sensor_summary) : report.sensor_summary;
+      const sensorChanges = typeof report.sensor_changes === 'string' ? JSON.parse(report.sensor_changes) : report.sensor_changes;
+      const deviceLogs = typeof report.device_logs === 'string' ? JSON.parse(report.device_logs) : report.device_logs;
+
+      return {
+        id: Number(report.id), // BigInt를 Number로 변환
+        farmId: Number(report.farm_id),
+        date: report.date.toISOString().split('T')[0],
+        sensorSummary,
+        sensorChanges,
+        deviceLogs,
+        aiAnalysis: report.ai_analysis,
+        createdAt: report.created_at
+      };
+    });
 
     res.json(formattedReports);
   } catch (error) {
@@ -219,11 +226,6 @@ app.get('/get-reports/:farmId', async (req, res) => {
   } finally {
     if (conn) conn.release();
   }
-});
-
-// 로그인 페이지
-app.get('/login', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
 // 아이디 중복 확인 API (Promise 기반으로 수정)
