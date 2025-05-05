@@ -1,608 +1,615 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: Arial, sans-serif;
-    }
-    
-    body {
-      background-color: #f5f5f5;
-      padding: 20px;
-    }
-    
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-    
-    .header {
-      margin-bottom: 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    
-    .header-left h1 {
-      font-size: 24px;
-      margin-bottom: 5px;
-    }
-    
-    .header-left p {
-      color: #666;
-    }
-    
-    .header-buttons {
-      display: flex;
-      gap: 10px;
-    }
-    
-    .add-farm-btn {
-      background-color: #10b981;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      padding: 8px 16px;
-      font-size: 14px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    
-    .add-farm-btn:hover {
-      background-color: #059669;
-    }
-    
-    .delete-farms-btn {
-      background-color: #ef4444;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      padding: 8px 16px;
-      font-size: 14px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    
-    .delete-farms-btn:hover {
-      background-color: #dc2626;
-    }
-    
-    .cancel-delete-mode-btn {
-      background-color: #6b7280;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      padding: 8px 16px;
-      font-size: 14px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    
-    .cancel-delete-mode-btn:hover {
-      background-color: #4b5563;
-    }
-    
-    .confirm-delete-btn {
-      background-color: #ef4444;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      padding: 8px 16px;
-      font-size: 14px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    
-    .confirm-delete-btn:hover {
-      background-color: #dc2626;
-    }
-    
-    .farm-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 15px;
-      margin-bottom: 20px;
-    }
-    
-    .farm-card {
-      background-color: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      padding: 12px;
-      transition: transform 0.2s;
-      position: relative;
-    }
-    
-    .farm-card:hover {
-      transform: translateY(-3px);
-    }
-    
-    .farm-card-content {
-      cursor: pointer;
-    }
-    
-    .farm-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-    
-    .farm-name {
-      font-size: 16px;
-      font-weight: bold;
-    }
-    
-    .farm-location {
-      color: #666;
-      font-size: 12px;
-    }
-    
-    .status {
-      padding: 3px 8px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: bold;
-    }
-    
-    .status-healthy {
-      background-color: #d1fae5;
-      color: #047857;
-    }
-    
-    .status-warning {
-      background-color: #fef3c7;
-      color: #b45309;
-    }
-    
-    .status-critical {
-      background-color: #fee2e2;
-      color: #b91c1c;
-      animation: pulse 2s infinite;
-    }
-    
-    @keyframes pulse {
-      0% { opacity: 1; }
-      50% { opacity: 0.7; }
-      100% { opacity: 1; }
-    }
-    
-    .farm-data {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-    
-    .farm-sensors {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    
-    .sensor {
-      background-color: #f9fafb;
-      border-radius: 6px;
-      padding: 8px;
-      display: flex;
-      align-items: center;
-    }
-    
-    .sensor-icon {
-      margin-right: 8px;
-      width: 20px;
-      height: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .sensor-info {
-      flex: 1;
-    }
-    
-    .sensor-label {
-      font-size: 11px;
-      color: #666;
-    }
-    
-    .sensor-value {
-      font-size: 14px;
-      font-weight: bold;
-    }
-    
-    .sensor-value.warning {
-      color: #b45309;
-    }
-    
-    .sensor-value.critical {
-      color: #b91c1c;
-    }
-    
-    .farm-controls {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6px;
-      background-color: #f9fafb;
-      border-radius: 6px;
-      padding: 8px;
-    }
-    
-    .control {
-      display: flex;
-      align-items: center;
-      background-color: white;
-      border-radius: 4px;
-      padding: 4px 6px;
-      border: 1px solid #e5e7eb;
-    }
-    
-    .control-icon {
-      width: 16px;
-      height: 16px;
-      margin-right: 4px;
-    }
-    
-    .control-label {
-      font-size: 11px;
-      color: #666;
-    }
-    
-    .control-status {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      margin-left: 4px;
-    }
-    
-    .status-on {
-      background-color: #10b981;
-    }
-    
-    .status-off {
-      background-color: #e5e7eb;
-    }
-    
-    .farm-info {
-      font-size: 12px;
-      margin-bottom: 8px;
-    }
-    
-    .farm-alerts {
-      background-color: #fee2e2;
-      border-radius: 6px;
-      padding: 8px;
-      margin-top: 8px;
-    }
-    
-    .alert-title {
-      font-weight: bold;
-      color: #b91c1c;
-      margin-bottom: 4px;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 12px;
-    }
-    
-    .alert-message {
-      font-size: 11px;
-      color: #b91c1c;
-    }
-    
-    .last-updated {
-      font-size: 11px;
-      color: #666;
-      margin-top: 8px;
-    }
-    
-    .search-bar {
-      display: flex;
-      margin-bottom: 15px;
-    }
-    
-    .search-input {
-      flex: 1;
-      padding: 8px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      font-size: 14px;
-    }
-    
-    .filter-buttons {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 15px;
-    }
-    
-    .filter-button {
-      padding: 6px 12px;
-      border: none;
-      border-radius: 6px;
-      background-color: #f3f4f6;
-      cursor: pointer;
-      font-size: 13px;
-    }
-    
-    .filter-button.active {
-      background-color: #3b82f6;
-      color: white;
-    }
-    
-    .filter-button-healthy {
-      background-color: #d1fae5;
-      color: #047857;
-    }
-    
-    .filter-button-warning {
-      background-color: #fef3c7;
-      color: #b45309;
-    }
-    
-    .filter-button-critical {
-      background-color: #fee2e2;
-      color: #b91c1c;
-    }
-    
-    .loading {
-      text-align: center;
-      padding: 50px;
-      color: #666;
-      grid-column: 1/-1;
-    }
-    
-    .error-message {
-      background-color: #fee2e2;
-      color: #b91c1c;
-      padding: 10px;
-      border-radius: 6px;
-      margin-bottom: 15px;
-    }
-    
-    .success-message {
-      background-color: #d1fae5;
-      color: #047857;
-      padding: 10px;
-      border-radius: 6px;
-      margin-bottom: 15px;
-    }
-    
-    /* 모달 스타일 */
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.5);
-      z-index: 1000;
-      justify-content: center;
-      align-items: center;
-    }
-    
-    .modal.active {
-      display: flex;
-    }
-    
-    .modal-content {
-      background-color: white;
-      border-radius: 8px;
-      width: 90%;
-      max-width: 500px;
-      padding: 20px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-    
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 15px;
-    }
-    
-    .modal-title {
-      font-size: 18px;
-      font-weight: bold;
-    }
-    
-    .close-modal {
-      background: none;
-      border: none;
-      font-size: 20px;
-      cursor: pointer;
-      color: #666;
-    }
-    
-    .form-group {
-      margin-bottom: 15px;
-    }
-    
-    .form-label {
-      display: block;
-      margin-bottom: 5px;
-      font-size: 14px;
-      color: #333;
-    }
-    
-    .form-input {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      font-size: 14px;
-    }
-    
-    .form-select {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      font-size: 14px;
-      background-color: white;
-    }
-    
-    .form-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-      margin-top: 20px;
-    }
-    
-    .cancel-btn {
-      background-color: #f3f4f6;
-      color: #333;
-      border: none;
-      border-radius: 6px;
-      padding: 8px 16px;
-      font-size: 14px;
-      cursor: pointer;
-    }
-    
-    .submit-btn {
-      background-color: #10b981;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      padding: 8px 16px;
-      font-size: 14px;
-      cursor: pointer;
-    }
-    
-    .submit-btn:hover {
-      background-color: #059669;
-    }
-    
-    .cancel-btn:hover {
-      background-color: #e5e7eb;
-    }
-    
-    /* 삭제 모드 스타일 */
-    .delete-mode .farm-card {
-      position: relative;
-      padding-left: 40px;
-    }
-    
-    .farm-checkbox {
-      position: absolute;
-      left: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 20px;
-      height: 20px;
-      cursor: pointer;
-    }
-    
-    .delete-mode-actions {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 15px;
-    }
-    
-    .delete-mode-info {
-      background-color: #f3f4f6;
-      padding: 10px;
-      border-radius: 6px;
-      margin-bottom: 15px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    
-    .delete-mode-info-text {
-      font-size: 14px;
-      color: #4b5563;
-    }
-    
-    /* 삭제 확인 모달 */
-    .confirm-modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.5);
-      z-index: 1000;
-      justify-content: center;
-      align-items: center;
-    }
-    
-    .confirm-modal.active {
-      display: flex;
-    }
-    
-    .confirm-modal-content {
-      background-color: white;
-      border-radius: 8px;
-      width: 90%;
-      max-width: 400px;
-      padding: 20px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-    
-    .confirm-modal-title {
-      font-size: 18px;
-      font-weight: bold;
-      margin-bottom: 10px;
-      color: #ef4444;
-    }
-    
-    .confirm-modal-message {
-      margin-bottom: 20px;
-      font-size: 14px;
-      color: #333;
-    }
-    
-    .confirm-modal-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-    }
-    
-    @media (max-width: 768px) {
-      .farm-grid {
-        grid-template-columns: 1fr;
-      }
-      
-      .header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-      }
-      
-      .header-buttons {
-        width: 100%;
-      }
-      
-      .add-farm-btn, .delete-farms-btn {
-        flex: 1;
-      }
-    }
-    
-    @media (max-width: 480px) {
-      .farm-data {
-        grid-template-columns: 1fr;
-      }
-      
-      .farm-controls {
-        grid-template-columns: 1fr 1fr;
-      }
-      
-      .filter-buttons {
-        flex-wrap: wrap;
-      }
-      
-      .delete-mode-actions {
-        flex-direction: column;
-      }
-    }
-  
+body {
+  background-color: #f5f5f5;
+  padding: 20px;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.header {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-left h1 {
+  font-size: 24px;
+  margin-bottom: 5px;
+}
+
+.header-left p {
+  color: #666;
+}
+
+.header-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.add-farm-btn {
+  background-color: #10b981;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.add-farm-btn:hover {
+  background-color: #059669;
+}
+
+.delete-farms-btn {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.delete-farms-btn:hover {
+  background-color: #dc2626;
+}
+
+.cancel-delete-mode-btn {
+  background-color: #6b7280;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cancel-delete-mode-btn:hover {
+  background-color: #4b5563;
+}
+
+.confirm-delete-btn {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.confirm-delete-btn:hover {
+  background-color: #dc2626;
+}
+
+.farm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.farm-card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 12px;
+  transition: transform 0.2s;
+  position: relative;
+}
+
+.farm-card:hover {
+  transform: translateY(-3px);
+}
+
+.farm-card-content {
+  cursor: pointer;
+}
+
+.farm-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.farm-name {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.farm-location {
+  color: #666;
+  font-size: 12px;
+}
+
+.status {
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.status-healthy {
+  background-color: #d1fae5;
+  color: #047857;
+}
+
+.status-warning {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+.status-critical {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.7;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+.farm-data {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.farm-sensors {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sensor {
+  background-color: #f9fafb;
+  border-radius: 6px;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.sensor-icon {
+  margin-right: 8px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sensor-info {
+  flex: 1;
+}
+
+.sensor-label {
+  font-size: 11px;
+  color: #666;
+}
+
+.sensor-value {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.sensor-value.warning {
+  color: #b45309;
+}
+
+.sensor-value.critical {
+  color: #b91c1c;
+}
+
+.farm-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  background-color: #f9fafb;
+  border-radius: 6px;
+  padding: 8px;
+}
+
+.control {
+  display: flex;
+  align-items: center;
+  background-color: white;
+  border-radius: 4px;
+  padding: 4px 6px;
+  border: 1px solid #e5e7eb;
+}
+
+.control-icon {
+  width: 16px;
+  height: 16px;
+  margin-right: 4px;
+}
+
+.control-label {
+  font-size: 11px;
+  color: #666;
+}
+
+.control-status {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-left: 4px;
+}
+
+.status-on {
+  background-color: #10b981;
+}
+
+.status-off {
+  background-color: #e5e7eb;
+}
+
+.farm-info {
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.farm-alerts {
+  background-color: #fee2e2;
+  border-radius: 6px;
+  padding: 8px;
+  margin-top: 8px;
+}
+
+.alert-title {
+  font-weight: bold;
+  color: #b91c1c;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.alert-message {
+  font-size: 11px;
+  color: #b91c1c;
+}
+
+.last-updated {
+  font-size: 11px;
+  color: #666;
+  margin-top: 8px;
+}
+
+.search-bar {
+  display: flex;
+  margin-bottom: 15px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.filter-button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  background-color: #f3f4f6;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.filter-button.active {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.filter-button-healthy {
+  background-color: #d1fae5;
+  color: #047857;
+}
+
+.filter-button-warning {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+.filter-button-critical {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+.loading {
+  text-align: center;
+  padding: 50px;
+  color: #666;
+  grid-column: 1/-1;
+}
+
+.error-message {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+}
+
+.success-message {
+  background-color: #d1fae5;
+  color: #047857;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+}
+
+/* 모달 스타일 */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal.active {
+  display: flex;
+}
+
+.modal-content {
+  background-color: white;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.close-modal {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #666;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 14px;
+  color: #333;
+}
+
+.form-input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.form-select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  background-color: white;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.cancel-btn {
+  background-color: #f3f4f6;
+  color: #333;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.submit-btn {
+  background-color: #10b981;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.submit-btn:hover {
+  background-color: #059669;
+}
+
+.cancel-btn:hover {
+  background-color: #e5e7eb;
+}
+
+/* 삭제 모드 스타일 */
+.delete-mode .farm-card {
+  position: relative;
+  padding-left: 40px;
+}
+
+.farm-checkbox {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.delete-mode-actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.delete-mode-info {
+  background-color: #f3f4f6;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.delete-mode-info-text {
+  font-size: 14px;
+  color: #4b5563;
+}
+
+/* 삭제 확인 모달 */
+.confirm-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+
+.confirm-modal.active {
+  display: flex;
+}
+
+.confirm-modal-content {
+  background-color: white;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 400px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.confirm-modal-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #ef4444;
+}
+
+.confirm-modal-message {
+  margin-bottom: 20px;
+  font-size: 14px;
+  color: #333;
+}
+
+.confirm-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+@media (max-width: 768px) {
+  .farm-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .header-buttons {
+    width: 100%;
+  }
+
+  .add-farm-btn,
+  .delete-farms-btn {
+    flex: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .farm-data {
+    grid-template-columns: 1fr;
+  }
+
+  .farm-controls {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .filter-buttons {
+    flex-wrap: wrap;
+  }
+
+  .delete-mode-actions {
+    flex-direction: column;
+  }
+}

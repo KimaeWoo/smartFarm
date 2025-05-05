@@ -8,24 +8,26 @@ const axios = require('axios');
 // dotenv 패키지를 불러오기
 require('dotenv').config();
 
+// OpenAI 모듈 추가
+const { Configuration, OpenAIApi } = require('openai');
+
 // 서버 만들기 + 실행할 포트 번호 설정
 const app = express(); // 서버를 만든다 (이 변수에 서버 기능을 저장)
 const PORT = 8000;     // 서버가 사용할 포트 번호
 
 // 'public' 폴더를 정적 파일 제공 폴더로 설정
 app.use(express.static('public'));
-
 app.use(cors()); // 모든 요청에 대해 CORS 허용
 // POST 요청을 처리하기 위해 express의 json() 사용
 app.use(express.json()); // body-parser가 필요하지 않음
 
 // MariaDB 연결 db 생성
 const db = mariadb.createPool({
-  host: "svc.sel4.cloudtype.app",
-  port: 31171,
-  user: "root",
-  password: "12345678",
-  database: "smartfarm",
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
   connectionLimit: 5
 });
 
@@ -36,6 +38,173 @@ db.getConnection()
     conn.release(); // 사용 후 연결 반환
   })
   .catch(err => console.error('MariaDB 연결 실패:', err));
+
+// OpenAI 설정
+const configuration = new Configuration({
+  apiKey: process.env.OPENAI_API_KEY, // .env 파일에 OPENAI_API_KEY 설정
+});
+const openai = new OpenAIApi(configuration);
+
+// reports 테이블 생성 (최초 실행 시)
+async function initializeDatabase() {
+  let conn;
+  try {
+    conn = await db.getConnection();
+    const createTableQuery = `
+      CREATE TABLE IF NOT EXISTS reports (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        farm_id VARCHAR(255) NOT NULL,
+        date VARCHAR(10) NOT NULL,
+        sensor_summary JSON NOT NULL,
+        sensor_changes JSON NOT NULL,
+        device_logs JSON NOT NULL,
+        ai_analysis TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+    await conn.query(createTableQuery);
+    console.log('Reports 테이블 생성 성공');
+  } catch (err) {
+    console.error('Reports 테이블 생성 실패:', err);
+  } finally {
+    if (conn) conn.release();
+  }
+}
+
+// 서버 시작 시 테이블 초기화
+initializeDatabase();
+
+// 리포트 생성 엔드포인트
+app.post('/generate-report', async (req, res) => {
+  let conn;
+  try {
+    const { farmId, date, sensorSummary, sensorChanges, deviceLogs } = req.body;
+
+    // OpenAI로 AI 분석 생성
+    const prompt = `
+      스마트팜 일일 리포트를 분석하고 요약해주세요. 다음 데이터를 기반으로:
+
+      1. 센서 측정 요약:
+      ${JSON.stringify(sensorSummary, null, 2)}
+
+      2. 센서 수치 변화:
+      ${JSON.stringify(sensorChanges, null, 2)}
+
+      3. 제어 장치 작동 기록:
+      ${JSON.stringify(deviceLogs, null, 2)}
+
+      출력 형식:
+      - 오늘 온도는 [안정적/변동이 심함]했습니다.
+      - 습도는 [적정 수준/낮은 경향/높은 경향]을 보였습니다.
+      - 토양 수분은 [충분/부족/과다] 상태를 유지했습니다.
+      - CO₂ 농도는 [안정적/변동 있음]였습니다.
+      - 주요 문제점: (문제점 설명)
+      - 개선 제안: (개선 제안)
+    `;
+
+    const response = await openai.createChatCompletion({
+      model: 'gpt-4',
+      messages: [
+        { role: 'system', content: '당신은 스마트팜 데이터 분석 전문가입니다.' },
+        { role: 'user', content: prompt },
+      ],
+      max_tokens: 300,
+    });
+
+    const aiAnalysis = response.data.choices[0].message.content.trim();
+
+    // MariaDB에 리포트 저장
+    conn = await db.getConnection();
+    const insertQuery = `
+      INSERT INTO reports (farm_id, date, sensor_summary, sensor_changes, device_logs, ai_analysis)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `;
+    const result = await conn.query(insertQuery, [
+      farmId,
+      date,
+      JSON.stringify(sensorSummary),
+      JSON.stringify(sensorChanges),
+      JSON.stringify(deviceLogs),
+      aiAnalysis
+    ]);
+
+    // 리포트 텍스트 생성
+    const reportText = `
+📋 스마트팜 일일 리포트
+1. 날짜
+${date}
+
+2. 센서 측정 요약
+평균 온도: ${sensorSummary.avg_temperature} ℃
+평균 습도: ${sensorSummary.avg_humidity} %
+평균 토양 수분: ${sensorSummary.avg_soil_moisture} %
+평균 CO₂ 농도: ${sensorSummary.avg_co2} ppm
+
+3. 센서 수치 변화
+최고 온도: ${sensorChanges.max_temperature.value} ℃ (시간: ${sensorChanges.max_temperature.time})
+최저 온도: ${sensorChanges.min_temperature.value} ℃ (시간: ${sensorChanges.min_temperature.time})
+최고 습도: ${sensorChanges.max_humidity.value} % (시간: ${sensorChanges.max_humidity.time})
+최저 습도: ${sensorChanges.min_humidity.value} % (시간: ${sensorChanges.min_humidity.time})
+최고 토양 수분: ${sensorChanges.max_soil_moisture.value} % (시간: ${sensorChanges.max_soil_moisture.time})
+최저 토양 수분: ${sensorChanges.min_soil_moisture.value} % (시간: ${sensorChanges.min_soil_moisture.time})
+최고 CO₂ 농도: ${sensorChanges.max_co2.value} ppm (시간: ${sensorChanges.max_co2.time})
+최저 CO₂ 농도: ${sensorChanges.min_co2.value} ppm (시간: ${sensorChanges.min_co2.time})
+
+4. 제어 장치 작동 기록
+LED: 켜짐(시작: ${deviceLogs.led.start}, 종료: ${deviceLogs.led.end})
+환기팬: 작동 횟수 ${deviceLogs.fan.count}회, 총 작동 시간 ${deviceLogs.fan.total_time}분
+급수장치: 급수 횟수 ${deviceLogs.water.count}회, 총 급수량 ${deviceLogs.water.total_amount} L
+히터: 작동 횟수 ${deviceLogs.heater.count}회, 총 작동 시간 ${deviceLogs.heater.total_time}분
+쿨러: 작동 횟수 ${deviceLogs.cooler.count}회, 총 작동 시간 ${deviceLogs.cooler.total_time}분
+
+5. AI 분석 및 요약
+${aiAnalysis}
+    `;
+
+    res.json({ reportText, reportId: result.insertId });
+  } catch (error) {
+    console.error('리포트 생성 오류:', error);
+    res.status(500).json({ error: '리포트 생성 실패' });
+  } finally {
+    if (conn) conn.release();
+  }
+});
+
+// 저장된 리포트 목록 조회 엔드포인트
+app.get('/get-reports/:farmId', async (req, res) => {
+  let conn;
+  try {
+    const { farmId } = req.params;
+    conn = await db.getConnection();
+    const selectQuery = `
+      SELECT id, farm_id, date, sensor_summary, sensor_changes, device_logs, ai_analysis, created_at
+      FROM reports
+      WHERE farm_id = ?
+      ORDER BY created_at DESC
+      LIMIT 10
+    `;
+    const reports = await conn.query(selectQuery, [farmId]);
+
+    // JSON 문자열을 객체로 변환
+    const formattedReports = reports.map(report => ({
+      id: report.id,
+      farmId: report.farm_id,
+      date: report.date,
+      sensorSummary: JSON.parse(report.sensor_summary),
+      sensorChanges: JSON.parse(report.sensor_changes),
+      deviceLogs: JSON.parse(report.device_logs),
+      aiAnalysis: report.ai_analysis,
+      createdAt: report.created_at
+    }));
+
+    res.json(formattedReports);
+  } catch (error) {
+    console.error('리포트 조회 오류:', error);
+    res.status(500).json({ error: '리포트 조회 실패' });
+  } finally {
+    if (conn) conn.release();
+  }
+});
 
 // 로그인 페이지
 app.get('/login', (req, res) => {

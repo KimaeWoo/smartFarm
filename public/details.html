@@ -1,17 +1,13 @@
 <!DOCTYPE html>
-
 <html lang="ko">
-
 <head>
   <meta charset="utf-8" />
   <meta content="width=device-width, initial-scale=1.0" name="viewport" />
   <title>스마트팜 대시보드</title>
   <link href="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.css" rel="stylesheet" />
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
-
   <link href="details.css" rel="stylesheet" />
 </head>
-
 <body>
   <header>
     <div class="header-container">
@@ -25,10 +21,6 @@
         <span id="username">홍길동님</span>
         <button class="logout-btn" id="logout-btn">로그아웃</button>
         <div class="settings-icon" id="settingsBtn">⋮</div>
-        <!--<div class="date-picker" id="datePicker">
-          <i class="fas fa-calendar"></i>
-          <span id="currentDate"></span>
-        </div>-->
       </div>
     </div>
   </header>
@@ -36,7 +28,6 @@
   <div class="settings-panel" id="settingsPanel">
     <div class="settings-content">
       <h2>설정</h2>
-      <!-- 최적 수치 설정 -->
       <div class="setting-item">
         <div class="setting-label">
           <i class="fas fa-temperature-high setting-icon" style="color: var(--temp-color);"></i>
@@ -77,7 +68,6 @@
           <input id="co2-max" max="2000" min="0" step="10" type="number" /> ppm
         </div>
       </div>
-      <!-- 버튼 영역 -->
       <div class="settings-buttons">
         <button id="closeSettings">취소</button>
         <button id="saveSettings">저장</button>
@@ -98,18 +88,10 @@
       <button class="start-button" id="start-farm-btn">시작하기</button>
       <div id="crop-info">
         <div class="stage-indicator">
-          <div class="stage active" data-stage="씨앗">
-            <span class="stage-label">씨앗</span>
-          </div>
-          <div class="stage" data-stage="새싹">
-            <span class="stage-label">새싹</span>
-          </div>
-          <div class="stage" data-stage="성장">
-            <span class="stage-label">성장</span>
-          </div>
-          <div class="stage" data-stage="열매">
-            <span class="stage-label">열매</span>
-          </div>
+          <div class="stage active" data-stage="씨앗"><span class="stage-label">씨앗</span></div>
+          <div class="stage" data-stage="새싹"><span class="stage-label">새싹</span></div>
+          <div class="stage" data-stage="성장"><span class="stage-label">성장</span></div>
+          <div class="stage" data-stage="열매"><span class="stage-label">열매</span></div>
         </div>
         <div class="info-row">
           <svg class="info-icon" fill="none" height="16" stroke="currentColor" stroke-linecap="round"
@@ -147,106 +129,56 @@
     </div>
     <!-- 현재 상태 탭 -->
     <div class="tab-content active" id="current-tab">
-      <!-- 센서 데이터 카드 -->
       <div class="grid grid-cols-1 grid-cols-2 grid-cols-4">
-        <!-- 온도 카드 -->
         <div class="card">
           <div class="card-header">
-            <div class="card-title">
-              <i class="fas fa-temperature-high" style="color: var(--temp-color);"></i>
-              온도
-            </div>
+            <div class="card-title"><i class="fas fa-temperature-high" style="color: var(--temp-color);"></i> 온도</div>
           </div>
           <div class="card-content">
             <div class="flex-col gap-2">
-              <div class="sensor-value temp">
-                0<span class="sensor-unit">°C</span>
-              </div>
-              <p class="text-sm text-muted">
-                최적 수치: <span class="font-medium" id="temp-optimal">0 ~ 0</span>
-              </p>
-              <div class="mt-2">
-                <div class="progress-container">
-                  <div class="progress-bar temp" style="width: 63%;"></div>
-                </div>
-              </div>
+              <div class="sensor-value temp">0<span class="sensor-unit">°C</span></div>
+              <p class="text-sm text-muted">최적 수치: <span class="font-medium" id="temp-optimal">0 ~ 0</span></p>
+              <div class="mt-2"><div class="progress-container"><div class="progress-bar temp" style="width: 63%;"></div></div></div>
             </div>
           </div>
         </div>
-        <!-- 습도 카드 -->
         <div class="card">
           <div class="card-header">
-            <div class="card-title">
-              <i class="fas fa-tint" style="color: var(--humidity-color);"></i>
-              습도
-            </div>
+            <div class="card-title"><i class="fas fa-tint" style="color: var(--humidity-color);"></i> 습도</div>
           </div>
           <div class="card-content">
             <div class="flex-col gap-2">
-              <div class="sensor-value humidity">
-                0<span class="sensor-unit">%</span>
-              </div>
-              <p class="text-sm text-muted">
-                최적 수치: <span class="font-medium" id="humid-optimal">0 ~ 0</span>
-              </p>
-              <div class="mt-2">
-                <div class="progress-container">
-                  <div class="progress-bar humidity" style="width: 62%;"></div>
-                </div>
-              </div>
+              <div class="sensor-value humidity">0<span class="sensor-unit">%</span></div>
+              <p class="text-sm text-muted">최적 수치: <span class="font-medium" id="humid-optimal">0 ~ 0</span></p>
+              <div class="mt-2"><div class="progress-container"><div class="progress-bar humidity" style="width: 62%;"></div></div></div>
             </div>
           </div>
         </div>
-        <!-- 토양 수분 카드 -->
         <div class="card">
           <div class="card-header">
-            <div class="card-title">
-              <i class="fas fa-leaf" style="color: var(--soil-color);"></i>
-              토양 수분
-            </div>
+            <div class="card-title"><i class="fas fa-leaf" style="color: var(--soil-color);"></i> 토양 수분</div>
           </div>
           <div class="card-content">
             <div class="flex-col gap-2">
-              <div class="sensor-value soil">
-                0<span class="sensor-unit">%</span>
-              </div>
-              <p class="text-sm text-muted">
-                최적 수치: <span class="font-medium" id="soil-optimal">0 ~ 0</span>
-              </p>
-              <div class="mt-2">
-                <div class="progress-container">
-                  <div class="progress-bar soil" style="width: 55%;"></div>
-                </div>
-              </div>
+              <div class="sensor-value soil">0<span class="sensor-unit">%</span></div>
+              <p class="text-sm text-muted">최적 수치: <span class="font-medium" id="soil-optimal">0 ~ 0</span></p>
+              <div class="mt-2"><div class="progress-container"><div class="progress-bar soil" style="width: 55%;"></div></div></div>
             </div>
           </div>
         </div>
-        <!-- CO2 카드 -->
         <div class="card">
           <div class="card-header">
-            <div class="card-title">
-              <i class="fas fa-wind" style="color: var(--co2-color);"></i>
-              CO2
-            </div>
+            <div class="card-title"><i class="fas fa-wind" style="color: var(--co2-color);"></i> CO2</div>
           </div>
           <div class="card-content">
             <div class="flex-col gap-2">
-              <div class="sensor-value co2">
-                0<span class="sensor-unit">ppm</span>
-              </div>
-              <p class="text-sm text-muted">
-                최적 수치: <span class="font-medium" id="co2-optimal">0 ~ 0</span>
-              </p>
-              <div class="mt-2">
-                <div class="progress-container">
-                  <div class="progress-bar co2" style="width: 42%;"></div>
-                </div>
-              </div>
+              <div class="sensor-value co2">0<span class="sensor-unit">ppm</span></div>
+              <p class="text-sm text-muted">최적 수치: <span class="font-medium" id="co2-optimal">0 ~ 0</span></p>
+              <div class="mt-2"><div class="progress-container"><div class="progress-bar co2" style="width: 42%;"></div></div></div>
             </div>
           </div>
         </div>
       </div>
-      <!-- 장치 제어 카드 -->
       <div class="card" style="margin-top: 1.5rem;">
         <div class="card-header">
           <div class="card-title">장치 제어</div>
@@ -254,73 +186,43 @@
         </div>
         <div class="card-content">
           <div class="device-grid">
-            <!-- LED 제어 -->
             <div class="device-item">
-              <div class="device-icon led" id="led-icon">
-                <i class="fas fa-lightbulb"></i>
-              </div>
+              <div class="device-icon led" id="led-icon"><i class="fas fa-lightbulb"></i></div>
               <div class="device-name">LED</div>
               <div class="switch-container">
-                <label class="switch">
-                  <input id="led-switch" onchange="updateDevice('led')" type="checkbox" />
-                  <span class="slider"></span>
-                </label>
+                <label class="switch"><input id="led-switch" onchange="updateDevice('led')" type="checkbox" /><span class="slider"></span></label>
                 <span class="switch-label" id="led-status">꺼짐</span>
               </div>
             </div>
-            <!-- 환풍팬 제어 -->
             <div class="device-item">
-              <div class="device-icon fan" id="fan-icon">
-                <i class="fas fa-fan"></i>
-              </div>
+              <div class="device-icon fan" id="fan-icon"><i class="fas fa-fan"></i></div>
               <div class="device-name">환풍팬</div>
               <div class="switch-container">
-                <label class="switch">
-                  <input id="fan-switch" type="checkbox" />
-                  <span class="slider"></span>
-                </label>
+                <label class="switch"><input id="fan-switch" type="checkbox" /><span class="slider"></span></label>
                 <span class="switch-label" id="fan-status">꺼짐</span>
               </div>
             </div>
-            <!-- 급수 제어 -->
             <div class="device-item">
-              <div class="device-icon water" id="water-icon">
-                <i class="fas fa-tint"></i>
-              </div>
+              <div class="device-icon water" id="water-icon"><i class="fas fa-tint"></i></div>
               <div class="device-name">급수</div>
               <div class="switch-container">
-                <label class="switch">
-                  <input id="water-switch" type="checkbox" />
-                  <span class="slider"></span>
-                </label>
+                <label class="switch"><input id="water-switch" type="checkbox" /><span class="slider"></span></label>
                 <span class="switch-label" id="water-status">꺼짐</span>
               </div>
             </div>
-            <!-- 히터 제어 -->
             <div class="device-item">
-              <div class="device-icon heater" id="heater-icon">
-                <i class="fas fa-fire"></i>
-              </div>
+              <div class="device-icon heater" id="heater-icon"><i class="fas fa-fire"></i></div>
               <div class="device-name">히터</div>
               <div class="switch-container">
-                <label class="switch">
-                  <input id="heater-switch" type="checkbox" />
-                  <span class="slider"></span>
-                </label>
+                <label class="switch"><input id="heater-switch" type="checkbox" /><span class="slider"></span></label>
                 <span class="switch-label" id="heater-status">꺼짐</span>
               </div>
             </div>
-            <!-- 쿨러 제어 -->
             <div class="device-item">
-              <div class="device-icon cooler" id="cooler-icon">
-                <i class="fas fa-wind"></i>
-              </div>
+              <div class="device-icon cooler" id="cooler-icon"><i class="fas fa-wind"></i></div>
               <div class="device-name">쿨러</div>
               <div class="switch-container">
-                <label class="switch">
-                  <input id="cooler-switch" type="checkbox" />
-                  <span class="slider"></span>
-                </label>
+                <label class="switch"><input id="cooler-switch" type="checkbox" /><span class="slider"></span></label>
                 <span class="switch-label" id="cooler-status">꺼짐</span>
               </div>
             </div>
@@ -328,16 +230,13 @@
         </div>
       </div>
       <div class="grid grid-cols-2">
-        <!-- 자원 사용량 카드 -->
         <div class="card" style="margin-top: 1.5rem;">
           <div class="card-header">
             <div class="card-title">자원 사용량</div>
             <div class="card-description">물, 전기, 영양분 사용량</div>
           </div>
-          <div class="card-content">
-          </div>
+          <div class="card-content"></div>
         </div>
-        <!-- 알림 카드 -->
         <div class="card" style="margin-top: 1.5rem;">
           <div class="card-header">
             <div class="card-title">알림</div>
@@ -367,19 +266,15 @@
     </div>
     <!-- 기록 데이터 탭 -->
     <div class="tab-content" id="history-tab">
-      <!-- 실시간 센서 데이터 그래프 -->
       <div class="card" style="margin-top: 1.5rem;">
         <div class="card-header">
           <div class="card-title">실시간 센서 데이터</div>
           <div class="card-description">최근 24시간 데이터 추이</div>
         </div>
         <div class="card-content">
-          <div class="chart-container">
-            <canvas id="realtime-chart"></canvas>
-          </div>
+          <div class="chart-container"><canvas id="realtime-chart"></canvas></div>
         </div>
       </div>
-      <!-- 센서 데이터 기록 그래프 -->
       <div class="card">
         <div class="card-header">
           <div class="card-title">센서 데이터 기록</div>
@@ -392,40 +287,23 @@
             <div class="sensor-tab soil" data-sensor="soil">토양 수분</div>
             <div class="sensor-tab co2" data-sensor="co2">CO2</div>
           </div>
-          <div class="sensor-chart active" id="temperature-chart">
-            <canvas id="temperature-canvas"></canvas>
-          </div>
-          <div class="sensor-chart" id="humidity-chart">
-            <canvas id="humidity-canvas"></canvas>
-          </div>
-          <div class="sensor-chart" id="soil-chart">
-            <canvas id="soil-canvas"></canvas>
-          </div>
-          <div class="sensor-chart" id="co2-chart">
-            <canvas id="co2-canvas"></canvas>
-          </div>
+          <div class="sensor-chart active" id="temperature-chart"><canvas id="temperature-canvas"></canvas></div>
+          <div class="sensor-chart" id="humidity-chart"><canvas id="humidity-canvas"></canvas></div>
+          <div class="sensor-chart" id="soil-chart"><canvas id="soil-canvas"></canvas></div>
+          <div class="sensor-chart" id="co2-chart"><canvas id="co2-canvas"></canvas></div>
         </div>
         <div class="card-footer">
-          <button class="btn" id="prev-date">
-            <i class="fas fa-chevron-left"></i>
-            이전 날짜
-          </button>
-          <button class="btn" id="next-date">
-            다음 날짜
-            <i class="fas fa-chevron-right"></i>
-          </button>
+          <button class="btn" id="prev-date"><i class="fas fa-chevron-left"></i> 이전 날짜</button>
+          <button class="btn" id="next-date">다음 날짜 <i class="fas fa-chevron-right"></i></button>
         </div>
       </div>
-      <!-- 일일 센서 데이터 요약 -->
       <div class="card" style="margin-top: 1.5rem;">
         <div class="card-header">
           <div class="card-title">일일 센서 데이터 요약</div>
           <div class="card-description" id="summary-date"></div>
         </div>
         <div class="card-content">
-          <div class="chart-container">
-            <canvas id="summary-chart"></canvas>
-          </div>
+          <div class="chart-container"><canvas id="summary-chart"></canvas></div>
         </div>
       </div>
     </div>
@@ -433,14 +311,14 @@
     <div class="tab-content" id="writeDiary-tab">
       <div class="card">
         <div class="card-header">
-          <div class="card-title">스마트팜 운영 일지</div>
+          <div class="card-title">스마트팜 일일 리포트</div>
         </div>
         <div class="card-content">
           <div class="diary-actions">
-            <button id="generateDiaryBtn">자동 일지 작성</button>
+            <button id="generateDiaryBtn">리포트 생성</button>
           </div>
           <div class="diary-list">
-            <h2>최근 작성된 일지</h2>
+            <h2>최근 생성된 리포트</h2>
             <ul id="diaryEntries"></ul>
           </div>
         </div>
@@ -484,16 +362,21 @@
                 <th>유형</th>
               </tr>
             </thead>
-            <tbody>
-            </tbody>
+            <tbody></tbody>
           </table>
         </div>
       </div>
     </div>
+    <!-- 리포트 모달 -->
+    <div class="modal" id="reportModal" style="display: none;">
+      <div class="modal-content">
+        <span class="modal-close" id="closeReportModal">&times;</span>
+        <h2>스마트팜 일일 리포트</h2>
+        <pre id="reportContent"></pre>
+      </div>
+    </div>
   </main>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
-
   <script src="details.js"></script>
 </body>
-
 </html>
