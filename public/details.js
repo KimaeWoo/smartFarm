@@ -192,7 +192,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const { farm_name, growthRate, harvestDays, startDate, farmActive } = data;
 
         farmNameText.textContent = farm_name;
-        sessionStorage.setItem('farmName', farm_name);
+        sessionStorage.setItem('farm_name', farm_name);
 
         // farmActive가 1일 경우, startButton 숨기고 cropInfo 표시
         if (farmActive === 1) {
@@ -291,7 +291,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 농장 센서 최적 수치 불러오기
   async function fetchFarmOptimalValues() {
-    const farmId = sessionStorage.getItem('farmId');
+    const farmId = sessionStorage.getItem('farm_id');
     try {
       const response = await fetch(`${API_BASE_URL}/getFarmConditions/${farmId}`, {
         method: 'GET',
@@ -337,7 +337,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 농장 최적 수치 업데이트하기
   async function updateFarmOptimalValues() {
-    const farmId = sessionStorage.getItem('farmId');
+    const farmId = sessionStorage.getItem('farm_id');
 
     const tempMin = document.getElementById('temp-min').value;
     const tempMax = document.getElementById('temp-max').value;
@@ -365,7 +365,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 서버에 저장
     try {
-      const farmType = sessionStorage.getItem('farmType');
+      const farmType = sessionStorage.getItem('farm_type');
       const response = await fetch(`${API_BASE_URL}/updateFarmCondition`, {
         method: 'POST',
         headers: {
@@ -403,7 +403,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     fetchFarmOptimalValues()
-    
+
     return true;
   }
 

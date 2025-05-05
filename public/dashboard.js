@@ -303,7 +303,7 @@ function renderFarmCards(filteredFarms = allFarms) {
       cardContent.addEventListener('click', () => {
         sessionStorage.setItem('farm_id', farm.farm_id);
         console.log(farm.farm_id,farm.farm_type);
-        sessionStorage.setItem('farmType', farm.farm_type);
+        sessionStorage.setItem('farm_type', farm.farm_type);
         alert(`${farm.farm_name} 농장을 선택했습니다.`);
         window.location.href = 'details.html';
       });
