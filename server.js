@@ -9,7 +9,7 @@ const axios = require('axios');
 require('dotenv').config();
 
 // OpenAI 모듈 추가
-const { Configuration, OpenAIApi } = require('openai');
+const OpenAI = require("openai");
 
 // 서버 만들기 + 실행할 포트 번호 설정
 const app = express(); // 서버를 만든다 (이 변수에 서버 기능을 저장)
@@ -40,10 +40,10 @@ db.getConnection()
   .catch(err => console.error('MariaDB 연결 실패:', err));
 
 // OpenAI 설정
-const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY, // .env 파일에 OPENAI_API_KEY 설정
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
 });
-const openai = new OpenAIApi(configuration);
+
 
 // reports 테이블 생성 (최초 실행 시)
 async function initializeDatabase() {
