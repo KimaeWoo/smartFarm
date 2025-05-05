@@ -801,7 +801,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 리포트 생성 함수
   async function generateReport() {
     try {
-      const today = formatDateYMD(new Date());
+      const today = new Date();
       const historyData = await fetchHistoryData(); // 기존 history-data API 사용
       if (!historyData.timeLabels.length) {
         alert('오늘의 센서 데이터가 부족합니다.');
