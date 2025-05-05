@@ -53,14 +53,16 @@ async function initializeDatabase() {
     const createTableQuery = `
       CREATE TABLE IF NOT EXISTS reports (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        farm_id VARCHAR(255) NOT NULL,
-        date VARCHAR(10) NOT NULL,
+        farm_id INT NOT NULL,
+        date DATE NOT NULL,
         sensor_summary JSON NOT NULL,
         sensor_changes JSON NOT NULL,
         device_logs JSON NOT NULL,
         ai_analysis TEXT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(farm_id, date),
+        FOREIGN KEY (farm_id) REFERENCES farms(farm_id) ON DELETE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     `;
     await conn.query(createTableQuery);
     console.log('Reports 테이블 생성 성공');
@@ -79,6 +81,17 @@ app.post('/generate-report', async (req, res) => {
   let conn;
   try {
     const { farmId, date, sensorSummary, sensorChanges, deviceLogs } = req.body;
+
+    // 입력 데이터 검증
+    if (!farmId || !date || !sensorSummary || !sensorChanges || !deviceLogs) {
+      return res.status(400).json({ error: '모든 필드가 필요합니다' });
+    }
+
+    // 날짜 형식이 YYYY-MM-DD인지 확인
+    const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+    if (!datePattern.test(date)) {
+      return res.status(400).json({ error: '유효한 날짜 형식이 아닙니다 (YYYY-MM-DD)' });
+    }
 
     // OpenAI로 AI 분석 생성
     const prompt = `
@@ -102,7 +115,7 @@ app.post('/generate-report', async (req, res) => {
       - 개선 제안: (개선 제안)
     `;
 
-    const response = await openai.createChatCompletion({
+    const response = await openai.chat.completions.create({
       model: 'gpt-4',
       messages: [
         { role: 'system', content: '당신은 스마트팜 데이터 분석 전문가입니다.' },
@@ -111,7 +124,7 @@ app.post('/generate-report', async (req, res) => {
       max_tokens: 300,
     });
 
-    const aiAnalysis = response.data.choices[0].message.content.trim();
+    const aiAnalysis = response.choices[0].message.content.trim();
 
     // MariaDB에 리포트 저장
     conn = await db.getConnection();
@@ -144,14 +157,14 @@ ${date}
 최고 온도: ${sensorChanges.max_temperature.value} ℃ (시간: ${sensorChanges.max_temperature.time})
 최저 온도: ${sensorChanges.min_temperature.value} ℃ (시간: ${sensorChanges.min_temperature.time})
 최고 습도: ${sensorChanges.max_humidity.value} % (시간: ${sensorChanges.max_humidity.time})
-최저 습도: ${sensorChanges.min_humidity.value} % (시간: ${sensorChanges.min_humidity.time})
+최저 습도: ${sensorChanges.min_humidity.value} % (시간: ${sensorChanges.max_humidity.time})
 최고 토양 수분: ${sensorChanges.max_soil_moisture.value} % (시간: ${sensorChanges.max_soil_moisture.time})
 최저 토양 수분: ${sensorChanges.min_soil_moisture.value} % (시간: ${sensorChanges.min_soil_moisture.time})
 최고 CO₂ 농도: ${sensorChanges.max_co2.value} ppm (시간: ${sensorChanges.max_co2.time})
 최저 CO₂ 농도: ${sensorChanges.min_co2.value} ppm (시간: ${sensorChanges.min_co2.time})
 
 4. 제어 장치 작동 기록
-LED: 켜짐(시작: ${deviceLogs.led.start}, 종료: ${deviceLogs.led.end})
+LED: ${deviceLogs.led.start ? `켜짐(시작: ${deviceLogs.led.start}, 종료: ${deviceLogs.led.end})` : '꺼짐'}
 환기팬: 작동 횟수 ${deviceLogs.fan.count}회, 총 작동 시간 ${deviceLogs.fan.total_time}분
 급수장치: 급수 횟수 ${deviceLogs.water.count}회, 총 급수량 ${deviceLogs.water.total_amount} L
 히터: 작동 횟수 ${deviceLogs.heater.count}회, 총 작동 시간 ${deviceLogs.heater.total_time}분
@@ -170,7 +183,6 @@ ${aiAnalysis}
   }
 });
 
-// 저장된 리포트 목록 조회 엔드포인트
 app.get('/get-reports/:farmId', async (req, res) => {
   let conn;
   try {
@@ -185,11 +197,10 @@ app.get('/get-reports/:farmId', async (req, res) => {
     `;
     const reports = await conn.query(selectQuery, [farmId]);
 
-    // JSON 문자열을 객체로 변환
     const formattedReports = reports.map(report => ({
       id: report.id,
       farmId: report.farm_id,
-      date: report.date,
+      date: report.date.toISOString().split('T')[0], // DATE 형식을 YYYY-MM-DD로 변환
       sensorSummary: JSON.parse(report.sensor_summary),
       sensorChanges: JSON.parse(report.sensor_changes),
       deviceLogs: JSON.parse(report.device_logs),

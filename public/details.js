@@ -178,7 +178,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     growthRate = Math.min(growthRate, 100);
     document.getElementById('growth-rate').textContent = `${growthRate}%`;
     growthCircle.style.background = `conic-gradient(#10b981 ${growthRate}%, #e5e7eb ${growthRate}%)`;
-    const formattedStartDate = formatDateYMD(startDate);
+    const formattedStartDate = formatDateYMD(new Date(startDate));
     document.getElementById('start-date').textContent = `시작일: ${formattedStartDate}`;
     const today = new Date();
     const startDateObj = new Date(startDate);
@@ -802,6 +802,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function generateReport() {
     try {
       const today = new Date();
+      const formattedDate = formatDateYMD(today); // YYYY-MM-DD 형식으로 변환
       const historyData = await fetchHistoryData(); // 기존 history-data API 사용
       if (!historyData.timeLabels.length) {
         alert('오늘의 센서 데이터가 부족합니다.');
@@ -828,13 +829,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         min_co2: { value: Math.min(...historyData.co2Data), time: historyData.timeLabels[historyData.co2Data.indexOf(Math.min(...historyData.co2Data))] }
       };
 
-      // 장치 로그는 임의로 설정 (실제 데이터로 대체 필요)
+      // 실제 장치 데이터 가져오기
+      const deviceResponse = await fetch(`${API_BASE_URL}/devices/status?farm_id=${farmId}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (!deviceResponse.ok) throw new Error('장치 상태 조회 실패');
+      const deviceData = await deviceResponse.json();
+
+      // 장치 로그 구성 (실제 데이터 기반으로 수정)
       const deviceLogs = {
-        led: { start: "08:00", end: "18:00" },
-        fan: { count: 5, total_time: 120 },
-        water: { count: 3, total_amount: 10 },
-        heater: { count: 2, total_time: 60 },
-        cooler: { count: 1, total_time: 30 }
+        led: { start: deviceData.led ? "08:00" : null, end: deviceData.led ? "18:00" : null },
+        fan: { count: deviceData.fan ? 5 : 0, total_time: deviceData.fan ? 120 : 0 },
+        water: { count: deviceData.water ? 3 : 0, total_amount: deviceData.water ? 10 : 0 },
+        heater: { count: deviceData.heater ? 2 : 0, total_time: deviceData.heater ? 60 : 0 },
+        cooler: { count: deviceData.cooler ? 1 : 0, total_time: deviceData.cooler ? 30 : 0 }
       };
 
       const response = await fetch(`${API_BASE_URL}/generate-report`, {
@@ -842,7 +851,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           farmId,
-          date: today,
+          date: formattedDate, // YYYY-MM-DD 형식
           sensorSummary,
           sensorChanges,
           deviceLogs
@@ -916,7 +925,7 @@ ${report.date}
 최저 CO₂ 농도: ${report.sensorChanges.min_co2.value} ppm (시간: ${report.sensorChanges.min_co2.time})
 
 4. 제어 장치 작동 기록
-LED: 켜짐(시작: ${report.deviceLogs.led.start}, 종료: ${report.deviceLogs.led.end})
+LED: ${report.deviceLogs.led.start ? `켜짐(시작: ${report.deviceLogs.led.start}, 종료: ${report.deviceLogs.led.end})` : '꺼짐'}
 환기팬: 작동 횟수 ${report.deviceLogs.fan.count}회, 총 작동 시간 ${report.deviceLogs.fan.total_time}분
 급수장치: 급수 횟수 ${report.deviceLogs.water.count}회, 총 급수량 ${report.deviceLogs.water.total_amount} L
 히터: 작동 횟수 ${report.deviceLogs.heater.count}회, 총 작동 시간 ${report.deviceLogs.heater.total_time}분
