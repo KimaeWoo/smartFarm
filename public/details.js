@@ -1,4 +1,4 @@
-import { Chart } from "@/components/ui/chart"
+// Chart.js 라이브러리를 직접 사용
 const API_BASE_URL = "https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app"
 
 const growthStages = [
@@ -35,11 +35,13 @@ function toggleMode() {
 }
 
 const logoutButton = document.getElementById("logout-btn")
-logoutButton.addEventListener("click", () => {
-  sessionStorage.removeItem("user_id")
-  alert("로그아웃")
-  window.location.href = "login.html"
-})
+if (logoutButton) {
+  logoutButton.addEventListener("click", () => {
+    sessionStorage.removeItem("user_id")
+    alert("로그아웃")
+    window.location.href = "login.html"
+  })
+}
 
 document.addEventListener("DOMContentLoaded", async () => {
   const today = new Date()
@@ -63,9 +65,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   function updateDateDisplay() {
     const formattedDate = formatDate(currentDate)
-    document.getElementById("history-date").textContent = formattedDate
-    document.getElementById("summary-date").textContent =
-      `${currentDate.getFullYear()}년 ${currentDate.getMonth() + 1}월 ${currentDate.getDate()}일 센서별 평균값`
+    const historyDateEl = document.getElementById("history-date")
+    const summaryDateEl = document.getElementById("summary-date")
+
+    if (historyDateEl) {
+      historyDateEl.textContent = formattedDate
+    }
+
+    if (summaryDateEl) {
+      summaryDateEl.textContent = `${currentDate.getFullYear()}년 ${currentDate.getMonth() + 1}월 ${currentDate.getDate()}일 센서별 평균값`
+    }
   }
 
   const tabs = document.querySelectorAll(".tab")
@@ -101,19 +110,25 @@ document.addEventListener("DOMContentLoaded", async () => {
     })
   })
 
-  document.getElementById("prev-date").addEventListener("click", async () => {
-    currentDate.setDate(currentDate.getDate() - 1)
-    updateDateDisplay()
-    await updateAllCharts()
-  })
-
-  document.getElementById("next-date").addEventListener("click", async () => {
-    if (currentDate < today) {
-      currentDate.setDate(currentDate.getDate() + 1)
+  const prevDateBtn = document.getElementById("prev-date")
+  if (prevDateBtn) {
+    prevDateBtn.addEventListener("click", async () => {
+      currentDate.setDate(currentDate.getDate() - 1)
       updateDateDisplay()
       await updateAllCharts()
-    }
-  })
+    })
+  }
+
+  const nextDateBtn = document.getElementById("next-date")
+  if (nextDateBtn) {
+    nextDateBtn.addEventListener("click", async () => {
+      if (currentDate < today) {
+        currentDate.setDate(currentDate.getDate() + 1)
+        updateDateDisplay()
+        await updateAllCharts()
+      }
+    })
+  }
 
   const userId = sessionStorage.getItem("user_id")
   const farmId = sessionStorage.getItem("farm_id")
@@ -127,32 +142,34 @@ document.addEventListener("DOMContentLoaded", async () => {
   const soilOptimal = document.getElementById("soil-optimal")
   const co2Optimal = document.getElementById("co2-optimal")
 
-  document.getElementById("start-farm-btn").addEventListener("click", () => {
-    startButton.style.display = "none"
-    cropInfo.classList.add("visible")
-    fetch(`${API_BASE_URL}/start-farm`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ farmId }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.harvestDays) {
-          const harvestDays = data.harvestDays
-          const today = new Date()
-          const startDate = new Date()
-          const harvestDate = new Date(startDate)
-          harvestDate.setDate(harvestDate.getDate() + harvestDays)
-          const timeDiff = harvestDate - today
-          const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24))
-          document.getElementById("d-day").textContent = `D-Day: ${daysLeft > 0 ? daysLeft + "일 남음" : "수확 가능"}`
-          const growthRate = ((harvestDays - daysLeft) / harvestDays) * 100
-          growthCircle.style.background = `conic-gradient(#10b981 ${growthRate}%, #e5e7eb ${growthRate}%)`
-          growthText.textContent = `${Math.round(growthRate)}%`
-        }
+  if (startButton) {
+    startButton.addEventListener("click", () => {
+      startButton.style.display = "none"
+      cropInfo.classList.add("visible")
+      fetch(`${API_BASE_URL}/start-farm`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ farmId }),
       })
-      .catch((error) => alert("오류 발생"))
-  })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.harvestDays) {
+            const harvestDays = data.harvestDays
+            const today = new Date()
+            const startDate = new Date()
+            const harvestDate = new Date(startDate)
+            harvestDate.setDate(harvestDate.getDate() + harvestDays)
+            const timeDiff = harvestDate - today
+            const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24))
+            document.getElementById("d-day").textContent = `D-Day: ${daysLeft > 0 ? daysLeft + "일 남음" : "수확 가능"}`
+            const growthRate = ((harvestDays - daysLeft) / harvestDays) * 100
+            growthCircle.style.background = `conic-gradient(#10b981 ${growthRate}%, #e5e7eb ${growthRate}%)`
+            growthText.textContent = `${Math.round(growthRate)}%`
+          }
+        })
+        .catch((error) => alert("오류 발생"))
+    })
+  }
 
   function fetchFarmStatus() {
     fetch(`${API_BASE_URL}/get-farm-status/${farmId}`)
@@ -162,48 +179,70 @@ document.addEventListener("DOMContentLoaded", async () => {
       })
       .then((data) => {
         const { farm_name, growthRate, harvestDays, startDate, farmActive } = data
-        farmNameText.textContent = farm_name
+        if (farmNameText) {
+          farmNameText.textContent = farm_name
+        }
         sessionStorage.setItem("farm_name", farm_name)
         if (farmActive === 1) {
-          startButton.style.display = "none"
-          cropInfo.classList.add("visible")
+          if (startButton) startButton.style.display = "none"
+          if (cropInfo) cropInfo.classList.add("visible")
         } else {
-          startButton.style.display = "block"
-          cropInfo.classList.remove("visible")
+          if (startButton) startButton.style.display = "block"
+          if (cropInfo) cropInfo.classList.remove("visible")
         }
         updateGrowthStatus(growthRate, harvestDays, startDate)
       })
-      .catch((error) => alert(error.message))
+      .catch((error) => console.error(error.message))
   }
 
   function updateGrowthStatus(growthRate, harvestDays, startDate) {
     growthRate = Math.min(growthRate, 100)
-    document.getElementById("growth-rate").textContent = `${growthRate}%`
-    growthCircle.style.background = `conic-gradient(#10b981 ${growthRate}%, #e5e7eb ${growthRate}%)`
+    const growthRateEl = document.getElementById("growth-rate")
+    if (growthRateEl) {
+      growthRateEl.textContent = `${growthRate}%`
+    }
+
+    if (growthCircle) {
+      growthCircle.style.background = `conic-gradient(#10b981 ${growthRate}%, #e5e7eb ${growthRate}%)`
+    }
+
     const formattedStartDate = formatDateYMD(new Date(startDate))
-    document.getElementById("start-date").textContent = `시작일: ${formattedStartDate}`
+    const startDateEl = document.getElementById("start-date")
+    if (startDateEl) {
+      startDateEl.textContent = `시작일: ${formattedStartDate}`
+    }
+
     const today = new Date()
     const startDateObj = new Date(startDate)
     const harvestDate = new Date(startDateObj)
     harvestDate.setDate(harvestDate.getDate() + harvestDays)
     const timeDiff = harvestDate - today
     const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24))
-    if (daysLeft > 0) {
-      document.getElementById("d-day").textContent = `D-Day: ${daysLeft}일 남음`
-    } else if (daysLeft === 0) {
-      document.getElementById("d-day").textContent = `D-Day: 오늘 수확 가능`
-    } else {
-      document.getElementById("d-day").textContent = `D-Day: 수확 완료`
+
+    const dDayEl = document.getElementById("d-day")
+    if (dDayEl) {
+      if (daysLeft > 0) {
+        dDayEl.textContent = `D-Day: ${daysLeft}일 남음`
+      } else if (daysLeft === 0) {
+        dDayEl.textContent = `D-Day: 오늘 수확 가능`
+      } else {
+        dDayEl.textContent = `D-Day: 수확 완료`
+      }
     }
+
     updateGrowthStageByRate(growthRate)
   }
 
   function updateGrowthStageByRate(growthRate) {
     const plantImage = document.getElementById("plantImage")
-    const growthText = document.getElementById("growthText")
+    const growthTextEl = document.getElementById("growthText")
     const stageElements = document.querySelectorAll(".stage")
+
+    if (!plantImage || !growthTextEl) return
+
     let stageText = ""
     let stageIndex = 0
+
     if (growthRate <= 10) {
       stageText = "씨앗"
       stageIndex = 0
@@ -217,8 +256,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       stageText = "열매"
       stageIndex = 3
     }
+
     plantImage.src = growthStages[stageIndex].image
-    growthText.textContent = `현재 성장 단계: ${stageText}`
+    growthTextEl.textContent = `현재 성장 단계: ${stageText}`
+
     stageElements.forEach((el, idx) => {
       if (idx <= stageIndex) {
         el.classList.add("active")
@@ -242,32 +283,57 @@ document.addEventListener("DOMContentLoaded", async () => {
         soil_moisture: { optimal_min: soilMin, optimal_max: soilMax },
         co2: { optimal_min: co2Min, optimal_max: co2Max },
       } = data
-      tempOptimal.textContent = `${tempMin} ~ ${tempMax}`
-      humidOptimal.textContent = `${humidMin} ~ ${humidMax}`
-      soilOptimal.textContent = `${soilMin} ~ ${humidMax}`
-      co2Optimal.textContent = `${co2Min} ~ ${co2Max}`
-      document.getElementById("temp-min").value = tempMin
-      document.getElementById("temp-max").value = tempMax
-      document.getElementById("humid-min").value = humidMin
-      document.getElementById("humid-max").value = humidMax
-      document.getElementById("soil-min").value = soilMin
-      document.getElementById("soil-max").value = soilMax
-      document.getElementById("co2-min").value = co2Min
-      document.getElementById("co2-max").value = co2Max
+
+      if (tempOptimal) tempOptimal.textContent = `${tempMin} ~ ${tempMax}`
+      if (humidOptimal) humidOptimal.textContent = `${humidMin} ~ ${humidMax}`
+      if (soilOptimal) soilOptimal.textContent = `${soilMin} ~ ${soilMax}`
+      if (co2Optimal) co2Optimal.textContent = `${co2Min} ~ ${co2Max}`
+
+      const tempMinEl = document.getElementById("temp-min")
+      const tempMaxEl = document.getElementById("temp-max")
+      const humidMinEl = document.getElementById("humid-min")
+      const humidMaxEl = document.getElementById("humid-max")
+      const soilMinEl = document.getElementById("soil-min")
+      const soilMaxEl = document.getElementById("soil-max")
+      const co2MinEl = document.getElementById("co2-min")
+      const co2MaxEl = document.getElementById("co2-max")
+
+      if (tempMinEl) tempMinEl.value = tempMin
+      if (tempMaxEl) tempMaxEl.value = tempMax
+      if (humidMinEl) humidMinEl.value = humidMin
+      if (humidMaxEl) humidMaxEl.value = humidMax
+      if (soilMinEl) soilMinEl.value = soilMin
+      if (soilMaxEl) soilMaxEl.value = soilMax
+      if (co2MinEl) co2MinEl.value = co2Min
+      if (co2MaxEl) co2MaxEl.value = co2Max
     } catch (error) {
       console.error("작물 최적 수치 불러오기 실패:", error)
     }
   }
 
   async function updateFarmOptimalValues() {
-    const tempMin = document.getElementById("temp-min").value
-    const tempMax = document.getElementById("temp-max").value
-    const humidMin = document.getElementById("humid-min").value
-    const humidMax = document.getElementById("humid-max").value
-    const soilMin = document.getElementById("soil-min").value
-    const soilMax = document.getElementById("soil-max").value
-    const co2Min = document.getElementById("co2-min").value
-    const co2Max = document.getElementById("co2-max").value
+    const tempMinEl = document.getElementById("temp-min")
+    const tempMaxEl = document.getElementById("temp-max")
+    const humidMinEl = document.getElementById("humid-min")
+    const humidMaxEl = document.getElementById("humid-max")
+    const soilMinEl = document.getElementById("soil-min")
+    const soilMaxEl = document.getElementById("soil-max")
+    const co2MinEl = document.getElementById("co2-min")
+    const co2MaxEl = document.getElementById("co2-max")
+
+    if (!tempMinEl || !tempMaxEl || !humidMinEl || !humidMaxEl || !soilMinEl || !soilMaxEl || !co2MinEl || !co2MaxEl) {
+      return false
+    }
+
+    const tempMin = tempMinEl.value
+    const tempMax = tempMaxEl.value
+    const humidMin = humidMinEl.value
+    const humidMax = humidMaxEl.value
+    const soilMin = soilMinEl.value
+    const soilMax = soilMaxEl.value
+    const co2Min = co2MinEl.value
+    const co2Max = co2MaxEl.value
+
     if (
       Number.parseInt(tempMin) > Number.parseInt(tempMax) ||
       Number.parseInt(humidMin) > Number.parseInt(humidMax) ||
@@ -277,10 +343,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       alert("최소값은 최대값보다 작아야 합니다.")
       return false
     }
-    tempOptimal.textContent = `${tempMin} ~ ${tempMax}`
-    humidOptimal.textContent = `${humidMin} ~ ${humidMax}`
-    soilOptimal.textContent = `${soilMin} ~ ${soilMax}`
-    co2Optimal.textContent = `${co2Min} ~ ${co2Max}`
+
+    if (tempOptimal) tempOptimal.textContent = `${tempMin} ~ ${tempMax}`
+    if (humidOptimal) humidOptimal.textContent = `${humidMin} ~ ${humidMax}`
+    if (soilOptimal) soilOptimal.textContent = `${soilMin} ~ ${soilMax}`
+    if (co2Optimal) co2Optimal.textContent = `${co2Min} ~ ${co2Max}`
+
     try {
       const response = await fetch(`${API_BASE_URL}/updateFarmCondition`, {
         method: "POST",
@@ -309,7 +377,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       })
       if (!response.ok) throw new Error("네트워크 응답 오류: " + response.statusText)
       const data = await response.json()
-      document.getElementById("username").textContent = `${data.username}님`
+      const usernameEl = document.getElementById("username")
+      if (usernameEl) {
+        usernameEl.textContent = `${data.username}님`
+      }
     } catch (error) {
       console.error("사용자 이름 불러오기 실패:", error)
     }
@@ -413,86 +484,97 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   async function updateChartData() {
     const realtimeData = await fetchRealtimeData()
-    realtimeChart.data.labels = realtimeData.map((item) => item.time)
-    realtimeChart.data.datasets[0].data = realtimeData.map((item) => item.temperature)
-    realtimeChart.data.datasets[1].data = realtimeData.map((item) => item.humidity)
-    realtimeChart.data.datasets[2].data = realtimeData.map((item) => item.soil)
-    realtimeChart.data.datasets[3].data = realtimeData.map((item) => item.co2)
-    realtimeChart.update()
+    const realtimeChartEl = document.getElementById("realtime-chart")
+    if (!realtimeChartEl) return
+
+    const ctx = realtimeChartEl.getContext("2d")
+    if (!window.realtimeChart) {
+      window.realtimeChart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: realtimeData.map((item) => item.time),
+          datasets: [
+            {
+              label: "온도 (°C)",
+              data: realtimeData.map((item) => item.temperature),
+              borderColor: "rgb(249, 115, 22)",
+              backgroundColor: "rgba(249, 115, 22, 0.1)",
+              tension: 0.4,
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              yAxisID: "y1",
+            },
+            {
+              label: "습도 (%)",
+              data: realtimeData.map((item) => item.humidity),
+              borderColor: "rgb(59, 130, 246)",
+              backgroundColor: "rgba(59, 130, 246, 0.1)",
+              tension: 0.4,
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              yAxisID: "y1",
+            },
+            {
+              label: "토양 수분 (%)",
+              data: realtimeData.map((item) => item.soil),
+              borderColor: "rgb(255, 223, 0)",
+              backgroundColor: "rgba(255, 223, 0, 0.1)",
+              tension: 0.4,
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              yAxisID: "y1",
+            },
+            {
+              label: "CO2 (ppm)",
+              data: realtimeData.map((item) => item.co2),
+              borderColor: "rgb(16, 185, 129)",
+              backgroundColor: "rgba(16, 185, 129, 0.1)",
+              tension: 0.4,
+              pointRadius: 4,
+              pointHoverRadius: 6,
+              yAxisID: "y2",
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: "top", labels: { color: "#000000" } },
+            tooltip: { mode: "index", intersect: false },
+          },
+          scales: {
+            y1: { beginAtZero: false, position: "left", ticks: { max: 80, min: 0, color: "#000000" } },
+            y2: {
+              beginAtZero: false,
+              position: "right",
+              grid: { drawOnChartArea: false },
+              ticks: { max: 1000, min: 0, color: "#000000" },
+            },
+          },
+        },
+      })
+    } else {
+      window.realtimeChart.data.labels = realtimeData.map((item) => item.time)
+      window.realtimeChart.data.datasets[0].data = realtimeData.map((item) => item.temperature)
+      window.realtimeChart.data.datasets[1].data = realtimeData.map((item) => item.humidity)
+      window.realtimeChart.data.datasets[2].data = realtimeData.map((item) => item.soil)
+      window.realtimeChart.data.datasets[3].data = realtimeData.map((item) => item.co2)
+      window.realtimeChart.update()
+    }
   }
 
   function getCssVariable(variable) {
     return getComputedStyle(document.documentElement).getPropertyValue(variable).trim()
   }
 
-  const realtimeChart = new Chart(document.getElementById("realtime-chart"), {
-    type: "line",
-    data: {
-      labels: [],
-      datasets: [
-        {
-          label: "온도 (°C)",
-          data: [],
-          borderColor: "rgb(249, 115, 22)",
-          backgroundColor: "rgba(249, 115, 22, 0.1)",
-          tension: 0.4,
-          pointRadius: 4,
-          pointHoverRadius: 6,
-          yAxisID: "y1",
-        },
-        {
-          label: "습도 (%)",
-          data: [],
-          borderColor: "rgb(59, 130, 246)",
-          backgroundColor: "rgba(59, 130, 246, 0.1)",
-          tension: 0.4,
-          pointRadius: 4,
-          pointHoverRadius: 6,
-          yAxisID: "y1",
-        },
-        {
-          label: "토양 수분 (%)",
-          data: [],
-          borderColor: "rgb(255, 223, 0)",
-          backgroundColor: "rgba(255, 223, 0, 0.1)",
-          tension: 0.4,
-          pointRadius: 4,
-          pointHoverRadius: 6,
-          yAxisID: "y1",
-        },
-        {
-          label: "CO2 (ppm)",
-          data: [],
-          borderColor: "rgb(16, 185, 129)",
-          backgroundColor: "rgba(16, 185, 129, 0.1)",
-          tension: 0.4,
-          pointRadius: 4,
-          pointHoverRadius: 6,
-          yAxisID: "y2",
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { position: "top", labels: { color: "#000000" } },
-        tooltip: { mode: "index", intersect: false, titlecolor: "#000000", bodycolor: "#000000" },
-      },
-      scales: {
-        y1: { beginAtZero: false, position: "left", ticks: { max: 80, min: 0, color: "#000000" } },
-        y2: {
-          beginAtZero: false,
-          position: "right",
-          grid: { drawOnChartArea: false },
-          ticks: { max: 1000, min: 0, color: "#000000" },
-        },
-      },
-    },
-  })
-
   async function fetchHistoryData() {
-    const selectedDate = document.getElementById("history-date").innerText.split(" (")[0]
+    const historyDateEl = document.getElementById("history-date")
+    if (!historyDateEl) {
+      return { timeLabels: [], temperatureData: [], humidityData: [], soilData: [], co2Data: [] }
+    }
+
+    const selectedDate = historyDateEl.innerText.split(" (")[0]
     const formattedDate = selectedDate
       .replace("년", "-")
       .replace("월", "-")
@@ -539,131 +621,171 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   async function updateHistoryChartData() {
     const historyData = await fetchHistoryData()
-    temperatureChart.data.labels = historyData.timeLabels
-    temperatureChart.data.datasets[0].data = historyData.temperatureData
-    temperatureChart.update()
-    humidityChart.data.labels = historyData.timeLabels
-    humidityChart.data.datasets[0].data = historyData.humidityData
-    humidityChart.update()
-    soilChart.data.labels = historyData.timeLabels
-    soilChart.data.datasets[0].data = historyData.soilData
-    soilChart.update()
-    co2Chart.data.labels = historyData.timeLabels
-    co2Chart.data.datasets[0].data = historyData.co2Data
-    co2Chart.update()
+
+    // 온도 차트 업데이트
+    const temperatureCanvasEl = document.getElementById("temperature-canvas")
+    if (temperatureCanvasEl) {
+      const ctx = temperatureCanvasEl.getContext("2d")
+      if (!window.temperatureChart) {
+        window.temperatureChart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: historyData.timeLabels,
+            datasets: [
+              {
+                label: "온도 (°C)",
+                data: historyData.temperatureData,
+                borderColor: "rgb(249, 115, 22)",
+                backgroundColor: "rgba(249, 115, 22, 0.2)",
+                tension: 0.4,
+                fill: true,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false, labels: { color: "#000000" } },
+              tooltip: { mode: "index", intersect: false },
+            },
+            scales: {
+              y: { min: 0, max: 40, title: { display: true, text: "온도 (°C)" }, ticks: { color: "#000000" } },
+            },
+          },
+        })
+      } else {
+        window.temperatureChart.data.labels = historyData.timeLabels
+        window.temperatureChart.data.datasets[0].data = historyData.temperatureData
+        window.temperatureChart.update()
+      }
+    }
+
+    // 습도 차트 업데이트
+    const humidityCanvasEl = document.getElementById("humidity-canvas")
+    if (humidityCanvasEl) {
+      const ctx = humidityCanvasEl.getContext("2d")
+      if (!window.humidityChart) {
+        window.humidityChart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: historyData.timeLabels,
+            datasets: [
+              {
+                label: "습도 (%)",
+                data: historyData.humidityData,
+                borderColor: "rgb(59, 130, 246)",
+                backgroundColor: "rgba(59, 130, 246, 0.2)",
+                tension: 0.4,
+                fill: true,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false, labels: { color: "#000000" } },
+              tooltip: { mode: "index", intersect: false },
+            },
+            scales: {
+              y: { min: 0, max: 100, title: { display: true, text: "습도 (%)" }, ticks: { color: "#000000" } },
+            },
+          },
+        })
+      } else {
+        window.humidityChart.data.labels = historyData.timeLabels
+        window.humidityChart.data.datasets[0].data = historyData.humidityData
+        window.humidityChart.update()
+      }
+    }
+
+    // 토양 수분 차트 업데이트
+    const soilCanvasEl = document.getElementById("soil-canvas")
+    if (soilCanvasEl) {
+      const ctx = soilCanvasEl.getContext("2d")
+      if (!window.soilChart) {
+        window.soilChart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: historyData.timeLabels,
+            datasets: [
+              {
+                label: "토양 수분 (%)",
+                data: historyData.soilData,
+                borderColor: "rgb(217, 119, 6)",
+                backgroundColor: "rgba(217, 119, 6, 0.2)",
+                tension: 0.4,
+                fill: true,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false, labels: { color: "#000000" } },
+              tooltip: { mode: "index", intersect: false },
+            },
+            scales: {
+              y: { min: 0, max: 100, title: { display: true, text: "토양 수분 (%)" }, ticks: { color: "#000000" } },
+            },
+          },
+        })
+      } else {
+        window.soilChart.data.labels = historyData.timeLabels
+        window.soilChart.data.datasets[0].data = historyData.soilData
+        window.soilChart.update()
+      }
+    }
+
+    // CO2 차트 업데이트
+    const co2CanvasEl = document.getElementById("co2-canvas")
+    if (co2CanvasEl) {
+      const ctx = co2CanvasEl.getContext("2d")
+      if (!window.co2Chart) {
+        window.co2Chart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: historyData.timeLabels,
+            datasets: [
+              {
+                label: "CO2 (ppm)",
+                data: historyData.co2Data,
+                borderColor: "rgb(16, 185, 129)",
+                backgroundColor: "rgba(16, 185, 129, 0.2)",
+                tension: 0.4,
+                fill: true,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false, labels: { color: "#000000" } },
+              tooltip: { mode: "index", intersect: false },
+            },
+            scales: {
+              y: { min: 0, max: 1000, title: { display: true, text: "CO2 (ppm)" }, ticks: { color: "#000000" } },
+            },
+          },
+        })
+      } else {
+        window.co2Chart.data.labels = historyData.timeLabels
+        window.co2Chart.data.datasets[0].data = historyData.co2Data
+        window.co2Chart.update()
+      }
+    }
   }
-
-  const temperatureChart = new Chart(document.getElementById("temperature-canvas"), {
-    type: "line",
-    data: {
-      labels: timeLabels,
-      datasets: [
-        {
-          label: "온도 (°C)",
-          data: temperatureData,
-          borderColor: "rgb(249, 115, 22)",
-          backgroundColor: "rgba(249, 115, 22, 0.2)",
-          tension: 0.4,
-          fill: true,
-          pointRadius: 4,
-          pointHoverRadius: 6,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false, labels: { color: "#000000" } },
-        tooltip: { mode: "index", intersect: false, titlecolor: "#000000", bodycolor: "#000000" },
-      },
-      scales: { y: { min: 0, max: 40, title: { display: true, text: "온도 (°C)" }, ticks: { color: "#000000" } } },
-    },
-  })
-
-  const humidityChart = new Chart(document.getElementById("humidity-canvas"), {
-    type: "line",
-    data: {
-      labels: timeLabels,
-      datasets: [
-        {
-          label: "습도 (%)",
-          data: humidityData,
-          borderColor: "rgb(59, 130, 246)",
-          backgroundColor: "rgba(59, 130, 246, 0.2)",
-          tension: 0.4,
-          fill: true,
-          pointRadius: 4,
-          pointHoverRadius: 6,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false, labels: { color: "#000000" } },
-        tooltip: { mode: "index", intersect: false, titlecolor: "#000000", bodycolor: "#000000" },
-      },
-      scales: { y: { min: 0, max: 100, title: { display: true, text: "습도 (%)" }, ticks: { color: "#000000" } } },
-    },
-  })
-
-  const soilChart = new Chart(document.getElementById("soil-canvas"), {
-    type: "line",
-    data: {
-      labels: timeLabels,
-      datasets: [
-        {
-          label: "토양 수분 (%)",
-          data: soilData,
-          borderColor: "rgb(217, 119, 6)",
-          backgroundColor: "rgba(217, 119, 6, 0.2)",
-          tension: 0.4,
-          fill: true,
-          pointRadius: 4,
-          pointHoverRadius: 6,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false, labels: { color: "#000000" } },
-        tooltip: { mode: "index", intersect: false, titlecolor: "#000000", bodycolor: "#000000" },
-      },
-      scales: { y: { min: 0, max: 100, title: { display: true, text: "토양 수분 (%)" }, ticks: { color: "#000000" } } },
-    },
-  })
-
-  const co2Chart = new Chart(document.getElementById("co2-canvas"), {
-    type: "line",
-    data: {
-      labels: timeLabels,
-      datasets: [
-        {
-          label: "CO2 (ppm)",
-          data: co2Data,
-          borderColor: "rgb(16, 185, 129)",
-          backgroundColor: "rgba(16, 185, 129, 0.2)",
-          tension: 0.4,
-          fill: true,
-          pointRadius: 4,
-          pointHoverRadius: 6,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false, labels: { color: "#000000" } },
-        tooltip: { mode: "index", intersect: false, titlecolor: "#000000", bodycolor: "#000000" },
-      },
-      scales: { y: { min: 0, max: 1000, title: { display: true, text: "CO2 (ppm)" }, ticks: { color: "#000000" } } },
-    },
-  })
 
   async function updateSummaryChart() {
     const historyData = await fetchHistoryData()
@@ -671,11 +793,80 @@ document.addEventListener("DOMContentLoaded", async () => {
     const avgHumidity = roundToTwo(average(historyData.humidityData))
     const avgSoil = roundToTwo(average(historyData.soilData))
     const avgCo2 = roundToTwo(average(historyData.co2Data))
-    summaryChart.data.datasets[0].data = [avgTemperature]
-    summaryChart.data.datasets[1].data = [avgHumidity]
-    summaryChart.data.datasets[2].data = [avgSoil]
-    summaryChart.data.datasets[3].data = [avgCo2 / 10]
-    summaryChart.update()
+
+    const summaryChartEl = document.getElementById("summary-chart")
+    if (!summaryChartEl) return
+
+    const ctx = summaryChartEl.getContext("2d")
+    if (!window.summaryChart) {
+      window.summaryChart = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: ["평균값"],
+          datasets: [
+            {
+              label: "온도 (°C)",
+              data: [avgTemperature],
+              backgroundColor: "rgba(249, 115, 22, 0.7)",
+              borderColor: "rgb(249, 115, 22)",
+              borderWidth: 1,
+            },
+            {
+              label: "습도 (%)",
+              data: [avgHumidity],
+              backgroundColor: "rgba(59, 130, 246, 0.7)",
+              borderColor: "rgb(59, 130, 246)",
+              borderWidth: 1,
+            },
+            {
+              label: "토양 수분 (%)",
+              data: [avgSoil],
+              backgroundColor: "rgba(217, 119, 6, 0.7)",
+              borderColor: "rgb(217, 119, 6)",
+              borderWidth: 1,
+            },
+            {
+              label: "CO2 (ppm/10)",
+              data: [avgCo2 / 10],
+              backgroundColor: "rgba(16, 185, 129, 0.7)",
+              borderColor: "rgb(16, 185, 129)",
+              borderWidth: 1,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: "top", labels: { color: "#000000" } },
+            tooltip: {
+              callbacks: {
+                label: (context) => {
+                  let label = context.dataset.label || ""
+                  if (label) label += ": "
+                  if (context.dataset.label === "CO2 (ppm/10)") {
+                    label += context.raw * 10
+                  } else {
+                    label += context.raw
+                  }
+                  return label
+                },
+              },
+            },
+          },
+          scales: {
+            y: { beginAtZero: true, ticks: { color: "#000000" } },
+            x: { beginAtZero: true, ticks: { color: "#000000" } },
+          },
+        },
+      })
+    } else {
+      window.summaryChart.data.datasets[0].data = [avgTemperature]
+      window.summaryChart.data.datasets[1].data = [avgHumidity]
+      window.summaryChart.data.datasets[2].data = [avgSoil]
+      window.summaryChart.data.datasets[3].data = [avgCo2 / 10]
+      window.summaryChart.update()
+    }
   }
 
   function average(dataArray) {
@@ -687,70 +878,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   function roundToTwo(num) {
     return Math.round(num * 100) / 100
   }
-
-  const summaryChart = new Chart(document.getElementById("summary-chart"), {
-    type: "bar",
-    data: {
-      labels: ["평균값"],
-      datasets: [
-        {
-          label: "온도 (°C)",
-          data: [24.5],
-          backgroundColor: "rgba(249, 115, 22, 0.7)",
-          borderColor: "rgb(249, 115, 22)",
-          borderWidth: 1,
-        },
-        {
-          label: "습도 (%)",
-          data: [65],
-          backgroundColor: "rgba(59, 130, 246, 0.7)",
-          borderColor: "rgb(59, 130, 246)",
-          borderWidth: 1,
-        },
-        {
-          label: "토양 수분 (%)",
-          data: [42],
-          backgroundColor: "rgba(217, 119, 6, 0.7)",
-          borderColor: "rgb(217, 119, 6)",
-          borderWidth: 1,
-        },
-        {
-          label: "CO2 (ppm/10)",
-          data: [65],
-          backgroundColor: "rgba(16, 185, 129, 0.7)",
-          borderColor: "rgb(16, 185, 129)",
-          borderWidth: 1,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { position: "top", labels: { color: "#000000" } },
-        tooltip: {
-          callbacks: {
-            label: (context) => {
-              let label = context.dataset.label || ""
-              if (label) label += ": "
-              if (context.dataset.label === "CO2 (ppm/10)") {
-                label += context.raw * 10
-              } else {
-                label += context.raw
-              }
-              return label
-            },
-          },
-          titlecolor: "#000000",
-          bodycolor: "#000000",
-        },
-      },
-      scales: {
-        y: { beginAtZero: true, ticks: { color: "#000000" } },
-        x: { beginAtZero: true, ticks: { color: "#000000" } },
-      },
-    },
-  })
 
   async function updateAllCharts() {
     const historyData = await fetchHistoryData()
@@ -764,38 +891,52 @@ document.addEventListener("DOMContentLoaded", async () => {
       console.error("History data가 부족합니다")
       return
     }
-    const newTimeLabels = historyData.timeLabels
-    const newTemperatureData = historyData.temperatureData
-    const newHumidityData = historyData.humidityData
-    const newSoilData = historyData.soilData
-    const newCo2Data = historyData.co2Data
-    temperatureChart.data.labels = newTimeLabels
-    temperatureChart.data.datasets[0].data = newTemperatureData
-    temperatureChart.update()
-    humidityChart.data.labels = newTimeLabels
-    humidityChart.data.datasets[0].data = newHumidityData
-    humidityChart.update()
-    soilChart.data.labels = newTimeLabels
-    soilChart.data.datasets[0].data = newSoilData
-    soilChart.update()
-    co2Chart.data.labels = newTimeLabels
-    co2Chart.data.datasets[0].data = newCo2Data
-    co2Chart.update()
-    const tempAvg = newTemperatureData.reduce((a, b) => a + b, 0) / newTemperatureData.length
-    const humidityAvg = newHumidityData.reduce((a, b) => a + b, 0) / newHumidityData.length
-    const soilAvg = newSoilData.reduce((a, b) => a + b, 0) / newSoilData.length
-    const co2Avg = newCo2Data.reduce((a, b) => a + b, 0) / newCo2Data.length / 10
-    summaryChart.data.datasets[0].data = [tempAvg.toFixed(1)]
-    summaryChart.data.datasets[1].data = [humidityAvg.toFixed(1)]
-    summaryChart.data.datasets[2].data = [soilAvg.toFixed(1)]
-    summaryChart.data.datasets[3].data = [co2Avg.toFixed(1)]
-    summaryChart.update()
+
+    if (window.temperatureChart) {
+      window.temperatureChart.data.labels = historyData.timeLabels
+      window.temperatureChart.data.datasets[0].data = historyData.temperatureData
+      window.temperatureChart.update()
+    }
+
+    if (window.humidityChart) {
+      window.humidityChart.data.labels = historyData.timeLabels
+      window.humidityChart.data.datasets[0].data = historyData.humidityData
+      window.humidityChart.update()
+    }
+
+    if (window.soilChart) {
+      window.soilChart.data.labels = historyData.timeLabels
+      window.soilChart.data.datasets[0].data = historyData.soilData
+      window.soilChart.update()
+    }
+
+    if (window.co2Chart) {
+      window.co2Chart.data.labels = historyData.timeLabels
+      window.co2Chart.data.datasets[0].data = historyData.co2Data
+      window.co2Chart.update()
+    }
+
+    const tempAvg = historyData.temperatureData.reduce((a, b) => a + b, 0) / historyData.temperatureData.length
+    const humidityAvg = historyData.humidityData.reduce((a, b) => a + b, 0) / historyData.humidityData.length
+    const soilAvg = historyData.soilData.reduce((a, b) => a + b, 0) / historyData.soilData.length
+    const co2Avg = historyData.co2Data.reduce((a, b) => a + b, 0) / historyData.co2Data.length / 10
+
+    if (window.summaryChart) {
+      window.summaryChart.data.datasets[0].data = [tempAvg.toFixed(1)]
+      window.summaryChart.data.datasets[1].data = [humidityAvg.toFixed(1)]
+      window.summaryChart.data.datasets[2].data = [soilAvg.toFixed(1)]
+      window.summaryChart.data.datasets[3].data = [co2Avg.toFixed(1)]
+      window.summaryChart.update()
+    }
   }
 
   async function updateDevice(device) {
     try {
       if (farmId) {
-        const isChecked = document.getElementById(`${device}-switch`).checked
+        const switchElement = document.getElementById(`${device}-switch`)
+        if (!switchElement) return
+
+        const isChecked = switchElement.checked
         const response = await fetch(`${API_BASE_URL}/devices/force-status`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -815,19 +956,24 @@ document.addEventListener("DOMContentLoaded", async () => {
     const switchElement = document.getElementById(`${device}-switch`)
     const iconElement = document.getElementById(`${device}-icon`)
     const statusElement = document.getElementById(`${device}-status`)
+
+    if (!switchElement || !iconElement || !statusElement) return
+
     if (status) {
       switchElement.checked = true
       iconElement.classList.add("active")
       statusElement.textContent = "켜짐"
       if (device === "fan") {
-        iconElement.querySelector("i").classList.add("spin")
+        const fanIcon = iconElement.querySelector("i")
+        if (fanIcon) fanIcon.classList.add("spin")
       }
     } else {
       switchElement.checked = false
       iconElement.classList.remove("active")
       statusElement.textContent = "꺼짐"
       if (device === "fan") {
-        iconElement.querySelector("i").classList.remove("spin")
+        const fanIcon = iconElement.querySelector("i")
+        if (fanIcon) fanIcon.classList.remove("spin")
       }
     }
   }
@@ -839,35 +985,41 @@ document.addEventListener("DOMContentLoaded", async () => {
       switchElement.addEventListener("change", () => {
         updateDevice(device)
       })
-    } else {
-      console.error(`${device}-switch 요소를 찾을 수 없습니다.`)
     }
   })
 
   const panel = document.querySelector(".floating-panel")
-  panel.style.top = "57.5%"
-  panel.style.transform = "translateY(-50%)"
-  panel.style.position = "fixed"
+  if (panel) {
+    panel.style.top = "57.5%"
+    panel.style.transform = "translateY(-50%)"
+    panel.style.position = "fixed"
+  }
 
   const settingsBtn = document.getElementById("settingsBtn")
   const settingsPanel = document.getElementById("settingsPanel")
   const closeSettings = document.getElementById("closeSettings")
   const saveSettings = document.getElementById("saveSettings")
 
-  settingsBtn.addEventListener("click", () => {
-    settingsPanel.style.display = "block"
-  })
+  if (settingsBtn && settingsPanel) {
+    settingsBtn.addEventListener("click", () => {
+      settingsPanel.style.display = "block"
+    })
+  }
 
-  closeSettings.addEventListener("click", () => {
-    settingsPanel.style.display = "none"
-  })
-
-  saveSettings.addEventListener("click", () => {
-    if (updateFarmOptimalValues()) {
+  if (closeSettings && settingsPanel) {
+    closeSettings.addEventListener("click", () => {
       settingsPanel.style.display = "none"
-      alert("최적 수치가 저장되었습니다.")
-    }
-  })
+    })
+  }
+
+  if (saveSettings && settingsPanel) {
+    saveSettings.addEventListener("click", () => {
+      if (updateFarmOptimalValues()) {
+        settingsPanel.style.display = "none"
+        alert("최적 수치가 저장되었습니다.")
+      }
+    })
+  }
 
   let allAlarms = []
 
@@ -896,17 +1048,27 @@ document.addEventListener("DOMContentLoaded", async () => {
         content: "알림 없음",
         created_at: "시간",
       }
-      if (latestDanger.content != "알림 없음") {
-        document.getElementById("danger-head").textContent = latestDanger.content
-        document.getElementById("danger-time").textContent = formatDateTime(latestDanger.created_at)
+
+      const dangerHeadEl = document.getElementById("danger-head")
+      const dangerTimeEl = document.getElementById("danger-time")
+      const warningHeadEl = document.getElementById("warning-head")
+      const warningTimeEl = document.getElementById("warning-time")
+      const completeHeadEl = document.getElementById("complete-head")
+      const completeTimeEl = document.getElementById("complete-time")
+
+      if (latestDanger.content != "알림 없음" && dangerHeadEl && dangerTimeEl) {
+        dangerHeadEl.textContent = latestDanger.content
+        dangerTimeEl.textContent = formatDateTime(latestDanger.created_at)
       }
-      if (latestWarning.content != "알림 없음") {
-        document.getElementById("warning-head").textContent = latestWarning.content
-        document.getElementById("warning-time").textContent = formatDateTime(latestWarning.created_at)
+
+      if (latestWarning.content != "알림 없음" && warningHeadEl && warningTimeEl) {
+        warningHeadEl.textContent = latestWarning.content
+        warningTimeEl.textContent = formatDateTime(latestWarning.created_at)
       }
-      if (latestComplete.content != "알림 없음") {
-        document.getElementById("complete-head").textContent = latestComplete.content
-        document.getElementById("complete-time").textContent = formatDateTime(latestComplete.created_at)
+
+      if (latestComplete.content != "알림 없음" && completeHeadEl && completeTimeEl) {
+        completeHeadEl.textContent = latestComplete.content
+        completeTimeEl.textContent = formatDateTime(latestComplete.created_at)
       }
     } catch (error) {
       console.error("알림 불러오기 실패:", error)
@@ -921,28 +1083,37 @@ document.addEventListener("DOMContentLoaded", async () => {
       console.error("필터 또는 테이블 요소를 찾을 수 없습니다.")
       return
     }
+
     const selectedType = alarmFilter.value
     alarmListTableBody.innerHTML = ""
+
     if (allAlarms.length === 0) {
       alarmListTableBody.innerHTML = '<tr><td colspan="4">알림이 없습니다.</td></tr>'
     } else {
       const sortedAlarms = allAlarms.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
       const filteredAlarms = sortedAlarms.filter((alarm) => !selectedType || alarm.type === selectedType)
+
       filteredAlarms.forEach((alarm) => {
         const tr = document.createElement("tr")
         const emoji = getEmojiForType(alarm.type)
+
         const contentTd = document.createElement("td")
         contentTd.textContent = emoji + " " + alarm.content
+
         const createdAtTd = document.createElement("td")
         createdAtTd.textContent = formatDateTime(alarm.created_at)
+
         const deviceTd = document.createElement("td")
         deviceTd.textContent = alarm.device || "장치 없음"
+
         const typeTd = document.createElement("td")
         typeTd.textContent = alarm.type
+
         tr.appendChild(contentTd)
         tr.appendChild(createdAtTd)
         tr.appendChild(deviceTd)
         tr.appendChild(typeTd)
+
         alarmListTableBody.appendChild(tr)
       })
     }
@@ -961,14 +1132,23 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  document.querySelector("#alarm-filter").addEventListener("change", fetchAlarmList)
+  const alarmFilterEl = document.querySelector("#alarm-filter")
+  if (alarmFilterEl) {
+    alarmFilterEl.addEventListener("change", fetchAlarmList)
+  }
 
-  document.querySelector(".alarm").addEventListener("click", () => {
-    document.querySelectorAll(".tab").forEach((tab) => tab.classList.remove("active"))
-    document.querySelector('[data-tab="alarm"]').classList.add("active")
-    document.querySelectorAll(".tab-content").forEach((content) => content.classList.remove("active"))
-    document.getElementById("alarm-tab").classList.add("active")
-  })
+  const alarmEl = document.querySelector(".alarm")
+  if (alarmEl) {
+    alarmEl.addEventListener("click", () => {
+      document.querySelectorAll(".tab").forEach((tab) => tab.classList.remove("active"))
+      const alarmTab = document.querySelector('[data-tab="alarm"]')
+      if (alarmTab) alarmTab.classList.add("active")
+
+      document.querySelectorAll(".tab-content").forEach((content) => content.classList.remove("active"))
+      const alarmTabContent = document.getElementById("alarm-tab")
+      if (alarmTabContent) alarmTabContent.classList.add("active")
+    })
+  }
 
   // 리포트 생성 함수
   async function generateReport() {
@@ -1073,7 +1253,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         throw new Error(errorData.error || "리포트 생성 실패")
       }
 
-      const data = await response.json()
+      await response.json()
       alert("리포트가 성공적으로 생성되었습니다.")
       fetchReports() // 리포트 목록 새로고침
     } catch (error) {
@@ -1091,8 +1271,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       })
       if (!response.ok) throw new Error("리포트 조회 실패")
       const reports = await response.json()
+
       const diaryEntries = document.getElementById("diaryEntries")
       const reportCount = document.getElementById("reportCount")
+
+      if (!diaryEntries || !reportCount) return
 
       diaryEntries.innerHTML = ""
       reportCount.textContent = `${reports.length}개`
@@ -1138,69 +1321,124 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     } catch (error) {
       console.error("리포트 조회 오류:", error)
-      document.getElementById("diaryEntries").innerHTML =
-        '<li class="no-reports">리포트를 불러오는 중 오류가 발생했습니다.</li>'
+      const diaryEntries = document.getElementById("diaryEntries")
+      if (diaryEntries) {
+        diaryEntries.innerHTML = '<li class="no-reports">리포트를 불러오는 중 오류가 발생했습니다.</li>'
+      }
     }
   }
 
   // 리포트 모달 표시 함수
   function showReportModal(report) {
     const modal = document.getElementById("reportModal")
+    if (!modal) return
 
     // 날짜 정보 설정
-    document.getElementById("reportDate").textContent = report.date
+    const reportDateEl = document.getElementById("reportDate")
+    if (reportDateEl) reportDateEl.textContent = report.date
 
     // 센서 요약 정보 설정
-    document.getElementById("avgTemp").textContent = `${report.sensorSummary.avg_temperature} °C`
-    document.getElementById("avgHumidity").textContent = `${report.sensorSummary.avg_humidity} %`
-    document.getElementById("avgSoil").textContent = `${report.sensorSummary.avg_soil_moisture} %`
-    document.getElementById("avgCo2").textContent = `${report.sensorSummary.avg_co2} ppm`
+    const avgTempEl = document.getElementById("avgTemp")
+    const avgHumidityEl = document.getElementById("avgHumidity")
+    const avgSoilEl = document.getElementById("avgSoil")
+    const avgCo2El = document.getElementById("avgCo2")
+
+    if (avgTempEl) avgTempEl.textContent = `${report.sensorSummary.avg_temperature} °C`
+    if (avgHumidityEl) avgHumidityEl.textContent = `${report.sensorSummary.avg_humidity} %`
+    if (avgSoilEl) avgSoilEl.textContent = `${report.sensorSummary.avg_soil_moisture} %`
+    if (avgCo2El) avgCo2El.textContent = `${report.sensorSummary.avg_co2} ppm`
 
     // 센서 변화 정보 설정
-    document.getElementById("maxTemp").textContent = `${report.sensorChanges.max_temperature.value} °C`
-    document.getElementById("maxTempTime").textContent = report.sensorChanges.max_temperature.time
-    document.getElementById("minTemp").textContent = `${report.sensorChanges.min_temperature.value} °C`
-    document.getElementById("minTempTime").textContent = report.sensorChanges.min_temperature.time
+    const maxTempEl = document.getElementById("maxTemp")
+    const maxTempTimeEl = document.getElementById("maxTempTime")
+    const minTempEl = document.getElementById("minTemp")
+    const minTempTimeEl = document.getElementById("minTempTime")
 
-    document.getElementById("maxHumidity").textContent = `${report.sensorChanges.max_humidity.value} %`
-    document.getElementById("maxHumidityTime").textContent = report.sensorChanges.max_humidity.time
-    document.getElementById("minHumidity").textContent = `${report.sensorChanges.min_humidity.value} %`
-    document.getElementById("minHumidityTime").textContent = report.sensorChanges.min_humidity.time
+    if (maxTempEl) maxTempEl.textContent = `${report.sensorChanges.max_temperature.value} °C`
+    if (maxTempTimeEl) maxTempTimeEl.textContent = report.sensorChanges.max_temperature.time
+    if (minTempEl) minTempEl.textContent = `${report.sensorChanges.min_temperature.value} °C`
+    if (minTempTimeEl) minTempTimeEl.textContent = report.sensorChanges.min_temperature.time
 
-    document.getElementById("maxSoil").textContent = `${report.sensorChanges.max_soil_moisture.value} %`
-    document.getElementById("maxSoilTime").textContent = report.sensorChanges.max_soil_moisture.time
-    document.getElementById("minSoil").textContent = `${report.sensorChanges.min_soil_moisture.value} %`
-    document.getElementById("minSoilTime").textContent = report.sensorChanges.min_soil_moisture.time
+    const maxHumidityEl = document.getElementById("maxHumidity")
+    const maxHumidityTimeEl = document.getElementById("maxHumidityTime")
+    const minHumidityEl = document.getElementById("minHumidity")
+    const minHumidityTimeEl = document.getElementById("minHumidityTime")
 
-    document.getElementById("maxCo2").textContent = `${report.sensorChanges.max_co2.value} ppm`
-    document.getElementById("maxCo2Time").textContent = report.sensorChanges.max_co2.time
-    document.getElementById("minCo2").textContent = `${report.sensorChanges.min_co2.value} ppm`
-    document.getElementById("minCo2Time").textContent = report.sensorChanges.min_co2.time
+    if (maxHumidityEl) maxHumidityEl.textContent = `${report.sensorChanges.max_humidity.value} %`
+    if (maxHumidityTimeEl) maxHumidityTimeEl.textContent = report.s` %`
+    if (maxHumidityTimeEl) maxHumidityTimeEl.textContent = report.sensorChanges.max_humidity.time
+    if (minHumidityEl) minHumidityEl.textContent = `${report.sensorChanges.min_humidity.value} %`
+    if (minHumidityTimeEl) minHumidityTimeEl.textContent = report.sensorChanges.min_humidity.time
+
+    const maxSoilEl = document.getElementById("maxSoil")
+    const maxSoilTimeEl = document.getElementById("maxSoilTime")
+    const minSoilEl = document.getElementById("minSoil")
+    const minSoilTimeEl = document.getElementById("minSoilTime")
+
+    if (maxSoilEl) maxSoilEl.textContent = `${report.sensorChanges.max_soil_moisture.value} %`
+    if (maxSoilTimeEl) maxSoilTimeEl.textContent = report.sensorChanges.max_soil_moisture.time
+    if (minSoilEl) minSoilEl.textContent = `${report.sensorChanges.min_soil_moisture.value} %`
+    if (minSoilTimeEl) minSoilTimeEl.textContent = report.sensorChanges.min_soil_moisture.time
+
+    const maxCo2El = document.getElementById("maxCo2")
+    const maxCo2TimeEl = document.getElementById("maxCo2Time")
+    const minCo2El = document.getElementById("minCo2")
+    const minCo2TimeEl = document.getElementById("minCo2Time")
+
+    if (maxCo2El) maxCo2El.textContent = `${report.sensorChanges.max_co2.value} ppm`
+    if (maxCo2TimeEl) maxCo2TimeEl.textContent = report.sensorChanges.max_co2.time
+    if (minCo2El) minCo2El.textContent = `${report.sensorChanges.min_co2.value} ppm`
+    if (minCo2TimeEl) minCo2TimeEl.textContent = report.sensorChanges.min_co2.time
 
     // 장치 로그 정보 설정
-    document.getElementById("ledLog").textContent = report.deviceLogs.led.start
-      ? `켜짐 (시작: ${report.deviceLogs.led.start}, 종료: ${report.deviceLogs.led.end})`
-      : "꺼짐"
+    const ledLogEl = document.getElementById("ledLog")
+    const fanLogEl = document.getElementById("fanLog")
+    const waterLogEl = document.getElementById("waterLog")
+    const heaterLogEl = document.getElementById("heaterLog")
+    const coolerLogEl = document.getElementById("coolerLog")
 
-    document.getElementById("fanLog").textContent =
-      `작동 횟수 ${report.deviceLogs.fan.count}회, 총 작동 시간 ${report.deviceLogs.fan.total_time}분`
-    document.getElementById("waterLog").textContent =
-      `급수 횟수 ${report.deviceLogs.water.count}회, 총 급수량 ${report.deviceLogs.water.total_amount} L`
-    document.getElementById("heaterLog").textContent =
-      `작동 횟수 ${report.deviceLogs.heater.count}회, 총 작동 시간 ${report.deviceLogs.heater.total_time}분`
-    document.getElementById("coolerLog").textContent =
-      `작동 횟수 ${report.deviceLogs.cooler.count}회, 총 작동 시간 ${report.deviceLogs.cooler.total_time}분`
+    if (ledLogEl) {
+      ledLogEl.textContent = report.deviceLogs.led.start
+        ? `켜짐 (시작: ${report.deviceLogs.led.start}, 종료: ${report.deviceLogs.led.end})`
+        : "꺼짐"
+    }
+
+    if (fanLogEl) {
+      fanLogEl.textContent = `작동 횟수 ${report.deviceLogs.fan.count}회, 총 작동 시간 ${report.deviceLogs.fan.total_time}분`
+    }
+
+    if (waterLogEl) {
+      waterLogEl.textContent = `급수 횟수 ${report.deviceLogs.water.count}회, 총 급수량 ${report.deviceLogs.water.total_amount} L`
+    }
+
+    if (heaterLogEl) {
+      heaterLogEl.textContent = `작동 횟수 ${report.deviceLogs.heater.count}회, 총 작동 시간 ${report.deviceLogs.heater.total_time}분`
+    }
+
+    if (coolerLogEl) {
+      coolerLogEl.textContent = `작동 횟수 ${report.deviceLogs.cooler.count}회, 총 작동 시간 ${report.deviceLogs.cooler.total_time}분`
+    }
 
     // AI 분석 정보 설정
-    document.getElementById("aiAnalysis").textContent = report.aiAnalysis || "AI 분석 데이터가 없습니다."
+    const aiAnalysisEl = document.getElementById("aiAnalysis")
+    if (aiAnalysisEl) {
+      aiAnalysisEl.textContent = report.aiAnalysis || "AI 분석 데이터가 없습니다."
+    }
 
     // 모달 표시
     modal.style.display = "block"
 
     // 다운로드 버튼 이벤트 설정
-    document.getElementById("downloadReportBtn").addEventListener("click", () => {
-      downloadReport(report)
-    })
+    const downloadReportBtn = document.getElementById("downloadReportBtn")
+    if (downloadReportBtn) {
+      // 이전 이벤트 리스너 제거
+      const newDownloadBtn = downloadReportBtn.cloneNode(true)
+      downloadReportBtn.parentNode.replaceChild(newDownloadBtn, downloadReportBtn)
+
+      newDownloadBtn.addEventListener("click", () => {
+        downloadReport(report)
+      })
+    }
   }
 
   // 리포트 다운로드 함수
@@ -1248,25 +1486,37 @@ ${report.aiAnalysis || "AI 분석 데이터가 없습니다."}
   }
 
   // 모달 닫기 이벤트
-  document.getElementById("closeReportModal").addEventListener("click", () => {
-    document.getElementById("reportModal").style.display = "none"
-  })
+  const closeReportModalBtn = document.getElementById("closeReportModal")
+  if (closeReportModalBtn) {
+    closeReportModalBtn.addEventListener("click", () => {
+      const reportModal = document.getElementById("reportModal")
+      if (reportModal) reportModal.style.display = "none"
+    })
+  }
 
-  document.getElementById("closeReportBtn").addEventListener("click", () => {
-    document.getElementById("reportModal").style.display = "none"
-  })
+  const closeReportBtn = document.getElementById("closeReportBtn")
+  if (closeReportBtn) {
+    closeReportBtn.addEventListener("click", () => {
+      const reportModal = document.getElementById("reportModal")
+      if (reportModal) reportModal.style.display = "none"
+    })
+  }
 
   // 모달 외부 클릭 시 닫기
   window.addEventListener("click", (event) => {
-    const modal = document.getElementById("reportModal")
-    if (event.target === modal) {
-      modal.style.display = "none"
+    const reportModal = document.getElementById("reportModal")
+    if (reportModal && event.target === reportModal) {
+      reportModal.style.display = "none"
     }
   })
 
   // 리포트 생성 버튼 이벤트
-  document.getElementById("generateDiaryBtn").addEventListener("click", generateReport)
+  const generateDiaryBtn = document.getElementById("generateDiaryBtn")
+  if (generateDiaryBtn) {
+    generateDiaryBtn.addEventListener("click", generateReport)
+  }
 
+  // 초기 데이터 로드
   fetchName()
   updateDateDisplay()
   fetchSensorData()
