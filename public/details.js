@@ -1176,112 +1176,29 @@ document.addEventListener("DOMContentLoaded", async () => {
   // 리포트 생성 함수
   async function generateReport() {
     try {
-      const today = new Date()
-      const formattedDate = formatDateYMD(today) // YYYY-MM-DD 형식으로 변환
-
-      // 동일한 날짜에 리포트가 이미 존재하는지 확인
-      const reportsResponse = await fetch(`${API_BASE_URL}/get-reports/${farmId}`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      })
-      if (!reportsResponse.ok) throw new Error("리포트 조회 실패")
-      const reports = await reportsResponse.json()
-      const existingReport = reports.find((report) => report.date === formattedDate)
-      if (existingReport) {
-        alert("해당 날짜의 리포트가 이미 존재합니다.")
-        return
-      }
-
-      const historyData = await fetchHistoryData() // 기존 history-data API 사용
-      if (!historyData.timeLabels.length) {
-        alert("오늘의 센서 데이터가 부족합니다.")
-        return
-      }
-
-      // 센서 요약 데이터 계산
-      const sensorSummary = {
-        avg_temperature: roundToTwo(average(historyData.temperatureData)),
-        avg_humidity: roundToTwo(average(historyData.humidityData)),
-        avg_soil_moisture: roundToTwo(average(historyData.soilData)),
-        avg_co2: roundToTwo(average(historyData.co2Data)),
-      }
-
-      // 센서 변화 데이터 계산
-      const sensorChanges = {
-        max_temperature: {
-          value: Math.max(...historyData.temperatureData),
-          time: historyData.timeLabels[historyData.temperatureData.indexOf(Math.max(...historyData.temperatureData))],
-        },
-        min_temperature: {
-          value: Math.min(...historyData.temperatureData),
-          time: historyData.timeLabels[historyData.temperatureData.indexOf(Math.min(...historyData.temperatureData))],
-        },
-        max_humidity: {
-          value: Math.max(...historyData.humidityData),
-          time: historyData.timeLabels[historyData.humidityData.indexOf(Math.max(...historyData.humidityData))],
-        },
-        min_humidity: {
-          value: Math.min(...historyData.humidityData),
-          time: historyData.timeLabels[historyData.humidityData.indexOf(Math.min(...historyData.humidityData))],
-        },
-        max_soil_moisture: {
-          value: Math.max(...historyData.soilData),
-          time: historyData.timeLabels[historyData.soilData.indexOf(Math.max(...historyData.soilData))],
-        },
-        min_soil_moisture: {
-          value: Math.min(...historyData.soilData),
-          time: historyData.timeLabels[historyData.soilData.indexOf(Math.min(...historyData.soilData))],
-        },
-        max_co2: {
-          value: Math.max(...historyData.co2Data),
-          time: historyData.timeLabels[historyData.co2Data.indexOf(Math.max(...historyData.co2Data))],
-        },
-        min_co2: {
-          value: Math.min(...historyData.co2Data),
-          time: historyData.timeLabels[historyData.co2Data.indexOf(Math.min(...historyData.co2Data))],
-        },
-      }
-
-      // 실제 장치 데이터 가져오기
-      const deviceResponse = await fetch(`${API_BASE_URL}/devices/status?farm_id=${farmId}`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      })
-      if (!deviceResponse.ok) throw new Error("장치 상태 조회 실패")
-      const deviceData = await deviceResponse.json()
-
-      // 장치 로그 구성 (실제 데이터 기반으로 수정)
-      const deviceLogs = {
-        led: { start: deviceData.led ? "08:00" : null, end: deviceData.led ? "18:00" : null },
-        fan: { count: deviceData.fan ? 5 : 0, total_time: deviceData.fan ? 120 : 0 },
-        water: { count: deviceData.water ? 3 : 0, total_amount: deviceData.water ? 10 : 0 },
-        heater: { count: deviceData.heater ? 2 : 0, total_time: deviceData.heater ? 60 : 0 },
-        cooler: { count: deviceData.cooler ? 1 : 0, total_time: deviceData.cooler ? 30 : 0 },
-      }
-
+      const today = new Date();
+      const formattedDate = formatDateYMD(today); // YYYY-MM-DD 형식으로 변환
+  
       const response = await fetch(`${API_BASE_URL}/generate-report`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           farmId,
-          date: formattedDate, // YYYY-MM-DD 형식
-          sensorSummary,
-          sensorChanges,
-          deviceLogs,
+          date: formattedDate,
         }),
-      })
-
+      });
+  
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || "리포트 생성 실패")
+        const errorData = await response.json();
+        throw new Error(errorData.error || '리포트 생성 실패');
       }
-
-      await response.json()
-      alert("리포트가 성공적으로 생성되었습니다.")
-      fetchReports() // 리포트 목록 새로고침
+  
+      await response.json();
+      alert('리포트가 성공적으로 생성되었습니다.');
+      fetchReports(); // 리포트 목록 새로고침
     } catch (error) {
-      console.error("리포트 생성 오류:", error)
-      alert(error.message || "리포트 생성 중 오류가 발생했습니다.")
+      console.error('리포트 생성 오류:', error);
+      alert(error.message || '리포트 생성 중 오류가 발생했습니다.');
     }
   }
 

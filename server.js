@@ -39,51 +39,15 @@ db.getConnection()
   })
   .catch(err => console.error('MariaDB 연결 실패:', err));
 
-// OpenAI 설정
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-// reports 테이블 생성 (최초 실행 시)
-async function initializeDatabase() {
-  let conn;
-  try {
-    conn = await db.getConnection();
-    const createTableQuery = `
-      CREATE TABLE IF NOT EXISTS reports (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        farm_id INT NOT NULL,
-        date DATE NOT NULL,
-        sensor_summary JSON NOT NULL,
-        sensor_changes JSON NOT NULL,
-        device_logs JSON NOT NULL,
-        ai_analysis TEXT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        UNIQUE(farm_id, date),
-        FOREIGN KEY (farm_id) REFERENCES farms(farm_id) ON DELETE CASCADE
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-    `;
-    await conn.query(createTableQuery);
-    console.log('Reports 테이블 생성 성공');
-  } catch (err) {
-    console.error('Reports 테이블 생성 실패:', err);
-  } finally {
-    if (conn) conn.release();
-  }
-}
-
-// 서버 시작 시 테이블 초기화
-initializeDatabase();
-
 // 리포트 생성 엔드포인트
 app.post('/generate-report', async (req, res) => {
   let conn;
   try {
-    const { farmId, date, sensorSummary, sensorChanges, deviceLogs } = req.body;
+    const { farmId, date } = req.body;
 
     // 입력 데이터 검증
-    if (!farmId || !date || !sensorSummary || !sensorChanges || !deviceLogs) {
-      return res.status(400).json({ error: '모든 필드가 필요합니다' });
+    if (!farmId || !date) {
+      return res.status(400).json({ error: 'farmId와 date는 필수입니다' });
     }
 
     // 날짜 형식이 YYYY-MM-DD인지 확인
@@ -91,6 +55,76 @@ app.post('/generate-report', async (req, res) => {
     if (!datePattern.test(date)) {
       return res.status(400).json({ error: '유효한 날짜 형식이 아닙니다 (YYYY-MM-DD)' });
     }
+
+    // 동일한 날짜에 리포트가 이미 존재하는지 확인
+    conn = await db.getConnection();
+    const [existingReport] = await conn.query(
+      'SELECT id FROM reports WHERE farm_id = ? AND date = ?',
+      [farmId, date]
+    );
+    if (existingReport.length > 0) {
+      return res.status(409).json({ error: '해당 날짜의 리포트가 이미 존재합니다.' });
+    }
+
+    // 센서 데이터 조회 (예: historyData를 DB 또는 내부 API에서 가져옴)
+    const historyData = await fetchHistoryDataFromDB(farmId, date); // 가정: DB에서 데이터 조회
+    if (!historyData.timeLabels || !historyData.timeLabels.length) {
+      return res.status(400).json({ error: '해당 날짜의 센서 데이터가 부족합니다' });
+    }
+
+    // 센서 요약 데이터 계산
+    const sensorSummary = {
+      avg_temperature: roundToTwo(average(historyData.temperatureData)),
+      avg_humidity: roundToTwo(average(historyData.humidityData)),
+      avg_soil_moisture: roundToTwo(average(historyData.soilData)),
+      avg_co2: roundToTwo(average(historyData.co2Data)),
+    };
+
+    // 센서 변화 데이터 계산
+    const sensorChanges = {
+      max_temperature: {
+        value: Math.max(...historyData.temperatureData),
+        time: historyData.timeLabels[historyData.temperatureData.indexOf(Math.max(...historyData.temperatureData))],
+      },
+      min_temperature: {
+        value: Math.min(...historyData.temperatureData),
+        time: historyData.timeLabels[historyData.temperatureData.indexOf(Math.min(...historyData.temperatureData))],
+      },
+      max_humidity: {
+        value: Math.max(...historyData.humidityData),
+        time: historyData.timeLabels[historyData.humidityData.indexOf(Math.max(...historyData.humidityData))],
+      },
+      min_humidity: {
+        value: Math.min(...historyData.humidityData),
+        time: historyData.timeLabels[historyData.humidityData.indexOf(Math.min(...historyData.humidityData))],
+      },
+      max_soil_moisture: {
+        value: Math.max(...historyData.soilData),
+        time: historyData.timeLabels[historyData.soilData.indexOf(Math.max(...historyData.soilData))],
+      },
+      min_soil_moisture: {
+        value: Math.min(...historyData.soilData),
+        time: historyData.timeLabels[historyData.soilData.indexOf(Math.min(...historyData.soilData))],
+      },
+      max_co2: {
+        value: Math.max(...historyData.co2Data),
+        time: historyData.timeLabels[historyData.co2Data.indexOf(Math.max(...historyData.co2Data))],
+      },
+      min_co2: {
+        value: Math.min(...historyData.co2Data),
+        time: historyData.timeLabels[historyData.co2Data.indexOf(Math.min(...historyData.co2Data))],
+      },
+    };
+
+    // 장치 상태 조회
+    const deviceData = await fetchDeviceStatus(farmId); // 가정: 장치 상태 조회 함수
+    const deviceLogs = {
+      led: { start: deviceData.led ? '08:00' : null, end: deviceData.led ? '18:00' : null },
+      fan: { count: deviceData.fan ? 5 : 0, total_time: deviceData.fan ? 120 : 0 },
+      water: { count: deviceData.water ? 3 : 0, total_amount: deviceData.water ? 10 : 0 },
+      heater: { count: deviceData.heater ? 2 : 0, total_time: deviceData.heater ? 60 : 0 },
+      cooler: { count: deviceData.cooler ? 1 : 0, total_time: deviceData.cooler ? 30 : 0 },
+    };
 
     // OpenAI로 AI 분석 생성
     const prompt = `
@@ -126,7 +160,6 @@ app.post('/generate-report', async (req, res) => {
     const aiAnalysis = response.choices[0].message.content.trim();
 
     // MariaDB에 리포트 저장
-    conn = await db.getConnection();
     const insertQuery = `
       INSERT INTO reports (farm_id, date, sensor_summary, sensor_changes, device_logs, ai_analysis)
       VALUES (?, ?, ?, ?, ?, ?)
@@ -137,7 +170,7 @@ app.post('/generate-report', async (req, res) => {
       JSON.stringify(sensorSummary),
       JSON.stringify(sensorChanges),
       JSON.stringify(deviceLogs),
-      aiAnalysis
+      aiAnalysis,
     ]);
 
     // 리포트 텍스트 생성
@@ -156,7 +189,7 @@ ${date}
 최고 온도: ${sensorChanges.max_temperature.value} ℃ (시간: ${sensorChanges.max_temperature.time})
 최저 온도: ${sensorChanges.min_temperature.value} ℃ (시간: ${sensorChanges.min_temperature.time})
 최고 습도: ${sensorChanges.max_humidity.value} % (시간: ${sensorChanges.max_humidity.time})
-최저 습도: ${sensorChanges.min_humidity.value} % (시간: ${sensorChanges.min_humidity.time})
+최저 습도: ${sensorChanges.min_humidity.value} % (시간: ${sensorChanges.max_humidity.time})
 최고 토양 수분: ${sensorChanges.max_soil_moisture.value} % (시간: ${sensorChanges.max_soil_moisture.time})
 최저 토양 수분: ${sensorChanges.min_soil_moisture.value} % (시간: ${sensorChanges.min_soil_moisture.time})
 최고 CO₂ 농도: ${sensorChanges.max_co2.value} ppm (시간: ${sensorChanges.max_co2.time})
@@ -176,15 +209,59 @@ ${aiAnalysis}
     // BigInt를 Number로 변환하여 직렬화 문제 해결
     res.json({ reportText, reportId: Number(result.insertId) });
   } catch (error) {
-    if (error.code === 'ER_DUP_ENTRY') {
-      return res.status(409).json({ error: '해당 날짜의 리포트가 이미 존재합니다.' });
-    }
     console.error('리포트 생성 오류:', error);
     res.status(500).json({ error: '리포트 생성 실패' });
   } finally {
     if (conn) conn.release();
   }
 });
+
+// 헬퍼 함수: 센서 데이터 조회 (예시)
+async function fetchHistoryDataFromDB(farmId, date) {
+  // 실제 구현은 DB 또는 기존 API 호출로 대체
+  // 예: MariaDB에서 센서 데이터 조회
+  const conn = await db.getConnection();
+  try {
+    const [rows] = await conn.query(
+      `SELECT temperature, humidity, soil_moisture, co2, recorded_at
+       FROM sensor_data
+       WHERE farm_id = ? AND DATE(recorded_at) = ?`,
+      [farmId, date]
+    );
+    // 데이터 가공
+    return {
+      timeLabels: rows.map(row => row.recorded_at.toISOString().slice(11, 16)), // HH:MM 형식
+      temperatureData: rows.map(row => row.temperature),
+      humidityData: rows.map(row => row.humidity),
+      soilData: rows.map(row => row.soil_moisture),
+      co2Data: rows.map(row => row.co2),
+    };
+  } finally {
+    conn.release();
+  }
+}
+
+// 헬퍼 함수: 장치 상태 조회 (예시)
+async function fetchDeviceStatus(farmId) {
+  // 실제 구현은 DB 또는 기존 API 호출로 대체
+  // 예: 내부 API 호출
+  const response = await fetch(`${API_BASE_URL}/devices/status?farm_id=${farmId}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  if (!response.ok) throw new Error('장치 상태 조회 실패');
+  return await response.json();
+}
+
+// 헬퍼 함수: 평균 계산
+function average(arr) {
+  return arr.reduce((sum, val) => sum + val, 0) / arr.length;
+}
+
+// 헬퍼 함수: 소수점 둘째 자리 반올림
+function roundToTwo(num) {
+  return Math.round(num * 100) / 100;
+}
 
 app.get('/get-reports/:farmId', async (req, res) => {
   let conn;
