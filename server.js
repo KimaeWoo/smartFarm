@@ -957,7 +957,6 @@ app.post('/updateFarmCondition', async (req, res) => {
     // 하드웨어 서버로 최적 수치 전송
     try {
       await axios.post('http://14.54.126.218:8000/level', {
-        farm_id,
         conditions: {
           temperature: { optimal_min: tempMin, optimal_max: tempMax },
           humidity: { optimal_min: humidMin, optimal_max: humidMax },
