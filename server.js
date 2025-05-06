@@ -39,6 +39,42 @@ db.getConnection()
   })
   .catch(err => console.error('MariaDB 연결 실패:', err));
 
+// OpenAI 설정
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+// reports 테이블 생성 (최초 실행 시)
+async function initializeDatabase() {
+  let conn;
+  try {
+    conn = await db.getConnection();
+    const createTableQuery = `
+      CREATE TABLE IF NOT EXISTS reports (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        farm_id INT NOT NULL,
+        date DATE NOT NULL,
+        sensor_summary JSON NOT NULL,
+        sensor_changes JSON NOT NULL,
+        device_logs JSON NOT NULL,
+        ai_analysis TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(farm_id, date),
+        FOREIGN KEY (farm_id) REFERENCES farms(farm_id) ON DELETE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `;
+    await conn.query(createTableQuery);
+    console.log('Reports 테이블 생성 성공');
+  } catch (err) {
+    console.error('Reports 테이블 생성 실패:', err);
+  } finally {
+    if (conn) conn.release();
+  }
+}
+
+// 서버 시작 시 테이블 초기화
+initializeDatabase();
+
 // 리포트 생성 엔드포인트
 app.post('/generate-report', async (req, res) => {
   let conn;
