@@ -98,13 +98,20 @@ app.post('/generate-report', async (req, res) => {
     // DB 연결
     console.log('Attempting DB connection');
     conn = await db.getConnection();
+    console.log('DB connection:', conn ? 'Established' : 'Failed');
 
     // 중복 리포트 확인
     console.log('Checking for duplicate report');
-    const [existingReport] = await conn.query(
+    const queryResult = await conn.query(
       'SELECT id FROM reports WHERE farm_id = ? AND date = ?',
       [farmId, date]
     );
+    console.log('Query result:', queryResult);
+
+    // MariaDB 버전에 따라 결과 처리
+    let existingReport = Array.isArray(queryResult) ? queryResult : queryResult?.rows || [];
+    console.log('existingReport:', existingReport);
+
     if (existingReport.length > 0) {
       return res.status(409).json({ error: '해당 날짜의 리포트가 이미 존재합니다.' });
     }
@@ -122,7 +129,7 @@ app.post('/generate-report', async (req, res) => {
       return res.status(400).json({ error: '해당 날짜의 센서 데이터가 부족합니다' });
     }
 
-    // 센서 요약 데이터 계산
+    // 나머지 코드 (sensorSummary, sensorChanges, deviceLogs, OpenAI, DB 저장 등)
     const sensorSummary = {
       avg_temperature: roundToTwo(average(historyData.temperatureData)),
       avg_humidity: roundToTwo(average(historyData.humidityData)),
@@ -130,7 +137,6 @@ app.post('/generate-report', async (req, res) => {
       avg_co2: roundToTwo(average(historyData.co2Data)),
     };
 
-    // 센서 변화 데이터 계산
     const sensorChanges = {
       max_temperature: {
         value: Math.max(...historyData.temperatureData),
@@ -166,7 +172,6 @@ app.post('/generate-report', async (req, res) => {
       },
     };
 
-    // 장치 상태 조회
     console.log('Fetching device status');
     const deviceData = await fetchDeviceStatus(farmId);
     const deviceLogs = {
@@ -177,7 +182,6 @@ app.post('/generate-report', async (req, res) => {
       cooler: { count: deviceData.cooler ? 1 : 0, total_time: deviceData.cooler ? 30 : 0 },
     };
 
-    // OpenAI로 AI 분석 생성
     console.log('Generating AI analysis');
     const prompt = `
       스마트팜 일일 리포트를 분석하고 요약해주세요. 다음 데이터를 기반으로:
@@ -211,7 +215,6 @@ app.post('/generate-report', async (req, res) => {
 
     const aiAnalysis = response.choices[0].message.content.trim();
 
-    // MariaDB에 리포트 저장
     console.log('Saving report to DB');
     const insertQuery = `
       INSERT INTO reports (farm_id, date, sensor_summary, sensor_changes, device_logs, ai_analysis)
@@ -226,7 +229,6 @@ app.post('/generate-report', async (req, res) => {
       aiAnalysis,
     ]);
 
-    // 리포트 텍스트 생성
     const reportText = `
 📋 스마트팜 일일 리포트
 1. 날짜
@@ -259,7 +261,6 @@ LED: ${deviceLogs.led.start ? `켜짐(시작: ${deviceLogs.led.start}, 종료: $
 ${aiAnalysis}
     `;
 
-    // BigInt를 Number로 변환하여 직렬화 문제 해결
     res.json({ reportText, reportId: Number(result.insertId) });
   } catch (error) {
     console.error('리포트 생성 오류:', error);
