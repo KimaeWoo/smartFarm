@@ -121,7 +121,7 @@ app.post('/generate-report', async (req, res) => {
         { role: 'system', content: '당신은 스마트팜 데이터 분석 전문가입니다.' },
         { role: 'user', content: prompt },
       ],
-      max_tokens: 300,
+      max_tokens: 400,
     });
 
     const aiAnalysis = response.choices[0].message.content.trim();
