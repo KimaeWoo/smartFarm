@@ -957,12 +957,10 @@ app.post('/updateFarmCondition', async (req, res) => {
     // 하드웨어 서버로 최적 수치 전송
     try {
       await axios.post('http://14.54.126.218:8000/level', {
-        conditions: {
-          temperature: { optimal_min: tempMin, optimal_max: tempMax },
-          humidity: { optimal_min: humidMin, optimal_max: humidMax },
-          soil_moisture: { optimal_min: soilMin, optimal_max: soilMax },
-          co2: { optimal_min: co2Min, optimal_max: co2Max }
-        }
+        temperature: { optimal_min: tempMin, optimal_max: tempMax },
+        humidity: { optimal_min: humidMin, optimal_max: humidMax },
+        soil_moisture: { optimal_min: soilMin, optimal_max: soilMax },
+        co2: { optimal_min: co2Min, optimal_max: co2Max }
       });
       console.log(`[POST /updateFarmCondition] 하드웨어 서버로 ${farm_id} 농장 최적 수치 전송 완료`);
     } catch (axiosError) {
