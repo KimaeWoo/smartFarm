@@ -311,15 +311,27 @@
     <div class="tab-content" id="writeDiary-tab">
       <div class="card">
         <div class="card-header">
-          <div class="card-title">스마트팜 일일 리포트</div>
+          <div class="card-title"><i class="fas fa-file-alt"></i> 스마트팜 일일 리포트</div>
+          <div class="card-description">스마트팜의 일일 데이터를 분석하여 AI가 자동으로 리포트를 생성합니다</div>
         </div>
         <div class="card-content">
           <div class="diary-actions">
-            <button id="generateDiaryBtn">리포트 생성</button>
+            <button id="generateDiaryBtn" class="generate-report-btn">
+              <i class="fas fa-plus-circle"></i> 리포트 생성
+            </button>
+            <div class="search-container">
+              <i class="fas fa-search search-icon"></i>
+              <input type="text" id="reportSearchInput" placeholder="날짜로 검색..." class="search-input">
+            </div>
           </div>
           <div class="diary-list">
-            <h2>최근 생성된 리포트</h2>
-            <ul id="diaryEntries"></ul>
+            <div class="diary-list-header">
+              <h3><i class="fas fa-list"></i> 최근 생성된 리포트</h3>
+              <span class="report-count" id="reportCount">0개</span>
+            </div>
+            <div class="diary-entries-container">
+              <ul id="diaryEntries" class="diary-entries"></ul>
+            </div>
           </div>
         </div>
       </div>
@@ -368,11 +380,177 @@
       </div>
     </div>
     <!-- 리포트 모달 -->
-    <div class="modal" id="reportModal" style="display: none;">
+    <div class="modal" id="reportModal">
       <div class="modal-content">
-        <span class="modal-close" id="closeReportModal">&times;</span>
-        <h2>스마트팜 일일 리포트</h2>
-        <pre id="reportContent"></pre>
+        <div class="modal-header">
+          <h2><i class="fas fa-file-alt"></i> 스마트팜 일일 리포트</h2>
+          <span class="modal-close" id="closeReportModal">&times;</span>
+        </div>
+        <div class="modal-body">
+          <div class="report-section">
+            <h3 class="report-section-title"><i class="fas fa-calendar-alt"></i> 날짜</h3>
+            <p id="reportDate" class="report-date"></p>
+          </div>
+          
+          <div class="report-section">
+            <h3 class="report-section-title"><i class="fas fa-chart-line"></i> 센서 측정 요약</h3>
+            <div class="sensor-summary-grid">
+              <div class="sensor-summary-item temp">
+                <i class="fas fa-temperature-high"></i>
+                <div class="sensor-summary-content">
+                  <span class="sensor-summary-label">평균 온도</span>
+                  <span id="avgTemp" class="sensor-summary-value">0 °C</span>
+                </div>
+              </div>
+              <div class="sensor-summary-item humidity">
+                <i class="fas fa-tint"></i>
+                <div class="sensor-summary-content">
+                  <span class="sensor-summary-label">평균 습도</span>
+                  <span id="avgHumidity" class="sensor-summary-value">0 %</span>
+                </div>
+              </div>
+              <div class="sensor-summary-item soil">
+                <i class="fas fa-leaf"></i>
+                <div class="sensor-summary-content">
+                  <span class="sensor-summary-label">평균 토양 수분</span>
+                  <span id="avgSoil" class="sensor-summary-value">0 %</span>
+                </div>
+              </div>
+              <div class="sensor-summary-item co2">
+                <i class="fas fa-wind"></i>
+                <div class="sensor-summary-content">
+                  <span class="sensor-summary-label">평균 CO₂ 농도</span>
+                  <span id="avgCo2" class="sensor-summary-value">0 ppm</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="report-section">
+            <h3 class="report-section-title"><i class="fas fa-exchange-alt"></i> 센서 수치 변화</h3>
+            <div class="sensor-changes">
+              <div class="sensor-change-item">
+                <h4><i class="fas fa-temperature-high"></i> 온도</h4>
+                <div class="sensor-change-values">
+                  <div class="max-value">
+                    <span class="change-label"><i class="fas fa-arrow-up"></i> 최고</span>
+                    <span id="maxTemp" class="change-value">0 °C</span>
+                    <span id="maxTempTime" class="change-time">00:00</span>
+                  </div>
+                  <div class="min-value">
+                    <span class="change-label"><i class="fas fa-arrow-down"></i> 최저</span>
+                    <span id="minTemp" class="change-value">0 °C</span>
+                    <span id="minTempTime" class="change-time">00:00</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="sensor-change-item">
+                <h4><i class="fas fa-tint"></i> 습도</h4>
+                <div class="sensor-change-values">
+                  <div class="max-value">
+                    <span class="change-label"><i class="fas fa-arrow-up"></i> 최고</span>
+                    <span id="maxHumidity" class="change-value">0 %</span>
+                    <span id="maxHumidityTime" class="change-time">00:00</span>
+                  </div>
+                  <div class="min-value">
+                    <span class="change-label"><i class="fas fa-arrow-down"></i> 최저</span>
+                    <span id="minHumidity" class="change-value">0 %</span>
+                    <span id="minHumidityTime" class="change-time">00:00</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="sensor-change-item">
+                <h4><i class="fas fa-leaf"></i> 토양 수분</h4>
+                <div class="sensor-change-values">
+                  <div class="max-value">
+                    <span class="change-label"><i class="fas fa-arrow-up"></i> 최고</span>
+                    <span id="maxSoil" class="change-value">0 %</span>
+                    <span id="maxSoilTime" class="change-time">00:00</span>
+                  </div>
+                  <div class="min-value">
+                    <span class="change-label"><i class="fas fa-arrow-down"></i> 최저</span>
+                    <span id="minSoil" class="change-value">0 %</span>
+                    <span id="minSoilTime" class="change-time">00:00</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="sensor-change-item">
+                <h4><i class="fas fa-wind"></i> CO₂ 농도</h4>
+                <div class="sensor-change-values">
+                  <div class="max-value">
+                    <span class="change-label"><i class="fas fa-arrow-up"></i> 최고</span>
+                    <span id="maxCo2" class="change-value">0 ppm</span>
+                    <span id="maxCo2Time" class="change-time">00:00</span>
+                  </div>
+                  <div class="min-value">
+                    <span class="change-label"><i class="fas fa-arrow-down"></i> 최저</span>
+                    <span id="minCo2" class="change-value">0 ppm</span>
+                    <span id="minCo2Time" class="change-time">00:00</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="report-section">
+            <h3 class="report-section-title"><i class="fas fa-cogs"></i> 제어 장치 작동 기록</h3>
+            <div class="device-logs">
+              <div class="device-log-item">
+                <div class="device-log-icon led"><i class="fas fa-lightbulb"></i></div>
+                <div class="device-log-content">
+                  <h4>LED</h4>
+                  <p id="ledLog">꺼짐</p>
+                </div>
+              </div>
+              
+              <div class="device-log-item">
+                <div class="device-log-icon fan"><i class="fas fa-fan"></i></div>
+                <div class="device-log-content">
+                  <h4>환기팬</h4>
+                  <p id="fanLog">작동 횟수 0회, 총 작동 시간 0분</p>
+                </div>
+              </div>
+              
+              <div class="device-log-item">
+                <div class="device-log-icon water"><i class="fas fa-tint"></i></div>
+                <div class="device-log-content">
+                  <h4>급수장치</h4>
+                  <p id="waterLog">급수 횟수 0회, 총 급수량 0 L</p>
+                </div>
+              </div>
+              
+              <div class="device-log-item">
+                <div class="device-log-icon heater"><i class="fas fa-fire"></i></div>
+                <div class="device-log-content">
+                  <h4>히터</h4>
+                  <p id="heaterLog">작동 횟수 0회, 총 작동 시간 0분</p>
+                </div>
+              </div>
+              
+              <div class="device-log-item">
+                <div class="device-log-icon cooler"><i class="fas fa-snowflake"></i></div>
+                <div class="device-log-content">
+                  <h4>쿨러</h4>
+                  <p id="coolerLog">작동 횟수 0회, 총 작동 시간 0분</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="report-section">
+            <h3 class="report-section-title"><i class="fas fa-robot"></i> AI 분석 및 요약</h3>
+            <div class="ai-analysis">
+              <p id="aiAnalysis" class="ai-analysis-content"></p>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="downloadReportBtn" class="download-btn"><i class="fas fa-download"></i> 리포트 다운로드</button>
+          <button id="closeReportBtn" class="close-btn">닫기</button>
+        </div>
       </div>
     </div>
   </main>

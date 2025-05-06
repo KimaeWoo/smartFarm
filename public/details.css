@@ -896,3 +896,498 @@ input:checked+.slider:before {
 .mt-2 {
   margin-top: 0.5rem;
 }
+
+/* 리포트 목록 스타일 개선 */
+.diary-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.generate-report-btn {
+  background-color: var(--success-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.generate-report-btn:hover {
+  background-color: #0d9668;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+.search-container {
+  position: relative;
+  width: 250px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted-color);
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 10px 10px 35px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background-color: var(--card-bg);
+  color: var(--text-color);
+}
+
+.diary-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.diary-list-header h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.report-count {
+  background-color: var(--secondary-color);
+  color: var(--text-color);
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.diary-entries-container {
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+.diary-entries {
+  list-style: none;
+}
+
+.diary-entry {
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  margin-bottom: 10px;
+  background-color: var(--secondary-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.diary-entry::before {
+  content: "\f15c";
+  font-family: "Font Awesome 5 Free";
+  font-weight: 400;
+  margin-right: 10px;
+  color: var(--primary-color);
+}
+
+.diary-entry:hover {
+  background-color: rgba(59, 130, 246, 0.1);
+  transform: translateY(-2px);
+}
+
+/* 리포트 모달 스타일 개선 */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  background-color: var(--card-bg);
+  margin: 3% auto;
+  width: 90%;
+  max-width: 900px;
+  border-radius: 12px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h2 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+}
+
+.modal-close {
+  color: white;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.modal-body {
+  padding: 20px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.modal-footer {
+  padding: 15px 20px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.download-btn, .close-btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.download-btn {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+}
+
+.download-btn:hover {
+  background-color: #2563eb;
+}
+
+.close-btn {
+  background-color: var(--secondary-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+}
+
+.close-btn:hover {
+  background-color: #e5e7eb;
+}
+
+.report-section {
+  margin-bottom: 30px;
+}
+
+.report-section-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 15px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.report-date {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: var(--primary-color);
+}
+
+.sensor-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+}
+
+@media (min-width: 768px) {
+  .sensor-summary-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.sensor-summary-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px;
+  border-radius: 8px;
+  background-color: var(--secondary-color);
+}
+
+.sensor-summary-item.temp {
+  background-color: rgba(249, 115, 22, 0.1);
+}
+
+.sensor-summary-item.humidity {
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.sensor-summary-item.soil {
+  background-color: rgba(217, 119, 6, 0.1);
+}
+
+.sensor-summary-item.co2 {
+  background-color: rgba(16, 185, 129, 0.1);
+}
+
+.sensor-summary-item i {
+  font-size: 1.5rem;
+}
+
+.sensor-summary-item.temp i {
+  color: var(--temp-color);
+}
+
+.sensor-summary-item.humidity i {
+  color: var(--humidity-color);
+}
+
+.sensor-summary-item.soil i {
+  color: var(--soil-color);
+}
+
+.sensor-summary-item.co2 i {
+  color: var(--co2-color);
+}
+
+.sensor-summary-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.sensor-summary-label {
+  font-size: 0.9rem;
+  color: var(--muted-color);
+}
+
+.sensor-summary-value {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.sensor-changes {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 15px;
+}
+
+@media (min-width: 768px) {
+  .sensor-changes {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.sensor-change-item {
+  padding: 15px;
+  border-radius: 8px;
+  background-color: var(--secondary-color);
+  border: 1px solid var(--border-color);
+}
+
+.sensor-change-item h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sensor-change-values {
+  display: flex;
+  justify-content: space-between;
+}
+
+.max-value, .min-value {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.change-label {
+  font-size: 0.8rem;
+  color: var(--muted-color);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.change-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.change-time {
+  font-size: 0.8rem;
+  color: var(--muted-color);
+}
+
+.device-logs {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 15px;
+}
+
+@media (min-width: 768px) {
+  .device-logs {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.device-log-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  border-radius: 8px;
+  background-color: var(--secondary-color);
+  border: 1px solid var(--border-color);
+}
+
+.device-log-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 1.2rem;
+}
+
+.device-log-icon.led {
+  background-color: rgba(250, 204, 21, 0.2);
+  color: var(--led-color);
+}
+
+.device-log-icon.fan {
+  background-color: rgba(59, 130, 246, 0.2);
+  color: var(--fan-color);
+}
+
+.device-log-icon.water {
+  background-color: rgba(6, 182, 212, 0.2);
+  color: var(--water-color);
+}
+
+.device-log-icon.heater {
+  background-color: rgba(239, 68, 68, 0.2);
+  color: var(--heater-color);
+}
+
+.device-log-icon.cooler {
+  background-color: rgba(99, 102, 241, 0.2);
+  color: var(--cooler-color);
+}
+
+.device-log-content {
+  flex: 1;
+}
+
+.device-log-content h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.device-log-content p {
+  font-size: 0.9rem;
+  color: var(--text-color);
+}
+
+.ai-analysis {
+  padding: 15px;
+  border-radius: 8px;
+  background-color: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.ai-analysis-content {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+/* 다크 모드 추가 스타일 */
+.dark-theme .modal-content {
+  background-color: var(--card-bg);
+  color: var(--text-color);
+}
+
+.dark-theme .search-input {
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  border-color: #4b5563;
+}
+
+.dark-theme .diary-entry {
+  background-color: #3a3a3a;
+}
+
+.dark-theme .diary-entry:hover {
+  background-color: #4a4a4a;
+}
+
+.dark-theme .sensor-summary-item,
+.dark-theme .sensor-change-item,
+.dark-theme .device-log-item {
+  background-color: #3a3a3a;
+  border-color: #4b5563;
+}
+
+.dark-theme .ai-analysis {
+  background-color: rgba(16, 185, 129, 0.05);
+  border-color: rgba(16, 185, 129, 0.1);
+}
+
+.dark-theme .close-btn {
+  background-color: #4b5563;
+  color: #e5e7eb;
+  border-color: #6b7280;
+}
+
+.dark-theme .close-btn:hover {
+  background-color: #6b7280;
+}
