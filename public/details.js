@@ -1365,7 +1365,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     const minHumidityTimeEl = document.getElementById("minHumidityTime")
 
     if (maxHumidityEl) maxHumidityEl.textContent = `${report.sensorChanges.max_humidity.value} %`
-    if (maxHumidityTimeEl) maxHumidityTimeEl.textContent = report.s` %`
     if (maxHumidityTimeEl) maxHumidityTimeEl.textContent = report.sensorChanges.max_humidity.time
     if (minHumidityEl) minHumidityEl.textContent = `${report.sensorChanges.min_humidity.value} %`
     if (minHumidityTimeEl) minHumidityTimeEl.textContent = report.sensorChanges.min_humidity.time
