@@ -67,6 +67,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const formattedDate = formatDate(currentDate)
     const historyDateEl = document.getElementById("history-date")
     const summaryDateEl = document.getElementById("summary-date")
+    const datePickerEl = document.getElementById("date-picker")
 
     if (historyDateEl) {
       historyDateEl.textContent = formattedDate
@@ -74,6 +75,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (summaryDateEl) {
       summaryDateEl.textContent = `${currentDate.getFullYear()}년 ${currentDate.getMonth() + 1}월 ${currentDate.getDate()}일 센서별 평균값`
+    }
+
+    if (datePickerEl) {
+      datePickerEl.value = formatDateYMD(currentDate)
     }
   }
 
@@ -109,6 +114,24 @@ document.addEventListener("DOMContentLoaded", async () => {
       document.getElementById(`${sensorId}-chart`).classList.add("active")
     })
   })
+
+  // 달력 선택 이벤트 추가
+  const datePickerEl = document.getElementById("date-picker")
+  if (datePickerEl) {
+    // 최대 날짜를 오늘로 제한
+    datePickerEl.max = formatDateYMD(today)
+    datePickerEl.addEventListener("change", async () => {
+      const selectedDate = new Date(datePickerEl.value)
+      if (selectedDate <= today) {
+        currentDate.setTime(selectedDate.getTime())
+        updateDateDisplay()
+        await updateAllCharts()
+      } else {
+        alert("미래 날짜는 선택할 수 없습니다.")
+        datePickerEl.value = formatDateYMD(currentDate)
+      }
+    })
+  }
 
   const prevDateBtn = document.getElementById("prev-date")
   if (prevDateBtn) {
