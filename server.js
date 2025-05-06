@@ -44,7 +44,6 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-
 // reports 테이블 생성 (최초 실행 시)
 async function initializeDatabase() {
   let conn;
@@ -945,13 +944,32 @@ app.post('/updateFarmCondition', async (req, res) => {
   let conn;
   try {
     conn = await db.getConnection();
-
+    
+    // DB 업데이트
     for (const [type, [min, max]] of Object.entries(values)) {
       const result = await conn.query(updateQuery, [min, max, farm_id, type]);
 
       if (result.affectedRows === 0) {
         console.warn(`[POST /updateFarmCondition] 데이터 없음: ${farm_id} - ${type} (업데이트 안 됨)`);
       }
+    }
+
+    // 하드웨어 서버로 최적 수치 전송
+    try {
+      await axios.post('http://14.54.126.218:8000/level', {
+        farm_id,
+        conditions: {
+          temperature: { optimal_min: tempMin, optimal_max: tempMax },
+          humidity: { optimal_min: humidMin, optimal_max: humidMax },
+          soil_moisture: { optimal_min: soilMin, optimal_max: soilMax },
+          co2: { optimal_min: co2Min, optimal_max: co2Max }
+        }
+      });
+      console.log(`[POST /updateFarmCondition] 하드웨어 서버로 ${farm_id} 농장 최적 수치 전송 완료`);
+    } catch (axiosError) {
+      console.error('[POST /updateFarmCondition] 하드웨어 서버 전송 오류:', axiosError.message);
+      // 하드웨어 서버 전송 실패 시, 필요에 따라 클라이언트에 경고를 반환하거나 무시
+      // return res.status(500).json({ error: '하드웨어 서버 전송 실패' });
     }
 
     console.log(`[POST /updateFarmCondition] ${farm_id}농장 최적 수치 업데이트 완료`);
