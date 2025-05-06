@@ -31,6 +31,8 @@ const db = mariadb.createPool({
   connectionLimit: 5
 });
 
+const API_BASE_URL = "https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app"
+
 // 연결 확인
 db.getConnection()
   .then(conn => {
@@ -79,6 +81,7 @@ initializeDatabase();
 app.post('/generate-report', async (req, res) => {
   let conn;
   try {
+    console.log('Received request:', req.body);
     const { farmId, date } = req.body;
 
     // 입력 데이터 검증
@@ -86,14 +89,18 @@ app.post('/generate-report', async (req, res) => {
       return res.status(400).json({ error: 'farmId와 date는 필수입니다' });
     }
 
-    // 날짜 형식이 YYYY-MM-DD인지 확인
+    // 날짜 형식 검증
     const datePattern = /^\d{4}-\d{2}-\d{2}$/;
     if (!datePattern.test(date)) {
       return res.status(400).json({ error: '유효한 날짜 형식이 아닙니다 (YYYY-MM-DD)' });
     }
 
-    // 동일한 날짜에 리포트가 이미 존재하는지 확인
+    // DB 연결
+    console.log('Attempting DB connection');
     conn = await db.getConnection();
+
+    // 중복 리포트 확인
+    console.log('Checking for duplicate report');
     const [existingReport] = await conn.query(
       'SELECT id FROM reports WHERE farm_id = ? AND date = ?',
       [farmId, date]
@@ -102,9 +109,16 @@ app.post('/generate-report', async (req, res) => {
       return res.status(409).json({ error: '해당 날짜의 리포트가 이미 존재합니다.' });
     }
 
-    // 센서 데이터 조회 (예: historyData를 DB 또는 내부 API에서 가져옴)
-    const historyData = await fetchHistoryDataFromDB(farmId, date); // 가정: DB에서 데이터 조회
-    if (!historyData.timeLabels || !historyData.timeLabels.length) {
+    // 센서 데이터 조회
+    console.log('Fetching sensor data');
+    let historyData;
+    try {
+      historyData = await fetchHistoryDataFromDB(farmId, date);
+    } catch (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    if (!historyData || !historyData.timeLabels || !historyData.timeLabels.length) {
       return res.status(400).json({ error: '해당 날짜의 센서 데이터가 부족합니다' });
     }
 
@@ -153,7 +167,8 @@ app.post('/generate-report', async (req, res) => {
     };
 
     // 장치 상태 조회
-    const deviceData = await fetchDeviceStatus(farmId); // 가정: 장치 상태 조회 함수
+    console.log('Fetching device status');
+    const deviceData = await fetchDeviceStatus(farmId);
     const deviceLogs = {
       led: { start: deviceData.led ? '08:00' : null, end: deviceData.led ? '18:00' : null },
       fan: { count: deviceData.fan ? 5 : 0, total_time: deviceData.fan ? 120 : 0 },
@@ -163,6 +178,7 @@ app.post('/generate-report', async (req, res) => {
     };
 
     // OpenAI로 AI 분석 생성
+    console.log('Generating AI analysis');
     const prompt = `
       스마트팜 일일 리포트를 분석하고 요약해주세요. 다음 데이터를 기반으로:
 
@@ -196,6 +212,7 @@ app.post('/generate-report', async (req, res) => {
     const aiAnalysis = response.choices[0].message.content.trim();
 
     // MariaDB에 리포트 저장
+    console.log('Saving report to DB');
     const insertQuery = `
       INSERT INTO reports (farm_id, date, sensor_summary, sensor_changes, device_logs, ai_analysis)
       VALUES (?, ?, ?, ?, ?, ?)
@@ -225,7 +242,7 @@ ${date}
 최고 온도: ${sensorChanges.max_temperature.value} ℃ (시간: ${sensorChanges.max_temperature.time})
 최저 온도: ${sensorChanges.min_temperature.value} ℃ (시간: ${sensorChanges.min_temperature.time})
 최고 습도: ${sensorChanges.max_humidity.value} % (시간: ${sensorChanges.max_humidity.time})
-최저 습도: ${sensorChanges.min_humidity.value} % (시간: ${sensorChanges.max_humidity.time})
+최저 습도: ${sensorChanges.min_humidity.value} % (시간: ${sensorChanges.min_humidity.time})
 최고 토양 수분: ${sensorChanges.max_soil_moisture.value} % (시간: ${sensorChanges.max_soil_moisture.time})
 최저 토양 수분: ${sensorChanges.min_soil_moisture.value} % (시간: ${sensorChanges.min_soil_moisture.time})
 최고 CO₂ 농도: ${sensorChanges.max_co2.value} ppm (시간: ${sensorChanges.max_co2.time})
@@ -246,34 +263,51 @@ ${aiAnalysis}
     res.json({ reportText, reportId: Number(result.insertId) });
   } catch (error) {
     console.error('리포트 생성 오류:', error);
-    res.status(500).json({ error: '리포트 생성 실패' });
+    if (error.code === 'ER_DUP_ENTRY') {
+      return res.status(409).json({ error: '해당 날짜의 리포트가 이미 존재합니다.' });
+    }
+    res.status(500).json({ error: `리포트 생성 실패: ${error.message}` });
   } finally {
     if (conn) conn.release();
   }
 });
 
-// 헬퍼 함수: 센서 데이터 조회 (예시)
+// 리포트 센서 데이터 조회
 async function fetchHistoryDataFromDB(farmId, date) {
-  // 실제 구현은 DB 또는 기존 API 호출로 대체
-  // 예: MariaDB에서 센서 데이터 조회
-  const conn = await db.getConnection();
   try {
-    const [rows] = await conn.query(
-      `SELECT temperature, humidity, soil_moisture, co2, recorded_at
-       FROM sensor_data
-       WHERE farm_id = ? AND DATE(recorded_at) = ?`,
-      [farmId, date]
-    );
-    // 데이터 가공
-    return {
-      timeLabels: rows.map(row => row.recorded_at.toISOString().slice(11, 16)), // HH:MM 형식
-      temperatureData: rows.map(row => row.temperature),
-      humidityData: rows.map(row => row.humidity),
-      soilData: rows.map(row => row.soil_moisture),
-      co2Data: rows.map(row => row.co2),
+    console.log(`Fetching sensor data from /history-data for farmId: ${farmId}, date: ${date}`);
+    
+    // /history-data API 호출
+    const response = await fetch(`${API_BASE_URL}/history-data?farm_id=${farmId}&date=${date}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to fetch history data');
+    }
+
+    const historyData = await response.json();
+
+    if (!historyData || historyData.length === 0) {
+      throw new Error('No sensor data available for the specified farm and date');
+    }
+
+    // /history-data의 응답을 /generate-report에 맞게 가공
+    const result = {
+      timeLabels: historyData.map(row => new Date(row.time_interval).toISOString().slice(11, 16)),
+      temperatureData: historyData.map(row => Number(row.avg_temperature) || 0),
+      humidityData: historyData.map(row => Number(row.avg_humidity) || 0),
+      soilData: historyData.map(row => Number(row.avg_soil_moisture) || 0),
+      co2Data: historyData.map(row => Number(row.avg_co2) || 0),
     };
-  } finally {
-    conn.release();
+
+    console.log('Processed sensor data:', result);
+    return result;
+  } catch (error) {
+    console.error(`fetchHistoryDataFromDB failed for farmId: ${farmId}, date: ${date}`, error);
+    throw new Error(`Failed to fetch sensor data: ${error.message}`);
   }
 }
 
