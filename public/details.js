@@ -1,4 +1,3 @@
-// Chart.js 라이브러리를 직접 사용
 const API_BASE_URL = "https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app"
 
 const growthStages = [
