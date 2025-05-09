@@ -304,6 +304,7 @@ function renderFarmCards(filteredFarms = allFarms) {
         sessionStorage.setItem('farm_id', farm.farm_id);
         console.log(farm.farm_id,farm.farm_type);
         sessionStorage.setItem('farm_type', farm.farm_type);
+        sessionStorage.setItem("farm_name", farm.farm_name)
         alert(`${farm.farm_name} 농장을 선택했습니다.`);
         window.location.href = 'details.html';
       });

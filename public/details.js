@@ -206,7 +206,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (farmNameText) {
           farmNameText.textContent = farm_name
         }
-        sessionStorage.setItem("farm_name", farm_name)
         if (farmActive === 1) {
           if (startButton) startButton.style.display = "none"
           if (cropInfo) cropInfo.classList.add("visible")
