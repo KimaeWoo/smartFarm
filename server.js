@@ -272,7 +272,7 @@ ${aiAnalysis}
 // 리포트 센서 데이터 조회
 async function fetchHistoryDataFromDB(farmId, date) {
   try {
-    console.log(`Fetching sensor data from /history-data for farmId: ${farmId}, date: ${date}`);
+    console.log(`센서 데이터 조회 중 - 농장 ID: ${farmId}, 날짜: ${date}`);
     
     // /history-data API 호출
     const response = await fetch(`${API_BASE_URL}/history-data?farm_id=${farmId}&date=${date}`, {
@@ -282,13 +282,13 @@ async function fetchHistoryDataFromDB(farmId, date) {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to fetch history data');
+      throw new Error(errorData.message || '센서 데이터를 불러오는데 실패했습니다');
     }
 
     const historyData = await response.json();
 
     if (!historyData || historyData.length === 0) {
-      throw new Error('No sensor data available for the specified farm and date');
+      throw new Error('해당 농장과 날짜에 대한 센서 데이터가 없습니다');
     }
 
     // /history-data의 응답을 /generate-report에 맞게 가공
@@ -300,11 +300,11 @@ async function fetchHistoryDataFromDB(farmId, date) {
       co2Data: historyData.map(row => Number(row.avg_co2) || 0),
     };
 
-    console.log('Processed sensor data:', result);
+    console.log('가공된 센서 데이터:', result);
     return result;
   } catch (error) {
-    console.error(`fetchHistoryDataFromDB failed for farmId: ${farmId}, date: ${date}`, error);
-    throw new Error(`Failed to fetch sensor data: ${error.message}`);
+    console.error(`센서 데이터 조회 실패 - 농장 ID: ${farmId}, 날짜: ${date}`, error);
+    throw new Error(`센서 데이터 불러오기 실패: ${error.message}`);
   }
 }
 
