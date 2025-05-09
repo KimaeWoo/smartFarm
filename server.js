@@ -81,7 +81,7 @@ initializeDatabase();
 app.post('/generate-report', async (req, res) => {
   let conn;
   try {
-    console.log('Received request:', req.body);
+    console.log('리포트 생성 요청 수신:', req.body);
     const { farmId, date } = req.body;
 
     // 입력 데이터 검증
@@ -96,28 +96,28 @@ app.post('/generate-report', async (req, res) => {
     }
 
     // DB 연결
-    console.log('Attempting DB connection');
+    console.log('데이터베이스 연결 시도');
     conn = await db.getConnection();
-    console.log('DB connection:', conn ? 'Established' : 'Failed');
+    console.log('데이터베이스 연결:', conn ? '성공' : '실패');
 
     // 중복 리포트 확인
-    console.log('Checking for duplicate report');
+    console.log('중복 리포트 확인');
     const queryResult = await conn.query(
       'SELECT id FROM reports WHERE farm_id = ? AND date = ?',
       [farmId, date]
     );
-    console.log('Query result:', queryResult);
+    console.log('중복 리포트 조회 결과:', queryResult);
 
     // MariaDB 버전에 따라 결과 처리
     let existingReport = Array.isArray(queryResult) ? queryResult : queryResult?.rows || [];
-    console.log('existingReport:', existingReport);
+    console.log('기존 리포트:', existingReport);
 
     if (existingReport.length > 0) {
       return res.status(409).json({ error: '해당 날짜의 리포트가 이미 존재합니다.' });
     }
 
     // 센서 데이터 조회
-    console.log('Fetching sensor data');
+    console.log('센서 데이터 조회');
     let historyData;
     try {
       historyData = await fetchHistoryDataFromDB(farmId, date);
@@ -172,17 +172,12 @@ app.post('/generate-report', async (req, res) => {
       },
     };
 
-    console.log('Fetching device status');
-    const deviceData = await fetchDeviceStatus(farmId);
-    const deviceLogs = {
-      led: { start: deviceData.led ? '08:00' : null, end: deviceData.led ? '18:00' : null },
-      fan: { count: deviceData.fan ? 5 : 0, total_time: deviceData.fan ? 120 : 0 },
-      water: { count: deviceData.water ? 3 : 0, total_amount: deviceData.water ? 10 : 0 },
-      heater: { count: deviceData.heater ? 2 : 0, total_time: deviceData.heater ? 60 : 0 },
-      cooler: { count: deviceData.cooler ? 1 : 0, total_time: deviceData.cooler ? 30 : 0 },
-    };
+    // 제어 장치 로그 조회
+    console.log('제어 장치 조회');
+    const deviceLogs = await fetchDeviceLogs(farmId, date);
 
-    console.log('Generating AI analysis');
+    // AI 분석 생성
+    console.log('AI 분석 생성');
     const prompt = `
       스마트팜 일일 리포트를 분석하고 요약해주세요. 다음 데이터를 기반으로:
 
@@ -214,8 +209,9 @@ app.post('/generate-report', async (req, res) => {
     });
 
     const aiAnalysis = response.choices[0].message.content.trim();
-
-    console.log('Saving report to DB');
+    
+    // 리포트 저장
+    console.log('리포트 데이터베이스 저장');
     const insertQuery = `
       INSERT INTO reports (farm_id, date, sensor_summary, sensor_changes, device_logs, ai_analysis)
       VALUES (?, ?, ?, ?, ?, ?)
@@ -312,28 +308,71 @@ async function fetchHistoryDataFromDB(farmId, date) {
   }
 }
 
-// 헬퍼 함수: 장치 상태 조회 (예시)
-async function fetchDeviceStatus(farmId) {
-  // 실제 구현은 DB 또는 기존 API 호출로 대체
-  // 예: 내부 API 호출
-  const response = await fetch(`${API_BASE_URL}/devices/status?farm_id=${farmId}`, {
-    method: 'GET',
-    headers: { 'Content-Type': 'application/json' },
-  });
-  if (!response.ok) throw new Error('장치 상태 조회 실패');
-  return await response.json();
+// [리포트 생성] 장치 상태 조회 
+async function fetchDeviceLogs(farmId, date) {
+  let conn;
+  try {
+    conn = await db.getConnection();
+    const query = `
+      SELECT device_type, operation_count, total_duration
+      FROM device_logs
+      WHERE farm_id = ? AND date = ?
+    `;
+    const result = await conn.query(query, [farmId, date]);
+    
+    // 기본 장치 로그 객체
+    const deviceLogs = {
+      led: { count: 0, total_time: 0 },
+      fan: { count: 0, total_time: 0 },
+      water: { count: 0, total_amount: 0 },
+      heater: { count: 0, total_time: 0 },
+      cooler: { count: 0, total_time: 0 },
+    };
+
+    // 조회된 데이터를 기반으로 deviceLogs 채우기
+    result.forEach(row => {
+      if (row.device_type === 'led') {
+        deviceLogs.led.count = row.operation_count;
+        deviceLogs.led.total_time = row.total_duration || 0;
+        // LED의 경우 시작/종료 시간은 임의로 설정 (필요 시 별도 로직 추가)
+        deviceLogs.led.start = row.operation_count > 0 ? '08:00' : null;
+        deviceLogs.led.end = row.operation_count > 0 ? '18:00' : null;
+      } else if (row.device_type === 'fan') {
+        deviceLogs.fan.count = row.operation_count;
+        deviceLogs.fan.total_time = row.total_duration || 0;
+      } else if (row.device_type === 'water') {
+        deviceLogs.water.count = row.operation_count;
+        deviceLogs.water.total_amount = row.operation_count * 3.33; // 예: 1회당 3.33L로 가정
+      } else if (row.device_type === 'heater') {
+        deviceLogs.heater.count = row.operation_count;
+        deviceLogs.heater.total_time = row.total_duration || 0;
+      } else if (row.device_type === 'cooler') {
+        deviceLogs.cooler.count = row.operation_count;
+        deviceLogs.cooler.total_time = row.total_duration || 0;
+      }
+    });
+
+    console.log(`[fetchDeviceLogs] farmId: ${farmId}, date: ${date}`, deviceLogs);
+    return deviceLogs;
+  } catch (error) {
+    console.error(`[fetchDeviceLogs] 오류: farmId=${farmId}, date=${date}`, error);
+    throw new Error('장치 로그 조회 실패');
+  } finally {
+    if (conn) conn.release();
+  }
 }
 
-// 헬퍼 함수: 평균 계산
+// [리포트 생성] 평균 계산
 function average(arr) {
   return arr.reduce((sum, val) => sum + val, 0) / arr.length;
 }
 
-// 헬퍼 함수: 소수점 둘째 자리 반올림
+// [리포트 생성] 소수점 둘째 자리 반올림
 function roundToTwo(num) {
   return Math.round(num * 100) / 100;
 }
 
+// 리포트 불러오기기
 app.get('/get-reports/:farmId', async (req, res) => {
   let conn;
   try {
@@ -666,26 +705,41 @@ app.get('/devices/status', async(req, res) => {
 // 제어장치 상태 변경하기
 app.post('/devices/:deviceId/status', async (req, res) => {
   const { farm_id, device, status, content } = req.body;
-  const query = `UPDATE devices SET ${device} = ? WHERE farm_id = ?`;
-  const alarm_query = `INSERT INTO alarms (farm_id, content, type, device) VALUES (?, ?, ?, ?)`;
   let conn;
 
   try {
     conn = await db.getConnection();
-    await conn.query(query, [status, farm_id]);
-    console.log('[/devices/:deviceId/status] 제어장치 변경 성공', device, status);
-    
+    await conn.beginTransaction(); // 트랜잭션 시작
+
+    // 1. devices 테이블 업데이트
+    const updateDeviceQuery = `UPDATE devices SET ${device} = ? WHERE farm_id = ?`;
+    await conn.query(updateDeviceQuery, [status, farm_id]);
+    console.log(`[/devices/:deviceId/status] 제어장치 변경 성공: ${device} -> ${status}`);
+
+    // 2. 알림 추가
+    const alarmQuery = `INSERT INTO alarms (farm_id, content, type, device) VALUES (?, ?, ?, ?)`;
+    const alarmType = status == 1 ? "경고" : "완료";
+    await conn.query(alarmQuery, [farm_id, content, alarmType, device]);
+    console.log(`[/devices/:deviceId/status] ${alarmType} 알림 추가 성공`);
+
+    // 3. device_logs 테이블 업데이트 (장치가 켜질 때만 카운트 증가)
     if (status == 1) {
-      await conn.query(alarm_query, [farm_id, content, "경고", device]);
-      console.log('[/devices/:deviceId/status] warning 알림 추가 성공');
-    } else {
-      await conn.query(alarm_query, [farm_id, content, "완료", device]);
-      console.log('[/devices/:deviceId/status] complete 알림 추가 성공');
+      const today = moment().tz("Asia/Seoul").format("YYYY-MM-DD");
+      const deviceLogQuery = `
+        INSERT INTO device_logs (farm_id, date, device_type, operation_count)
+        VALUES (?, ?, ?, 1)
+        ON DUPLICATE KEY UPDATE operation_count = operation_count + 1
+      `;
+      await conn.query(deviceLogQuery, [farm_id, today, device]);
+      console.log(`[/devices/:deviceId/status] ${device} 작동 횟수 증가: farm_id=${farm_id}, date=${today}`);
     }
-    return res.json({ message: '제어장치 변경 및 알림 추가 성공' });
+
+    await conn.commit(); // 트랜잭션 커밋
+    return res.json({ message: '제어장치 변경 및 알림, 로그 추가 성공' });
   } catch (err) {
-    console.error('[POST /devices/:deviceId/status] DB 오류:', err);
-    return res.status(500).json({ message: 'DB 오류' });
+    if (conn) await conn.rollback(); // 오류 시 롤백
+    console.error('[POST /devices/:deviceId/status] 오류:', err);
+    return res.status(500).json({ message: '서버 오류' });
   } finally {
     if (conn) conn.release();
   }
