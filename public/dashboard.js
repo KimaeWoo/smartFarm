@@ -734,3 +734,5 @@ function setActiveFilter(filter) {
     document.getElementById(`filter-${filter}`).classList.add('active');
   }
 }
+
+fetchName();
