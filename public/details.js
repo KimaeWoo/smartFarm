@@ -206,7 +206,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     })
   }
 
-  // 농장 정보 가져오기기
+  // 농장 정보 가져오기
   function fetchFarmStatus() {
     fetch(`${API_BASE_URL}/get-farm-status/${farmId}`)
       .then((response) => {
@@ -214,7 +214,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         return response.json()
       })
       .then((data) => {
-        const { growthRate, harvestDays, startDate, farmActive } = data
+        const { farmname, growthRate, harvestDays, startDate, farmActive } = data
         if (farmActive === 1) {
           if (startButton) startButton.style.display = "none"
           if (cropInfo) cropInfo.classList.add("visible")
