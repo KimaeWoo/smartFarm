@@ -592,6 +592,9 @@ document.addEventListener('DOMContentLoaded', function() {
   // 초기 데이터 로딩
   loadFarmData();
   
+  // 세션스토리지에서 user_id 가져오기
+  const userId = sessionStorage.getItem('user_id');
+  
   // 검색 기능
   document.getElementById('search-input').addEventListener('input', function(e) {
     const searchQuery = e.target.value.toLowerCase();
