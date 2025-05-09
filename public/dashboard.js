@@ -587,20 +587,6 @@ function updateSelectedCount() {
   }
 }
 
-async function fetchName() {
-  try {
-    const response = await fetch(`${API_BASE_URL}/getName?user_id=${userId}`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-    })
-    if (!response.ok) throw new Error("네트워크 응답 오류: " + response.statusText)
-    const data = await response.json()
-    sessionStorage.setItem('user_name', data.username);
-  } catch (error) {
-    console.error("사용자 이름 불러오기 실패:", error)
-  }
-}
-
 // 이벤트 리스너 설정
 document.addEventListener('DOMContentLoaded', function() {
   // 초기 데이터 로딩
@@ -720,6 +706,21 @@ document.addEventListener('DOMContentLoaded', function() {
       closeDeleteConfirmModal();
     }
   });
+  async function fetchName() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/getName?user_id=${userId}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      })
+      if (!response.ok) throw new Error("네트워크 응답 오류: " + response.statusText)
+      const data = await response.json()
+      sessionStorage.setItem('user_name', data.username);
+    } catch (error) {
+      console.error("사용자 이름 불러오기 실패:", error)
+    }
+  }
+
+  fetchName();
 });
 
 // 활성 필터 설정
@@ -735,4 +736,3 @@ function setActiveFilter(filter) {
   }
 }
 
-fetchName();
