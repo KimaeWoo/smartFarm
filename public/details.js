@@ -188,11 +188,13 @@ document.addEventListener("DOMContentLoaded", async () => {
             growthCircle.style.background = `conic-gradient(#10b981 ${growthRate}%, #e5e7eb ${growthRate}%)`
             growthText.textContent = `${Math.round(growthRate)}%`
           }
+          location.reload();
         })
         .catch((error) => alert("오류 발생"))
     })
   }
 
+  // 농장 정보 가져오기기
   function fetchFarmStatus() {
     fetch(`${API_BASE_URL}/get-farm-status/${farmId}`)
       .then((response) => {
