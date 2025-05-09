@@ -151,9 +151,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     })
   }
-
+  
   const userId = sessionStorage.getItem("user_id")
   const farmId = sessionStorage.getItem("farm_id")
+  const userName = sessionStorage.getItem("user_name")
+  const farmName = seesionStorage.getItem("farm_name")
+  const username = document.getElementById("username")
   const farmNameText = document.getElementById("farmname")
   const startButton = document.getElementById("start-farm-btn")
   const cropInfo = document.getElementById("crop-info")
@@ -163,6 +166,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   const humidOptimal = document.getElementById("humid-optimal")
   const soilOptimal = document.getElementById("soil-optimal")
   const co2Optimal = document.getElementById("co2-optimal")
+
+  function fetchData() {
+    if (farmNameText) {
+      farmNameText.textContent = farmName
+    }
+    if (username) {
+      username.textContent = `${userName}님`
+    }
+  }
 
   if (startButton) {
     startButton.addEventListener("click", () => {
@@ -202,10 +214,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         return response.json()
       })
       .then((data) => {
-        const { farm_name, growthRate, harvestDays, startDate, farmActive } = data
-        if (farmNameText) {
-          farmNameText.textContent = farm_name
-        }
+        const { growthRate, harvestDays, startDate, farmActive } = data
         if (farmActive === 1) {
           if (startButton) startButton.style.display = "none"
           if (cropInfo) cropInfo.classList.add("visible")
@@ -390,23 +399,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     fetchFarmOptimalValues()
     return true
-  }
-
-  async function fetchName() {
-    try {
-      const response = await fetch(`${API_BASE_URL}/getName?user_id=${userId}`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      })
-      if (!response.ok) throw new Error("네트워크 응답 오류: " + response.statusText)
-      const data = await response.json()
-      const usernameEl = document.getElementById("username")
-      if (usernameEl) {
-        usernameEl.textContent = `${data.username}님`
-      }
-    } catch (error) {
-      console.error("사용자 이름 불러오기 실패:", error)
-    }
   }
 
   async function fetchSensorData() {
@@ -1456,7 +1448,7 @@ ${report.aiAnalysis || "AI 분석 데이터가 없습니다."}
   }
 
   // 초기 데이터 로드
-  fetchName()
+  fetchData()
   updateDateDisplay()
   fetchSensorData()
   fetchDevicesStatus()

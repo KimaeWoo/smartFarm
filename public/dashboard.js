@@ -304,7 +304,7 @@ function renderFarmCards(filteredFarms = allFarms) {
         sessionStorage.setItem('farm_id', farm.farm_id);
         console.log(farm.farm_id,farm.farm_type);
         sessionStorage.setItem('farm_type', farm.farm_type);
-        sessionStorage.setItem("farm_name", farm.farm_name)
+        sessionStorage.setItem('farm_name', farm.farm_name)
         alert(`${farm.farm_name} 농장을 선택했습니다.`);
         window.location.href = 'details.html';
       });
@@ -584,6 +584,20 @@ function updateSelectedCount() {
     confirmDeleteBtn.disabled = false;
   } else {
     confirmDeleteBtn.disabled = true;
+  }
+}
+
+async function fetchName() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/getName?user_id=${userId}`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    })
+    if (!response.ok) throw new Error("네트워크 응답 오류: " + response.statusText)
+    const data = await response.json()
+    sessionStorage.setItem('user_name', data.username);
+  } catch (error) {
+    console.error("사용자 이름 불러오기 실패:", error)
   }
 }
 
