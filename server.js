@@ -232,7 +232,7 @@ app.post('/addFarm', authenticateToken, async (req, res) => {
 
     // 1. 농장 삽입
     const farmResult = await conn.query(insertFarmQuery, [user_id, farm_name, farm_location, farm_type]);
-    const farm_id = farmResult.insertId;
+    const farm_id = parseInt(farmResult.insertId);
     console.log(`[POST /addFarm] 농장 추가 성공: user_id=${user_id}, farm_id=${farm_id}`);
 
     // 2. devices 초기화
