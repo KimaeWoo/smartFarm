@@ -109,7 +109,6 @@ async function login() {
       console.log('로그인 성공, 페이지 이동');
       window.location.href = "dashboard.html";
     } else {
-      console.warn('예상치 못한 응답:', data);
       alert(data.message || '로그인 실패');
     }
   } catch (error) {

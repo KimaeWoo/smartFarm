@@ -427,15 +427,24 @@ async function loadFarmData() {
   try {
     // 세션스토리지에서 user_id 가져오기
     const userId = sessionStorage.getItem('user_id');
+    const token = sessionStorage.getItem('token'); // 저장된 토큰 가져오기
+
     // if (!userId) {
     //   showMessage('사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.');
     //   return;
     // }
     
     // 농장 목록 불러오기
-    const farmsResponse = await fetch(`${API_BASE_URL}/getFarms?user_id=${userId}`);
+    const farmsResponse = await fetch(`${API_BASE_URL}/getFarms?user_id=${userId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`, // 토큰 포함
+        'Content-Type': 'application/json',
+      },
+    });
+
     if (!farmsResponse.ok) {
-      throw new Error('농장 목록을 불러오는데 실패했습니다.');
+      const errorData = await farmsResponse.json();
+      throw new Error(errorData.message || '농장 목록을 불러오는데 실패했습니다.');
     }
     
     const farmsData = await farmsResponse.json();
@@ -445,14 +454,22 @@ async function loadFarmData() {
     await Promise.all(allFarms.map(async (farm) => {
       try {
         // 센서 데이터 불러오기
-        const sensorsResponse = await fetch(`${API_BASE_URL}/sensors/status?farm_id=${farm.farm_id}`);
+        const sensorsResponse = await fetch(`${API_BASE_URL}/sensors/status?farm_id=${farm.farm_id}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`, // 토큰 포함
+          },
+        });
         if (sensorsResponse.ok) {
           const sensorData = await sensorsResponse.json();
           farmSensors[farm.farm_id] = sensorData;
         }
-        
+
         // 제어장치 데이터 불러오기
-        const devicesResponse = await fetch(`${API_BASE_URL}/devices/status?farm_id=${farm.farm_id}`);
+        const devicesResponse = await fetch(`${API_BASE_URL}/devices/status?farm_id=${farm.farm_id}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`, // 토큰 포함
+          },
+        });
         if (devicesResponse.ok) {
           const deviceData = await devicesResponse.json();
           farmDevices[farm.farm_id] = deviceData;
@@ -474,25 +491,27 @@ async function loadFarmData() {
 // 농장 추가하기
 async function addFarm(farmData) {
   try {
+    const token = sessionStorage.getItem('token');
     const response = await fetch(`${API_BASE_URL}/addFarm`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`, // 토큰 포함
       },
       body: JSON.stringify(farmData),
     });
-    
+
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.message || '농장 추가에 실패했습니다.');
     }
-    
+
     const result = await response.json();
     showMessage(result.message || '농장이 성공적으로 추가되었습니다.', 'success');
-    
+
     // 농장 목록 새로고침
     await loadFarmData();
-    
+
     return true;
   } catch (err) {
     console.error('농장 추가 오류:', err);
@@ -508,6 +527,7 @@ async function deleteFarms(farmIds) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`, // 토큰 포함
       },
       body: JSON.stringify({
         farm_ids: farmIds
@@ -709,19 +729,25 @@ document.addEventListener('DOMContentLoaded', function() {
       closeDeleteConfirmModal();
     }
   });
+  
   async function fetchName() {
-    try {
-      const response = await fetch(`${API_BASE_URL}/getName?user_id=${userId}`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      })
-      if (!response.ok) throw new Error("네트워크 응답 오류: " + response.statusText)
-      const data = await response.json()
-      sessionStorage.setItem('user_name', data.username);
-    } catch (error) {
-      console.error("사용자 이름 불러오기 실패:", error)
-    }
+  try {
+    const userId = sessionStorage.getItem('user_id');
+    const token = sessionStorage.getItem('token');
+    const response = await fetch(`${API_BASE_URL}/getName?user_id=${userId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`, // 토큰 포함
+      },
+    });
+    if (!response.ok) throw new Error('네트워크 응답 오류: ' + response.statusText);
+    const data = await response.json();
+    sessionStorage.setItem('user_name', data.username);
+  } catch (error) {
+    console.error('사용자 이름 불러오기 실패:', error);
   }
+}
 
   fetchName();
 });

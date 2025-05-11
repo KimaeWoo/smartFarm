@@ -104,42 +104,38 @@ app.post('/login', async (req, res) => {
   let conn;
 
   try {
-    console.log('로그인 요청 수신:', { user_id });
     conn = await db.getConnection();
     const results = await conn.query(query, [user_id]);
 
     if (results.length === 0) {
-      console.log('사용자 없음:', user_id);
       return res.status(401).json({ message: '존재하지 않는 이메일입니다.' });
     }
 
     const user = results[0];
+
+    // 비밀번호 비교
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      console.log('비밀번호 불일치:', user_id);
+      console.log(`[POST /login] 로그인 실패: ${user_id} - 잘못된 비밀번호`);
       return res.status(401).json({ message: '잘못된 비밀번호입니다.' });
     }
 
+    // JWT 토큰 생성
     const token = jwt.sign(
       { user_id: user.user_id, username: user.username },
       JWT_SECRET,
-      { expiresIn: '1h' }
+      { expiresIn: '1h' } // 토큰 만료 시간 (1시간)
     );
-    console.log('JWT 생성 성공:', token);
 
-    const responseData = {
+    console.log(`[POST /login] 로그인 성공: ${user_id}`);
+    return res.json({
       message: '로그인 성공',
-      token,
+      token, // 클라이언트에 토큰 반환
       user_id: user.user_id,
-    };
-    console.log('응답 데이터:', responseData);
-
-    res.setHeader('Content-Type', 'application/json');
-    res.status(200).json(responseData);
-    console.log(`[POST /login] 로그인 성공: ${user_id}, 응답 전송 완료`);
+    });
   } catch (err) {
-    console.error('[POST /login] 오류:', err.stack);
-    return res.status(500).json({ message: '서버 오류', error: err.message });
+    console.error('[POST /login] DB 오류:', err.stack);
+    return res.status(500).json({ message: 'DB 오류' });
   } finally {
     if (conn) conn.release();
   }
@@ -208,7 +204,7 @@ app.get('/getFarms', authenticateToken, async(req, res) => {
 });
 
 // 농장 추가하기
-app.post('/addFarm', async (req, res) => {
+app.post('/addFarm', authenticateToken, async (req, res) => {
   const { user_id, farm_name, farm_location, farm_type } = req.body;
   const insertFarmQuery = `
     INSERT INTO farms (user_id, farm_name, farm_location, farm_type)
