@@ -84,35 +84,24 @@ function checkSignupEligibility() {
 
 // 로그인 요청
 async function login() {
-  console.log('로그인 함수 호출됨'); // 함수 호출 확인
   const user_id = document.getElementById("login-email").value;
   const password = document.getElementById("login-password").value;
-  console.log('로그인 요청:', { user_id, password });
 
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10초 타임아웃
-
     const response = await fetch(`${API_BASE_URL}/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ user_id, password }),
-      signal: controller.signal,
+      body: JSON.stringify({ user_id, password })
     });
 
-    clearTimeout(timeoutId);
-    console.log('서버 응답 상태:', response.status, response.ok);
-
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
       console.error('서버 에러 응답:', errorData);
       throw new Error(errorData.message || `로그인 실패: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log('서버 응답 데이터:', data);
 
     if (data.message === '로그인 성공') {
       sessionStorage.setItem('token', data.token);
