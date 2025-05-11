@@ -523,10 +523,12 @@ async function addFarm(farmData) {
 // 농장 삭제하기
 async function deleteFarms(farmIds) {
   try {
+    const token = sessionStorage.getItem('token');
     const response = await fetch(`${API_BASE_URL}/delFarm`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`, // 토큰 포함
       },
       body: JSON.stringify({
         farm_ids: farmIds
