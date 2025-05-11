@@ -1,3 +1,5 @@
+const API_BASE_URL = "https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app";
+
 // 토글 버튼 요소 가져오기
 const loginToggle = document.getElementById('login-toggle');
 const signupToggle = document.getElementById('signup-toggle');
@@ -40,7 +42,7 @@ async function checkUserId() {
         document.getElementById("email-result").style.color = "red";
         return;
     }
-    const response = await fetch(`https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app/check-userid?user_id=${encodeURIComponent(user_id)}`);
+    const response = await fetch(`${API_BASE_URL}/check-userid?user_id=${encodeURIComponent(user_id)}`);
     const data = await response.json();
 
     if (response.ok) {
@@ -91,7 +93,7 @@ async function login() {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10초 타임아웃
 
-    const response = await fetch('https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app/login', {
+    const response = await fetch(`${API_BASE_URL}/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -132,7 +134,7 @@ async function signup() {
     const user_id = document.getElementById("signup-email").value;
     const password = document.getElementById("signup-password").value;
     const username = document.getElementById("signup-name").value;
-    const response = await fetch('https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app/signup', {
+    const response = await fetch(`${API_BASE_URL}/signup`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
