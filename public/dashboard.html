@@ -1,101 +1,68 @@
 <!DOCTYPE html>
+
 <html lang="ko">
+
 <head>
   <meta charset="utf-8" />
   <meta content="width=device-width, initial-scale=1.0" name="viewport" />
   <title>스마트팜 관리 대시보드</title>
-  <link href="common.css" rel="stylesheet" />
+
   <link href="dashboard.css" rel="stylesheet" />
 </head>
-<body>
-  <div class="page-container">
-    <!-- 헤더 -->
-    <header>
-      <div class="header-container">
-        <div class="header-left">
-          <h1 class="header-title">스마트팜 관리 대시보드</h1>
-        </div>
-        <div class="header-right">
-          <span id="username">사용자님</span>
-          <button class="logout-btn" id="logout-btn">로그아웃</button>
-        </div>
-      </div>
-    </header>
 
-    <!-- 메인 콘텐츠 -->
-    <main>
-      <div class="dashboard-header">
-        <div class="dashboard-title">
-          <h2>스마트팜 관리 대시보드</h2>
-          <p>모든 농장의 상태를 한눈에 확인하세요</p>
-        </div>
-        <div class="dashboard-actions">
-          <button class="add-farm-btn" id="add-farm-btn">
-            <svg fill="none" height="16" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="16">
-              <path d="M12 5v14M5 12h14"></path>
-            </svg>
-            농장 추가
-          </button>
-          <button class="delete-farms-btn" id="delete-farms-btn">
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-left">
+        <h1>스마트팜 관리 대시보드</h1>
+        <p>모든 농장의 상태를 한눈에 확인하세요</p>
+      </div>
+      <div class="header-buttons">
+        <button class="add-farm-btn" id="add-farm-btn">
+          <svg fill="none" height="16" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="16">
+            <path d="M12 5v14M5 12h14"></path>
+          </svg>
+          농장 추가
+        </button>
+        <button class="delete-farms-btn" id="delete-farms-btn">
+          <svg fill="none" height="16" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="16">
+            <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path>
+            <line x1="10" x2="10" y1="11" y2="17"></line>
+            <line x1="14" x2="14" y1="11" y2="17"></line>
+          </svg>
+          농장 삭제
+        </button>
+      </div>
+    </div>
+    <div id="message-container"></div>
+    <!-- 삭제 모드 정보 및 액션 -->
+    <div id="delete-mode-container" style="display: none;">
+      <div class="delete-mode-info">
+        <div class="delete-mode-info-text">삭제할 농장을 선택하세요. <span id="selected-count">0</span>개 선택됨</div>
+        <div class="delete-mode-actions">
+          <button class="cancel-delete-mode-btn" id="cancel-delete-mode-btn">취소</button>
+          <button class="confirm-delete-btn" disabled="" id="confirm-delete-selected-btn">
             <svg fill="none" height="16" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="16">
               <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path>
-              <line x1="10" x2="10" y1="11" y2="17"></line>
-              <line x1="14" x2="14" y1="11" y2="17"></line>
             </svg>
-            농장 삭제
+            선택 삭제
           </button>
         </div>
       </div>
-      
-      <div id="message-container"></div>
-      
-      <!-- 삭제 모드 정보 및 액션 -->
-      <div id="delete-mode-container" style="display: none;">
-        <div class="delete-mode-info">
-          <div class="delete-mode-info-text">삭제할 농장을 선택하세요. <span id="selected-count">0</span>개 선택됨</div>
-          <div class="delete-mode-actions">
-            <button class="cancel-delete-mode-btn" id="cancel-delete-mode-btn">취소</button>
-            <button class="confirm-delete-btn" disabled="" id="confirm-delete-selected-btn">
-              <svg fill="none" height="16" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="16">
-                <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path>
-              </svg>
-              선택 삭제
-            </button>
-          </div>
-        </div>
-      </div>
-      
-      <div class="search-bar">
-        <input class="search-input" id="search-input" placeholder="농장 검색..." type="text" />
-      </div>
-      
-      <div class="filter-buttons">
-        <button class="filter-button active" id="filter-all">전체</button>
-        <button class="filter-button filter-button-critical" id="filter-critical">위험</button>
-        <button class="filter-button filter-button-warning" id="filter-warning">주의</button>
-        <button class="filter-button filter-button-healthy" id="filter-healthy">정상</button>
-      </div>
-      
-      <div class="farm-grid" id="farm-grid">
-        <div class="loading">데이터를 불러오는 중입니다...</div>
-      </div>
-    </main>
-
-    <!-- 푸터 -->
-    <footer>
-      <div class="footer-container">
-        <div class="footer-links">
-          <a href="#">이용약관</a>
-          <a href="#">개인정보처리방침</a>
-          <a href="#">고객센터</a>
-        </div>
-        <div class="footer-copyright">
-          &copy; 2025 스마트팜 시스템. All rights reserved.
-        </div>
-      </div>
-    </footer>
+    </div>
+    <div class="search-bar">
+      <input class="search-input" id="search-input" placeholder="농장 검색..." type="text" />
+    </div>
+    <div class="filter-buttons">
+      <button class="filter-button active" id="filter-all">전체</button>
+      <button class="filter-button filter-button-critical" id="filter-critical">위험</button>
+      <button class="filter-button filter-button-warning" id="filter-warning">주의</button>
+      <button class="filter-button filter-button-healthy" id="filter-healthy">정상</button>
+    </div>
+    <div class="farm-grid" id="farm-grid">
+      <div class="loading">데이터를 불러오는 중입니다...</div>
+    </div>
   </div>
-
   <!-- 농장 추가 모달 -->
   <div class="modal" id="add-farm-modal">
     <div class="modal-content">
@@ -127,7 +94,6 @@
       </form>
     </div>
   </div>
-  
   <!-- 삭제 확인 모달 -->
   <div class="confirm-modal" id="confirm-delete-modal">
     <div class="confirm-modal-content">
@@ -143,4 +109,5 @@
 
   <script src="dashboard.js"></script>
 </body>
+
 </html>

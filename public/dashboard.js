@@ -6,16 +6,6 @@ let farmDevices = {};
 let isDeleteMode = false;
 let selectedFarmIds = [];
 
-// JWT 관련 함수
-function getToken() {
-  return localStorage.getItem('jwt_token');
-}
-
-function getAuthHeaders() {
-  const token = getToken();
-  return token ? { 'Authorization': `Bearer ${token}` } : {};
-}
-
 // 상태 텍스트 가져오기
 function getStatusText(status) {
   return {
@@ -436,19 +426,14 @@ function renderFarmCards(filteredFarms = allFarms) {
 async function loadFarmData() {
   try {
     // 세션스토리지에서 user_id 가져오기
-    let userId = sessionStorage.getItem('user_id');
-    
-    // 로그인 체크 제거 - 사용자 정보가 없으면 임의 값 설정
+    const userId = sessionStorage.getItem('user_id');
     if (!userId) {
-      userId = 'default_user';
-      sessionStorage.setItem('user_id', userId);
+      showMessage('사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.');
+      return;
     }
     
     // 농장 목록 불러오기
-    const farmsResponse = await fetch(`${API_BASE_URL}/getFarms?user_id=${userId}`, {
-      headers: getAuthHeaders()
-    });
-    
+    const farmsResponse = await fetch(`${API_BASE_URL}/getFarms?user_id=${userId}`);
     if (!farmsResponse.ok) {
       throw new Error('농장 목록을 불러오는데 실패했습니다.');
     }
@@ -460,20 +445,14 @@ async function loadFarmData() {
     await Promise.all(allFarms.map(async (farm) => {
       try {
         // 센서 데이터 불러오기
-        const sensorsResponse = await fetch(`${API_BASE_URL}/sensors/status?farm_id=${farm.farm_id}`, {
-          headers: getAuthHeaders()
-        });
-        
+        const sensorsResponse = await fetch(`${API_BASE_URL}/sensors/status?farm_id=${farm.farm_id}`);
         if (sensorsResponse.ok) {
           const sensorData = await sensorsResponse.json();
           farmSensors[farm.farm_id] = sensorData;
         }
         
         // 제어장치 데이터 불러오기
-        const devicesResponse = await fetch(`${API_BASE_URL}/devices/status?farm_id=${farm.farm_id}`, {
-          headers: getAuthHeaders()
-        });
-        
+        const devicesResponse = await fetch(`${API_BASE_URL}/devices/status?farm_id=${farm.farm_id}`);
         if (devicesResponse.ok) {
           const deviceData = await devicesResponse.json();
           farmDevices[farm.farm_id] = deviceData;
@@ -499,7 +478,6 @@ async function addFarm(farmData) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...getAuthHeaders()
       },
       body: JSON.stringify(farmData),
     });
@@ -530,7 +508,6 @@ async function deleteFarms(farmIds) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...getAuthHeaders()
       },
       body: JSON.stringify({
         farm_ids: farmIds
@@ -616,13 +593,7 @@ document.addEventListener('DOMContentLoaded', function() {
   loadFarmData();
   
   // 세션스토리지에서 user_id 가져오기
-  let userId = sessionStorage.getItem('user_id');
-  
-  // 로그인 체크 제거 - 사용자 정보가 없으면 임의 값 설정
-  if (!userId) {
-    userId = 'default_user';
-    sessionStorage.setItem('user_id', userId);
-  }
+  const userId = sessionStorage.getItem('user_id');
   
   // 검색 기능
   document.getElementById('search-input').addEventListener('input', function(e) {
@@ -698,8 +669,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     const userId = sessionStorage.getItem('user_id');
     if (!userId) {
-      // 로그인 체크 제거 - 사용자 정보가 없으면 임의 값 설정
-      sessionStorage.setItem('user_id', 'default_user');
+      showMessage('사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.');
+      return;
     }
     
     const farmName = document.getElementById('farm-name').value;
@@ -707,7 +678,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const farmType = document.getElementById('farm-type').value;
     
     const farmData = {
-      user_id: userId || 'default_user',
+      user_id: userId,
       farm_name: farmName,
       farm_location: farmLocation,
       farm_type: farmType
@@ -738,53 +709,21 @@ document.addEventListener('DOMContentLoaded', function() {
       closeDeleteConfirmModal();
     }
   });
-  
-  // 사용자 이름 가져오기
   async function fetchName() {
     try {
-      // 로그인 체크 제거 - 사용자 정보가 없으면 임의 값 설정
-      if (!userId) {
-        sessionStorage.setItem('user_name', '사용자');
-        document.getElementById('username').textContent = '사용자님';
-        return;
-      }
-      
       const response = await fetch(`${API_BASE_URL}/getName?user_id=${userId}`, {
         method: "GET",
-        headers: { 
-          "Content-Type": "application/json",
-          ...getAuthHeaders()
-        },
-      });
-      
-      if (!response.ok) {
-        // 오류 발생 시 임의 값 설정
-        sessionStorage.setItem('user_name', '사용자');
-        document.getElementById('username').textContent = '사용자님';
-        return;
-      }
-      
-      const data = await response.json();
+        headers: { "Content-Type": "application/json" },
+      })
+      if (!response.ok) throw new Error("네트워크 응답 오류: " + response.statusText)
+      const data = await response.json()
       sessionStorage.setItem('user_name', data.username);
-      document.getElementById('username').textContent = `${data.username}님`;
     } catch (error) {
-      console.error("사용자 이름 불러오기 실패:", error);
-      // 오류 발생 시 임의 값 설정
-      sessionStorage.setItem('user_name', '사용자');
-      document.getElementById('username').textContent = '사용자님';
+      console.error("사용자 이름 불러오기 실패:", error)
     }
   }
 
   fetchName();
-  
-  // 로그아웃 버튼 이벤트
-  document.getElementById('logout-btn').addEventListener('click', function() {
-    // JWT 토큰 제거
-    localStorage.removeItem('jwt_token');
-    sessionStorage.removeItem('user_id');
-    sessionStorage.removeItem('user_name');
-    window.location.href = 'login.html';
-  });
 });
 
 // 활성 필터 설정
@@ -799,3 +738,4 @@ function setActiveFilter(filter) {
     document.getElementById(`filter-${filter}`).classList.add('active');
   }
 }
+
