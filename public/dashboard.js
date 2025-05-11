@@ -526,8 +526,7 @@ async function deleteFarms(farmIds) {
     const response = await fetch(`${API_BASE_URL}/delFarm`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`, // 토큰 포함
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         farm_ids: farmIds
