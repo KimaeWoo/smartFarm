@@ -82,34 +82,49 @@ function checkSignupEligibility() {
 
 // 로그인 요청
 async function login() {
-    const user_id = document.getElementById("login-email").value;
-    const password = document.getElementById("login-password").value;
-    console.error('로그인 요청');
-    try {
-        const response = await fetch('https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app/login', {
-            method: 'POST',
-            headers: {
-            'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ user_id, password }),
-        });
-        console.error('1');
-        const data = await response.json();
+  console.log('로그인 함수 호출됨'); // 함수 호출 확인
+  const user_id = document.getElementById("login-email").value;
+  const password = document.getElementById("login-password").value;
+  console.log('로그인 요청:', { user_id, password });
 
-        console.error('2');
-        if (response.ok) {
-            // 로그인 성공 시 user_id와 JWT 토큰 저장
-            sessionStorage.setItem('token', data.token); // JWT 토큰 저장
-            console.error('3');
-            sessionStorage.setItem('user_id', user_id);
-            window.location.href = "dashboard.html";
-        } else {
-            alert(data.message || '로그인 실패');
-        }
-    } catch (error) {
-        console.error('로그인 오류:', error);
-        alert('서버와의 연결에 실패했습니다.');
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10초 타임아웃
+
+    const response = await fetch('https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ user_id, password }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+    console.log('서버 응답 상태:', response.status, response.ok);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('서버 에러 응답:', errorData);
+      throw new Error(errorData.message || `로그인 실패: ${response.status}`);
     }
+
+    const data = await response.json();
+    console.log('서버 응답 데이터:', data);
+
+    if (data.message === '로그인 성공') {
+      sessionStorage.setItem('token', data.token);
+      sessionStorage.setItem('user_id', user_id);
+      console.log('로그인 성공, 페이지 이동');
+      window.location.href = "dashboard.html";
+    } else {
+      console.warn('예상치 못한 응답:', data);
+      alert(data.message || '로그인 실패');
+    }
+  } catch (error) {
+    console.error('로그인 오류:', error.message, error.stack);
+    alert('서버와의 연결에 실패했습니다: ' + error.message);
+  }
 }
 
 // 회원가입 요청
