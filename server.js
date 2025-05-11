@@ -20,7 +20,13 @@ const PORT = 8000;     // 서버가 사용할 포트 번호
 
 // 'public' 폴더를 정적 파일 제공 폴더로 설정
 app.use(express.static('public'));
-app.use(cors()); // 모든 요청에 대해 CORS 허용
+const corsOptions = {
+  origin: ['http://localhost:3000', 'https://your-client-domain.com'], // 클라이언트 도메인
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true, // 쿠키나 인증 헤더를 사용할 경우
+};
+app.use(cors(corsOptions));
 // POST 요청을 처리하기 위해 express의 json() 사용
 app.use(express.json()); // body-parser가 필요하지 않음
 
