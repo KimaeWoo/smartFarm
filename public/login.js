@@ -3,6 +3,33 @@ const loginToggle = document.getElementById('login-toggle');
 const signupToggle = document.getElementById('signup-toggle');
 const formsContainer = document.querySelector('.forms-container');
 
+// JWT 관련 함수
+function saveToken(token) {
+    localStorage.setItem('jwt_token', token);
+}
+
+function getToken() {
+    return localStorage.getItem('jwt_token');
+}
+
+function removeToken() {
+    localStorage.removeItem('jwt_token');
+}
+
+function isTokenValid() {
+    const token = getToken();
+    if (!token) return false;
+    
+    // 간단한 토큰 유효성 검사 (실제로는 서버에서 검증해야 함)
+    try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const expiryTime = payload.exp * 1000; // 밀리초로 변환
+        return Date.now() < expiryTime;
+    } catch (e) {
+        return false;
+    }
+}
+
 // 로그인 버튼 클릭 이벤트
 loginToggle.addEventListener('click', () => {
     formsContainer.style.transform = 'translateX(0)';
@@ -97,12 +124,36 @@ async function login() {
 
     if (response.ok) {
         // 로그인 성공 시 user_id와 JWT 토큰을 저장
-        //sessionStorage.setItem('token', data.token);  
         sessionStorage.setItem('user_id', user_id);
+        
+        // JWT 토큰 저장 (서버에서 토큰을 제공한다고 가정)
+        if (data.token) {
+            saveToken(data.token);
+        } else {
+            // 서버에서 토큰을 제공하지 않는 경우 임시 토큰 생성
+            const dummyToken = generateDummyToken(user_id);
+            saveToken(dummyToken);
+        }
+        
         window.location.href = "dashboard.html";
     } else {
         alert(data.message || '로그인 실패');
     }
+}
+
+// 임시 토큰 생성 함수 (실제 환경에서는 서버에서 발급해야 함)
+function generateDummyToken(userId) {
+    // 간단한 JWT 형식의 토큰 생성 (실제 환경에서는 사용하지 말 것)
+    const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+    const payload = btoa(JSON.stringify({
+        sub: userId,
+        name: userId,
+        iat: Math.floor(Date.now() / 1000),
+        exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24) // 24시간 유효
+    }));
+    const signature = btoa('dummy_signature'); // 실제로는 비밀키로 서명해야 함
+    
+    return `${header}.${payload}.${signature}`;
 }
 
 // 회원가입 요청
@@ -122,8 +173,35 @@ async function signup() {
 
     if (response.ok) {
         alert('회원가입 성공!');
-        toggleForm(); // 가입 후 로그인 화면으로 이동
+        loginToggle.click(); // 가입 후 로그인 화면으로 이동
     } else {
         alert(data.message || '회원가입 실패');
     }
 }
+
+// 이벤트 리스너 설정
+document.addEventListener('DOMContentLoaded', function() {
+    // 중복확인 버튼 이벤트
+    document.querySelector('.check-btn').addEventListener('click', checkUserId);
+    
+    // 비밀번호 확인 이벤트
+    document.getElementById('signup-confirm-password').addEventListener('input', checkPasswordMatch);
+    document.getElementById('signup-password').addEventListener('input', checkPasswordMatch);
+    
+    // 로그인 폼 제출 이벤트
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        login();
+    });
+    
+    // 회원가입 폼 제출 이벤트
+    document.getElementById('signup-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        signup();
+    });
+    
+    // 토큰이 유효하면 자동으로 대시보드로 이동
+    if (isTokenValid()) {
+        window.location.href = "dashboard.html";
+    }
+});

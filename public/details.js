@@ -1,4 +1,15 @@
+// 파일 상단에 JWT 관련 함수 추가
 const API_BASE_URL = "https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app"
+
+// JWT 관련 함수
+function getToken() {
+  return localStorage.getItem('jwt_token');
+}
+
+function getAuthHeaders() {
+  const token = getToken();
+  return token ? { 'Authorization': `Bearer ${token}` } : {};
+}
 
 const growthStages = [
   { image: "images/씨앗.png", text: "씨앗" },
@@ -33,15 +44,22 @@ function toggleMode() {
   }
 }
 
-const logoutButton = document.getElementById("logout-btn")
+// 로그아웃 버튼 이벤트 수정
+const logoutButton = document.getElementById("logout-btn");
 if (logoutButton) {
   logoutButton.addEventListener("click", () => {
-    sessionStorage.removeItem("user_id")
-    alert("로그아웃")
-    window.location.href = "login.html"
-  })
+    localStorage.removeItem('jwt_token');
+    sessionStorage.removeItem("user_id");
+    sessionStorage.removeItem("user_name");
+    sessionStorage.removeItem("farm_id");
+    sessionStorage.removeItem("farm_name");
+    sessionStorage.removeItem("farm_type");
+    alert("로그아웃");
+    window.location.href = "login.html";
+  });
 }
 
+// 로그인 체크 제거 및 임의 값 설정 부분 수정
 document.addEventListener("DOMContentLoaded", async () => {
   const today = new Date()
   const currentDate = new Date()
@@ -152,20 +170,24 @@ document.addEventListener("DOMContentLoaded", async () => {
     })
   }
   
-  const userId = sessionStorage.getItem("user_id")
-  const farmId = sessionStorage.getItem("farm_id")
-  const userName = sessionStorage.getItem("user_name")
-  const farmName = sessionStorage.getItem("farm_name")
-  const username = document.getElementById("username")
-  const farmNameText = document.getElementById("farmname")
-  const startButton = document.getElementById("start-farm-btn")
-  const cropInfo = document.getElementById("crop-info")
-  const growthCircle = document.getElementById("growth-circle")
-  const growthText = document.getElementById("growth-rate")
-  const tempOptimal = document.getElementById("temp-optimal")
-  const humidOptimal = document.getElementById("humid-optimal")
-  const soilOptimal = document.getElementById("soil-optimal")
-  const co2Optimal = document.getElementById("co2-optimal")
+  const userId = sessionStorage.getItem("user_id") || 'default_user';
+  const farmId = sessionStorage.getItem("farm_id") || 'default_farm';
+  const userName = sessionStorage.getItem("user_name") || '사용자';
+  const farmName = sessionStorage.getItem("farm_name") || '스마트팜';
+  
+  // 세션 스토리지에 기본값 저장
+  if (!sessionStorage.getItem("user_id")) {
+    sessionStorage.setItem("user_id", 'default_user');
+  }
+  if (!sessionStorage.getItem("farm_id")) {
+    sessionStorage.setItem("farm_id", 'default_farm');
+  }
+  if (!sessionStorage.getItem("user_name")) {
+    sessionStorage.setItem("user_name", '사용자');
+  }
+  if (!sessionStorage.getItem("farm_name")) {
+    sessionStorage.setItem("farm_name", '스마트팜');
+  }
 
   function fetchData() {
     if (farmNameText) {
@@ -401,6 +423,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     return true
   }
 
+  // API 요청 시 인증 헤더 추가
   async function fetchSensorData() {
     try {
       if (!userId) {
@@ -415,8 +438,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
       const response = await fetch(`${API_BASE_URL}/sensors/status?farm_id=${farmId}`, {
         method: "GET",
-        headers: { "Content-Type": "application/json" },
-      })
+        headers: { 
+          "Content-Type": "application/json",
+          ...getAuthHeaders()
+        },
+      });
       if (!response.ok) throw new Error("네트워크 응답 오류: " + response.statusText)
       const data = await response.json()
       updateSensorUI("temperature", data.temperature, "temp", 0, 40)
