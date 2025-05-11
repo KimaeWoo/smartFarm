@@ -82,27 +82,32 @@ function checkSignupEligibility() {
 
 // 로그인 요청
 async function login() {
-    const user_id = document.getElementById("login-email").value;
-    const password = document.getElementById("login-password").value;
+  const user_id = document.getElementById("login-email").value;
+  const password = document.getElementById("login-password").value;
 
+  try {
     const response = await fetch('https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app/login', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ user_id, password })
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ user_id, password }),
     });
 
     const data = await response.json();
 
     if (response.ok) {
-        // 로그인 성공 시 user_id와 JWT 토큰을 저장
-        //sessionStorage.setItem('token', data.token);  
-        sessionStorage.setItem('user_id', user_id);
-        window.location.href = "dashboard.html";
+      // 로그인 성공 시 user_id와 JWT 토큰 저장
+      sessionStorage.setItem('token', data.token); // JWT 토큰 저장
+      sessionStorage.setItem('user_id', user_id);
+      window.location.href = "dashboard.html";
     } else {
-        alert(data.message || '로그인 실패');
+      alert(data.message || '로그인 실패');
     }
+  } catch (error) {
+    console.error('로그인 오류:', error);
+    alert('서버와의 연결에 실패했습니다.');
+  }
 }
 
 // 회원가입 요청
