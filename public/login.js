@@ -84,7 +84,7 @@ function checkSignupEligibility() {
 async function login() {
     const user_id = document.getElementById("login-email").value;
     const password = document.getElementById("login-password").value;
-
+    console.error('로그인 요청');
     try {
         const response = await fetch('https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app/login', {
             method: 'POST',
@@ -93,12 +93,14 @@ async function login() {
             },
             body: JSON.stringify({ user_id, password }),
         });
-
+        console.error('1');
         const data = await response.json();
 
+        console.error('2');
         if (response.ok) {
             // 로그인 성공 시 user_id와 JWT 토큰 저장
             sessionStorage.setItem('token', data.token); // JWT 토큰 저장
+            console.error('3');
             sessionStorage.setItem('user_id', user_id);
             window.location.href = "dashboard.html";
         } else {
