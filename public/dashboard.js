@@ -427,10 +427,10 @@ async function loadFarmData() {
   try {
     // 세션스토리지에서 user_id 가져오기
     const userId = sessionStorage.getItem('user_id');
-    if (!userId) {
-      showMessage('사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.');
-      return;
-    }
+    // if (!userId) {
+    //   showMessage('사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.');
+    //   return;
+    // }
     
     // 농장 목록 불러오기
     const farmsResponse = await fetch(`${API_BASE_URL}/getFarms?user_id=${userId}`);

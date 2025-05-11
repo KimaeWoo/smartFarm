@@ -4,7 +4,7 @@ const growthStages = [
   { image: "images/씨앗.png", text: "씨앗" },
   { image: "images/새싹.png", text: "새싹" },
   { image: "images/성장.png", text: "성장" },
-  { image: "images/수확.png", text: "수확" },
+  { image: "images/열매.png", text: "열매" },
 ]
 
 let currentStage = 0
@@ -403,16 +403,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   async function fetchSensorData() {
     try {
-      if (!userId) {
-        alert("사용자 정보를 확인할 수 없습니다. 로그인 후 다시 시도해주세요.")
-        window.location.href = "login.html"
-        return
-      }
-      if (!farmId) {
-        alert("스마트팜 정보를 확인할 수 없습니다. 스마트팜 추가가 후 다시 시도해주세요.")
-        window.location.href = "dashboard.html"
-        return
-      }
+      // if (!userId) {
+      //   alert("사용자 정보를 확인할 수 없습니다. 로그인 후 다시 시도해주세요.")
+      //   window.location.href = "login.html"
+      //   return
+      // }
+      // if (!farmId) {
+      //   alert("스마트팜 정보를 확인할 수 없습니다. 스마트팜 추가가 후 다시 시도해주세요.")
+      //   window.location.href = "dashboard.html"
+      //   return
+      // }
       const response = await fetch(`${API_BASE_URL}/sensors/status?farm_id=${farmId}`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },

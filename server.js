@@ -1,12 +1,15 @@
 // 서버를 만들기 위해 필요한 도구(모듈) 불러오기
 const express = require('express'); // 웹 서버를 만들기 위한 도구(Express)
 const mariadb = require('mariadb'); // MariaDB 연결 모듈
-const path = require('path');
 const cors = require('cors'); // CORS 불러오기
 const moment = require('moment-timezone');
 const axios = require('axios');
-// dotenv 패키지를 불러오기
-require('dotenv').config();
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt'); // 비밀번호 해싱용
+require('dotenv').config(); // 환경 변수 로드
+
+// JWT 비밀 키
+const JWT_SECRET = process.env.JWT_SECRET
 
 // OpenAI 모듈 추가
 const OpenAI = require("openai");
@@ -46,374 +49,6 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// reports 테이블 생성 (최초 실행 시)
-async function initializeDatabase() {
-  let conn;
-  try {
-    conn = await db.getConnection();
-    const createTableQuery = `
-      CREATE TABLE IF NOT EXISTS reports (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        farm_id INT NOT NULL,
-        date DATE NOT NULL,
-        sensor_summary JSON NOT NULL,
-        sensor_changes JSON NOT NULL,
-        device_logs JSON NOT NULL,
-        ai_analysis TEXT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        UNIQUE(farm_id, date),
-        FOREIGN KEY (farm_id) REFERENCES farms(farm_id) ON DELETE CASCADE
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-    `;
-    await conn.query(createTableQuery);
-    console.log('Reports 테이블 생성 성공');
-  } catch (err) {
-    console.error('Reports 테이블 생성 실패:', err);
-  } finally {
-    if (conn) conn.release();
-  }
-}
-
-// 서버 시작 시 테이블 초기화
-initializeDatabase();
-
-// 리포트 생성 엔드포인트
-app.post('/generate-report', async (req, res) => {
-  let conn;
-  try {
-    console.log('리포트 생성 요청 수신:', req.body);
-    const { farmId, date } = req.body;
-
-    // 입력 데이터 검증
-    if (!farmId || !date) {
-      return res.status(400).json({ error: 'farmId와 date는 필수입니다' });
-    }
-
-    // 날짜 형식 검증
-    const datePattern = /^\d{4}-\d{2}-\d{2}$/;
-    if (!datePattern.test(date)) {
-      return res.status(400).json({ error: '유효한 날짜 형식이 아닙니다 (YYYY-MM-DD)' });
-    }
-
-    // DB 연결
-    console.log('데이터베이스 연결 시도');
-    conn = await db.getConnection();
-    console.log('데이터베이스 연결:', conn ? '성공' : '실패');
-
-    // 중복 리포트 확인
-    console.log('중복 리포트 확인');
-    const queryResult = await conn.query(
-      'SELECT id FROM reports WHERE farm_id = ? AND date = ?',
-      [farmId, date]
-    );
-    console.log('중복 리포트 조회 결과:', queryResult);
-
-    // MariaDB 버전에 따라 결과 처리
-    let existingReport = Array.isArray(queryResult) ? queryResult : queryResult?.rows || [];
-    console.log('기존 리포트:', existingReport);
-
-    if (existingReport.length > 0) {
-      return res.status(409).json({ error: '해당 날짜의 리포트가 이미 존재합니다.' });
-    }
-
-    // 센서 데이터 조회
-    console.log('센서 데이터 조회');
-    let historyData;
-    try {
-      historyData = await fetchHistoryDataFromDB(farmId, date);
-    } catch (error) {
-      return res.status(400).json({ error: error.message });
-    }
-
-    if (!historyData || !historyData.timeLabels || !historyData.timeLabels.length) {
-      return res.status(400).json({ error: '해당 날짜의 센서 데이터가 부족합니다' });
-    }
-
-    // 나머지 코드 (sensorSummary, sensorChanges, deviceLogs, OpenAI, DB 저장 등)
-    const sensorSummary = {
-      avg_temperature: roundToTwo(average(historyData.temperatureData)),
-      avg_humidity: roundToTwo(average(historyData.humidityData)),
-      avg_soil_moisture: roundToTwo(average(historyData.soilData)),
-      avg_co2: roundToTwo(average(historyData.co2Data)),
-    };
-
-    const sensorChanges = {
-      max_temperature: {
-        value: Math.max(...historyData.temperatureData),
-        time: historyData.timeLabels[historyData.temperatureData.indexOf(Math.max(...historyData.temperatureData))],
-      },
-      min_temperature: {
-        value: Math.min(...historyData.temperatureData),
-        time: historyData.timeLabels[historyData.temperatureData.indexOf(Math.min(...historyData.temperatureData))],
-      },
-      max_humidity: {
-        value: Math.max(...historyData.humidityData),
-        time: historyData.timeLabels[historyData.humidityData.indexOf(Math.max(...historyData.humidityData))],
-      },
-      min_humidity: {
-        value: Math.min(...historyData.humidityData),
-        time: historyData.timeLabels[historyData.humidityData.indexOf(Math.min(...historyData.humidityData))],
-      },
-      max_soil_moisture: {
-        value: Math.max(...historyData.soilData),
-        time: historyData.timeLabels[historyData.soilData.indexOf(Math.max(...historyData.soilData))],
-      },
-      min_soil_moisture: {
-        value: Math.min(...historyData.soilData),
-        time: historyData.timeLabels[historyData.soilData.indexOf(Math.min(...historyData.soilData))],
-      },
-      max_co2: {
-        value: Math.max(...historyData.co2Data),
-        time: historyData.timeLabels[historyData.co2Data.indexOf(Math.max(...historyData.co2Data))],
-      },
-      min_co2: {
-        value: Math.min(...historyData.co2Data),
-        time: historyData.timeLabels[historyData.co2Data.indexOf(Math.min(...historyData.co2Data))],
-      },
-    };
-
-    // 제어 장치 로그 조회
-    console.log('제어 장치 조회');
-    const deviceLogs = await fetchDeviceLogs(farmId, date);
-
-    // AI 분석 생성
-    console.log('AI 분석 생성');
-    const prompt = `
-      스마트팜 일일 리포트를 분석하고 요약해주세요. 다음 데이터를 기반으로:
-
-      1. 센서 측정 요약:
-      ${JSON.stringify(sensorSummary, null, 2)}
-
-      2. 센서 수치 변화:
-      ${JSON.stringify(sensorChanges, null, 2)}
-
-      3. 제어 장치 작동 기록:
-      ${JSON.stringify(deviceLogs, null, 2)}
-
-      출력 형식:
-      - 오늘 온도는 [안정적/변동이 심함]했습니다.
-      - 습도는 [적정 수준/낮은 경향/높은 경향]을 보였습니다.
-      - 토양 수분은 [충분/부족/과다] 상태를 유지했습니다.
-      - CO₂ 농도는 [안정적/변동 있음]였습니다.
-      - 주요 문제점: (문제점 설명)
-      - 개선 제안: (개선 제안)
-    `;
-
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4',
-      messages: [
-        { role: 'system', content: '당신은 스마트팜 데이터 분석 전문가입니다.' },
-        { role: 'user', content: prompt },
-      ],
-      max_tokens: 600,
-    });
-
-    const aiAnalysis = response.choices[0].message.content.trim();
-    
-    // 리포트 저장
-    console.log('리포트 데이터베이스 저장');
-    const insertQuery = `
-      INSERT INTO reports (farm_id, date, sensor_summary, sensor_changes, device_logs, ai_analysis)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `;
-    const result = await conn.query(insertQuery, [
-      farmId,
-      date,
-      JSON.stringify(sensorSummary),
-      JSON.stringify(sensorChanges),
-      JSON.stringify(deviceLogs),
-      aiAnalysis,
-    ]);
-
-    const reportText = `
-📋 스마트팜 일일 리포트
-1. 날짜
-${date}
-
-2. 센서 측정 요약
-평균 온도: ${sensorSummary.avg_temperature} ℃
-평균 습도: ${sensorSummary.avg_humidity} %
-평균 토양 수분: ${sensorSummary.avg_soil_moisture} %
-평균 CO₂ 농도: ${sensorSummary.avg_co2} ppm
-
-3. 센서 수치 변화
-최고 온도: ${sensorChanges.max_temperature.value} ℃ (시간: ${sensorChanges.max_temperature.time})
-최저 온도: ${sensorChanges.min_temperature.value} ℃ (시간: ${sensorChanges.min_temperature.time})
-최고 습도: ${sensorChanges.max_humidity.value} % (시간: ${sensorChanges.max_humidity.time})
-최저 습도: ${sensorChanges.min_humidity.value} % (시간: ${sensorChanges.min_humidity.time})
-최고 토양 수분: ${sensorChanges.max_soil_moisture.value} % (시간: ${sensorChanges.max_soil_moisture.time})
-최저 토양 수분: ${sensorChanges.min_soil_moisture.value} % (시간: ${sensorChanges.min_soil_moisture.time})
-최고 CO₂ 농도: ${sensorChanges.max_co2.value} ppm (시간: ${sensorChanges.max_co2.time})
-최저 CO₂ 농도: ${sensorChanges.min_co2.value} ppm (시간: ${sensorChanges.min_co2.time})
-
-4. 제어 장치 작동 기록
-LED: ${deviceLogs.led.start ? `켜짐(시작: ${deviceLogs.led.start}, 종료: ${deviceLogs.led.end})` : '꺼짐'}
-환기팬: 작동 횟수 ${deviceLogs.fan.count}회, 총 작동 시간 ${deviceLogs.fan.total_time}분
-급수장치: 급수 횟수 ${deviceLogs.water.count}회, 총 급수량 ${deviceLogs.water.total_amount} L
-히터: 작동 횟수 ${deviceLogs.heater.count}회, 총 작동 시간 ${deviceLogs.heater.total_time}분
-쿨러: 작동 횟수 ${deviceLogs.cooler.count}회, 총 작동 시간 ${deviceLogs.cooler.total_time}분
-
-5. AI 분석 및 요약
-${aiAnalysis}
-    `;
-
-    res.json({ reportText, reportId: Number(result.insertId) });
-  } catch (error) {
-    console.error('리포트 생성 오류:', error);
-    if (error.code === 'ER_DUP_ENTRY') {
-      return res.status(409).json({ error: '해당 날짜의 리포트가 이미 존재합니다.' });
-    }
-    res.status(500).json({ error: `리포트 생성 실패: ${error.message}` });
-  } finally {
-    if (conn) conn.release();
-  }
-});
-
-// 리포트 센서 데이터 조회
-async function fetchHistoryDataFromDB(farmId, date) {
-  try {
-    console.log(`센서 데이터 조회 중 - 농장 ID: ${farmId}, 날짜: ${date}`);
-    
-    // /history-data API 호출
-    const response = await fetch(`${API_BASE_URL}/history-data?farm_id=${farmId}&date=${date}`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || '센서 데이터를 불러오는데 실패했습니다');
-    }
-
-    const historyData = await response.json();
-
-    if (!historyData || historyData.length === 0) {
-      throw new Error('해당 농장과 날짜에 대한 센서 데이터가 없습니다');
-    }
-
-    // /history-data의 응답을 /generate-report에 맞게 가공
-    const result = {
-      timeLabels: historyData.map(row => new Date(row.time_interval).toISOString().slice(11, 16)),
-      temperatureData: historyData.map(row => Number(row.avg_temperature) || 0),
-      humidityData: historyData.map(row => Number(row.avg_humidity) || 0),
-      soilData: historyData.map(row => Number(row.avg_soil_moisture) || 0),
-      co2Data: historyData.map(row => Number(row.avg_co2) || 0),
-    };
-
-    console.log('가공된 센서 데이터:', result);
-    return result;
-  } catch (error) {
-    console.error(`센서 데이터 조회 실패 - 농장 ID: ${farmId}, 날짜: ${date}`, error);
-    throw new Error(`센서 데이터 불러오기 실패: ${error.message}`);
-  }
-}
-
-// [리포트 생성] 장치 상태 조회 
-async function fetchDeviceLogs(farmId, date) {
-  let conn;
-  try {
-    conn = await db.getConnection();
-    const query = `
-      SELECT device_type, operation_count, total_duration
-      FROM device_logs
-      WHERE farm_id = ? AND date = ?
-    `;
-    const result = await conn.query(query, [farmId, date]);
-    
-    // 기본 장치 로그 객체
-    const deviceLogs = {
-      led: { count: 0, total_time: 0 },
-      fan: { count: 0, total_time: 0 },
-      water: { count: 0, total_amount: 0 },
-      heater: { count: 0, total_time: 0 },
-      cooler: { count: 0, total_time: 0 },
-    };
-
-    // 조회된 데이터를 기반으로 deviceLogs 채우기
-    result.forEach(row => {
-      if (row.device_type === 'led') {
-        deviceLogs.led.count = row.operation_count;
-        deviceLogs.led.total_time = row.total_duration || 0;
-        // LED의 경우 시작/종료 시간은 임의로 설정 (필요 시 별도 로직 추가)
-        deviceLogs.led.start = row.operation_count > 0 ? '08:00' : null;
-        deviceLogs.led.end = row.operation_count > 0 ? '18:00' : null;
-      } else if (row.device_type === 'fan') {
-        deviceLogs.fan.count = row.operation_count;
-        deviceLogs.fan.total_time = row.total_duration || 0;
-      } else if (row.device_type === 'water') {
-        deviceLogs.water.count = row.operation_count;
-        deviceLogs.water.total_amount = row.operation_count * 3.33; // 예: 1회당 3.33L로 가정
-      } else if (row.device_type === 'heater') {
-        deviceLogs.heater.count = row.operation_count;
-        deviceLogs.heater.total_time = row.total_duration || 0;
-      } else if (row.device_type === 'cooler') {
-        deviceLogs.cooler.count = row.operation_count;
-        deviceLogs.cooler.total_time = row.total_duration || 0;
-      }
-    });
-
-    console.log(`[fetchDeviceLogs] farmId: ${farmId}, date: ${date}`, deviceLogs);
-    return deviceLogs;
-  } catch (error) {
-    console.error(`[fetchDeviceLogs] 오류: farmId=${farmId}, date=${date}`, error);
-    throw new Error('장치 로그 조회 실패');
-  } finally {
-    if (conn) conn.release();
-  }
-}
-
-// [리포트 생성] 평균 계산
-function average(arr) {
-  return arr.reduce((sum, val) => sum + val, 0) / arr.length;
-}
-
-// [리포트 생성] 소수점 둘째 자리 반올림
-function roundToTwo(num) {
-  return Math.round(num * 100) / 100;
-}
-
-// 리포트 불러오기기
-app.get('/get-reports/:farmId', async (req, res) => {
-  let conn;
-  try {
-    const { farmId } = req.params;
-    conn = await db.getConnection();
-    const selectQuery = `
-      SELECT id, farm_id, date, sensor_summary, sensor_changes, device_logs, ai_analysis, created_at
-      FROM reports
-      WHERE farm_id = ?
-      ORDER BY created_at DESC
-      LIMIT 10
-    `;
-    const reports = await conn.query(selectQuery, [farmId]);
-
-    const formattedReports = reports.map(report => {
-      // JSON 필드가 문자열인지 객체인지 확인
-      const sensorSummary = typeof report.sensor_summary === 'string' ? JSON.parse(report.sensor_summary) : report.sensor_summary;
-      const sensorChanges = typeof report.sensor_changes === 'string' ? JSON.parse(report.sensor_changes) : report.sensor_changes;
-      const deviceLogs = typeof report.device_logs === 'string' ? JSON.parse(report.device_logs) : report.device_logs;
-
-      return {
-        id: Number(report.id), // BigInt를 Number로 변환
-        farmId: Number(report.farm_id),
-        date: report.date.toISOString().split('T')[0],
-        sensorSummary,
-        sensorChanges,
-        deviceLogs,
-        aiAnalysis: report.ai_analysis,
-        createdAt: report.created_at
-      };
-    });
-
-    res.json(formattedReports);
-  } catch (error) {
-    console.error('리포트 조회 오류:', error);
-    res.status(500).json({ error: '리포트 조회 실패' });
-  } finally {
-    if (conn) conn.release();
-  }
-});
-
 // 아이디 중복 확인 API (Promise 기반으로 수정)
 app.get('/check-userid', async (req, res) => {
   const { user_id } = req.query;
@@ -441,12 +76,16 @@ app.get('/check-userid', async (req, res) => {
 // 회원가입 API
 app.post('/signup', async (req, res) => {
   const { user_id, password, username } = req.body;
-  const query = 'INSERT INTO users (user_id, password, username) VALUES (?, ?, ?)';
   let conn;
 
   try {
     conn = await db.getConnection();
-    await conn.query(query, [user_id, password, username]);
+
+    // 비밀번호 해싱
+    const hashedPassword = await bcrypt.hash(password, 10); // 10은 salt rounds
+
+    const query = 'INSERT INTO users (user_id, password, username) VALUES (?, ?, ?)';
+    await conn.query(query, [user_id, hashedPassword, username]);
 
     console.log(`[POST /signup] 회원가입 성공 - user_id: ${user_id}`);
     return res.status(201).json({ message: '회원가입 성공' });
@@ -469,26 +108,56 @@ app.post('/login', async (req, res) => {
     const results = await conn.query(query, [user_id]);
 
     if (results.length === 0) {
-      return res.status(401).json({ message:'존재하지 않는 이메일입니다.' });
-    } else {
-      const user = results[0];
-      // 비밀번호 비교
-      if (user.password === password) {
-        console.log(`[POST /login] 로그인 성공: ${user_id}`);
-        return res.json({ message: '로그인 성공'});
-      } else {
-        // 비밀번호가 틀린 경우
-        console.log(`[POST /login] 로그인 실패: ${user_id} - 잘못된 비밀번호`);
-        return res.status(401).json({ message:'잘못된 비밀번호입니다.' });
-      } 
+      return res.status(401).json({ message: '존재하지 않는 이메일입니다.' });
     }
+
+    const user = results[0];
+
+    // 비밀번호 비교
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      console.log(`[POST /login] 로그인 실패: ${user_id} - 잘못된 비밀번호`);
+      return res.status(401).json({ message: '잘못된 비밀번호입니다.' });
+    }
+
+    // JWT 토큰 생성
+    const token = jwt.sign(
+      { user_id: user.user_id, username: user.username },
+      JWT_SECRET,
+      { expiresIn: '1h' } // 토큰 만료 시간 (1시간)
+    );
+
+    console.log(`[POST /login] 로그인 성공: ${user_id}`);
+    return res.json({
+      message: '로그인 성공',
+      token, // 클라이언트에 토큰 반환
+      user_id: user.user_id,
+    });
   } catch (err) {
-    console.error('[POST /login] DB 오류: ' + err.stack);
+    console.error('[POST /login] DB 오류:', err.stack);
     return res.status(500).json({ message: 'DB 오류' });
   } finally {
     if (conn) conn.release();
   }
 });
+
+// JWT 검증 미들웨어
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1]; // Bearer <token>
+
+  if (!token) {
+    return res.status(401).json({ message: '인증 토큰이 필요합니다.' });
+  }
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).json({ message: '유효하지 않은 토큰입니다.' });
+    }
+    req.user = user; // 요청 객체에 사용자 정보 추가
+    next();
+  });
+};
 
 // 사용자 이름 불러오기
 app.get('/getName', async (req,res) => {
@@ -515,8 +184,8 @@ app.get('/getName', async (req,res) => {
 });
 
 // 농장 목록 불러오기
-app.get('/getFarms', async(req, res) => {
-  const user_id = req.query.user_id;
+app.get('/getFarms', authenticateToken, async(req, res) => {
+  const user_id = req.user.user_id; // JWT에서 추출한 user_id
   const query = `SELECT farm_id, farm_name, farm_location, farm_type, farm_active FROM farms WHERE user_id = ?`;
   let conn;
 
@@ -1181,108 +850,374 @@ app.post('/updateFarmCondition', async (req, res) => {
   }
 });
 
+// reports 테이블 생성 (최초 실행 시)
+async function initializeDatabase() {
+  let conn;
+  try {
+    conn = await db.getConnection();
+    const createTableQuery = `
+      CREATE TABLE IF NOT EXISTS reports (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        farm_id INT NOT NULL,
+        date DATE NOT NULL,
+        sensor_summary JSON NOT NULL,
+        sensor_changes JSON NOT NULL,
+        device_logs JSON NOT NULL,
+        ai_analysis TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(farm_id, date),
+        FOREIGN KEY (farm_id) REFERENCES farms(farm_id) ON DELETE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `;
+    await conn.query(createTableQuery);
+    console.log('Reports 테이블 생성 성공');
+  } catch (err) {
+    console.error('Reports 테이블 생성 실패:', err);
+  } finally {
+    if (conn) conn.release();
+  }
+}
+
+// 서버 시작 시 테이블 초기화
+initializeDatabase();
+
+// 리포트 생성 엔드포인트
+app.post('/generate-report', async (req, res) => {
+  let conn;
+  try {
+    console.log('리포트 생성 요청 수신:', req.body);
+    const { farmId, date } = req.body;
+
+    // 입력 데이터 검증
+    if (!farmId || !date) {
+      return res.status(400).json({ error: 'farmId와 date는 필수입니다' });
+    }
+
+    // 날짜 형식 검증
+    const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+    if (!datePattern.test(date)) {
+      return res.status(400).json({ error: '유효한 날짜 형식이 아닙니다 (YYYY-MM-DD)' });
+    }
+
+    // DB 연결
+    console.log('데이터베이스 연결 시도');
+    conn = await db.getConnection();
+    console.log('데이터베이스 연결:', conn ? '성공' : '실패');
+
+    // 중복 리포트 확인
+    console.log('중복 리포트 확인');
+    const queryResult = await conn.query(
+      'SELECT id FROM reports WHERE farm_id = ? AND date = ?',
+      [farmId, date]
+    );
+    console.log('중복 리포트 조회 결과:', queryResult);
+
+    // MariaDB 버전에 따라 결과 처리
+    let existingReport = Array.isArray(queryResult) ? queryResult : queryResult?.rows || [];
+    console.log('기존 리포트:', existingReport);
+
+    if (existingReport.length > 0) {
+      return res.status(409).json({ error: '해당 날짜의 리포트가 이미 존재합니다.' });
+    }
+
+    // 센서 데이터 조회
+    console.log('센서 데이터 조회');
+    let historyData;
+    try {
+      historyData = await fetchHistoryDataFromDB(farmId, date);
+    } catch (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    if (!historyData || !historyData.timeLabels || !historyData.timeLabels.length) {
+      return res.status(400).json({ error: '해당 날짜의 센서 데이터가 부족합니다' });
+    }
+
+    // 나머지 코드 (sensorSummary, sensorChanges, deviceLogs, OpenAI, DB 저장 등)
+    const sensorSummary = {
+      avg_temperature: roundToTwo(average(historyData.temperatureData)),
+      avg_humidity: roundToTwo(average(historyData.humidityData)),
+      avg_soil_moisture: roundToTwo(average(historyData.soilData)),
+      avg_co2: roundToTwo(average(historyData.co2Data)),
+    };
+
+    const sensorChanges = {
+      max_temperature: {
+        value: Math.max(...historyData.temperatureData),
+        time: historyData.timeLabels[historyData.temperatureData.indexOf(Math.max(...historyData.temperatureData))],
+      },
+      min_temperature: {
+        value: Math.min(...historyData.temperatureData),
+        time: historyData.timeLabels[historyData.temperatureData.indexOf(Math.min(...historyData.temperatureData))],
+      },
+      max_humidity: {
+        value: Math.max(...historyData.humidityData),
+        time: historyData.timeLabels[historyData.humidityData.indexOf(Math.max(...historyData.humidityData))],
+      },
+      min_humidity: {
+        value: Math.min(...historyData.humidityData),
+        time: historyData.timeLabels[historyData.humidityData.indexOf(Math.min(...historyData.humidityData))],
+      },
+      max_soil_moisture: {
+        value: Math.max(...historyData.soilData),
+        time: historyData.timeLabels[historyData.soilData.indexOf(Math.max(...historyData.soilData))],
+      },
+      min_soil_moisture: {
+        value: Math.min(...historyData.soilData),
+        time: historyData.timeLabels[historyData.soilData.indexOf(Math.min(...historyData.soilData))],
+      },
+      max_co2: {
+        value: Math.max(...historyData.co2Data),
+        time: historyData.timeLabels[historyData.co2Data.indexOf(Math.max(...historyData.co2Data))],
+      },
+      min_co2: {
+        value: Math.min(...historyData.co2Data),
+        time: historyData.timeLabels[historyData.co2Data.indexOf(Math.min(...historyData.co2Data))],
+      },
+    };
+
+    // 제어 장치 로그 조회
+    console.log('제어 장치 조회');
+    const deviceLogs = await fetchDeviceLogs(farmId, date);
+
+    // AI 분석 생성
+    console.log('AI 분석 생성');
+    const prompt = `
+      스마트팜 일일 리포트를 분석하고 요약해주세요. 다음 데이터를 기반으로:
+
+      1. 센서 측정 요약:
+      ${JSON.stringify(sensorSummary, null, 2)}
+
+      2. 센서 수치 변화:
+      ${JSON.stringify(sensorChanges, null, 2)}
+
+      3. 제어 장치 작동 기록:
+      ${JSON.stringify(deviceLogs, null, 2)}
+
+      출력 형식:
+      - 오늘 온도는 [안정적/변동이 심함]했습니다.
+      - 습도는 [적정 수준/낮은 경향/높은 경향]을 보였습니다.
+      - 토양 수분은 [충분/부족/과다] 상태를 유지했습니다.
+      - CO₂ 농도는 [안정적/변동 있음]였습니다.
+      - 주요 문제점: (문제점 설명)
+      - 개선 제안: (개선 제안)
+    `;
+
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: [
+        { role: 'system', content: '당신은 스마트팜 데이터 분석 전문가입니다.' },
+        { role: 'user', content: prompt },
+      ],
+      max_tokens: 600,
+    });
+
+    const aiAnalysis = response.choices[0].message.content.trim();
+    
+    // 리포트 저장
+    console.log('리포트 데이터베이스 저장');
+    const insertQuery = `
+      INSERT INTO reports (farm_id, date, sensor_summary, sensor_changes, device_logs, ai_analysis)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `;
+    const result = await conn.query(insertQuery, [
+      farmId,
+      date,
+      JSON.stringify(sensorSummary),
+      JSON.stringify(sensorChanges),
+      JSON.stringify(deviceLogs),
+      aiAnalysis,
+    ]);
+
+    const reportText = `
+📋 스마트팜 일일 리포트
+1. 날짜
+${date}
+
+2. 센서 측정 요약
+평균 온도: ${sensorSummary.avg_temperature} ℃
+평균 습도: ${sensorSummary.avg_humidity} %
+평균 토양 수분: ${sensorSummary.avg_soil_moisture} %
+평균 CO₂ 농도: ${sensorSummary.avg_co2} ppm
+
+3. 센서 수치 변화
+최고 온도: ${sensorChanges.max_temperature.value} ℃ (시간: ${sensorChanges.max_temperature.time})
+최저 온도: ${sensorChanges.min_temperature.value} ℃ (시간: ${sensorChanges.min_temperature.time})
+최고 습도: ${sensorChanges.max_humidity.value} % (시간: ${sensorChanges.max_humidity.time})
+최저 습도: ${sensorChanges.min_humidity.value} % (시간: ${sensorChanges.min_humidity.time})
+최고 토양 수분: ${sensorChanges.max_soil_moisture.value} % (시간: ${sensorChanges.max_soil_moisture.time})
+최저 토양 수분: ${sensorChanges.min_soil_moisture.value} % (시간: ${sensorChanges.min_soil_moisture.time})
+최고 CO₂ 농도: ${sensorChanges.max_co2.value} ppm (시간: ${sensorChanges.max_co2.time})
+최저 CO₂ 농도: ${sensorChanges.min_co2.value} ppm (시간: ${sensorChanges.min_co2.time})
+
+4. 제어 장치 작동 기록
+LED: ${deviceLogs.led.start ? `켜짐(시작: ${deviceLogs.led.start}, 종료: ${deviceLogs.led.end})` : '꺼짐'}
+환기팬: 작동 횟수 ${deviceLogs.fan.count}회, 총 작동 시간 ${deviceLogs.fan.total_time}분
+급수장치: 급수 횟수 ${deviceLogs.water.count}회, 총 급수량 ${deviceLogs.water.total_amount} L
+히터: 작동 횟수 ${deviceLogs.heater.count}회, 총 작동 시간 ${deviceLogs.heater.total_time}분
+쿨러: 작동 횟수 ${deviceLogs.cooler.count}회, 총 작동 시간 ${deviceLogs.cooler.total_time}분
+
+5. AI 분석 및 요약
+${aiAnalysis}
+    `;
+
+    res.json({ reportText, reportId: Number(result.insertId) });
+  } catch (error) {
+    console.error('리포트 생성 오류:', error);
+    if (error.code === 'ER_DUP_ENTRY') {
+      return res.status(409).json({ error: '해당 날짜의 리포트가 이미 존재합니다.' });
+    }
+    res.status(500).json({ error: `리포트 생성 실패: ${error.message}` });
+  } finally {
+    if (conn) conn.release();
+  }
+});
+
+// 리포트 센서 데이터 조회
+async function fetchHistoryDataFromDB(farmId, date) {
+  try {
+    console.log(`센서 데이터 조회 중 - 농장 ID: ${farmId}, 날짜: ${date}`);
+    
+    // /history-data API 호출
+    const response = await fetch(`${API_BASE_URL}/history-data?farm_id=${farmId}&date=${date}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || '센서 데이터를 불러오는데 실패했습니다');
+    }
+
+    const historyData = await response.json();
+
+    if (!historyData || historyData.length === 0) {
+      throw new Error('해당 농장과 날짜에 대한 센서 데이터가 없습니다');
+    }
+
+    // /history-data의 응답을 /generate-report에 맞게 가공
+    const result = {
+      timeLabels: historyData.map(row => new Date(row.time_interval).toISOString().slice(11, 16)),
+      temperatureData: historyData.map(row => Number(row.avg_temperature) || 0),
+      humidityData: historyData.map(row => Number(row.avg_humidity) || 0),
+      soilData: historyData.map(row => Number(row.avg_soil_moisture) || 0),
+      co2Data: historyData.map(row => Number(row.avg_co2) || 0),
+    };
+
+    console.log('가공된 센서 데이터:', result);
+    return result;
+  } catch (error) {
+    console.error(`센서 데이터 조회 실패 - 농장 ID: ${farmId}, 날짜: ${date}`, error);
+    throw new Error(`센서 데이터 불러오기 실패: ${error.message}`);
+  }
+}
+
+// [리포트 생성] 장치 상태 조회 
+async function fetchDeviceLogs(farmId, date) {
+  let conn;
+  try {
+    conn = await db.getConnection();
+    const query = `
+      SELECT device_type, operation_count, total_duration
+      FROM device_logs
+      WHERE farm_id = ? AND date = ?
+    `;
+    const result = await conn.query(query, [farmId, date]);
+    
+    // 기본 장치 로그 객체
+    const deviceLogs = {
+      led: { count: 0, total_time: 0 },
+      fan: { count: 0, total_time: 0 },
+      water: { count: 0, total_amount: 0 },
+      heater: { count: 0, total_time: 0 },
+      cooler: { count: 0, total_time: 0 },
+    };
+
+    // 조회된 데이터를 기반으로 deviceLogs 채우기
+    result.forEach(row => {
+      if (row.device_type === 'led') {
+        deviceLogs.led.count = row.operation_count;
+        deviceLogs.led.total_time = row.total_duration || 0;
+        // LED의 경우 시작/종료 시간은 임의로 설정 (필요 시 별도 로직 추가)
+        deviceLogs.led.start = row.operation_count > 0 ? '08:00' : null;
+        deviceLogs.led.end = row.operation_count > 0 ? '18:00' : null;
+      } else if (row.device_type === 'fan') {
+        deviceLogs.fan.count = row.operation_count;
+        deviceLogs.fan.total_time = row.total_duration || 0;
+      } else if (row.device_type === 'water') {
+        deviceLogs.water.count = row.operation_count;
+        deviceLogs.water.total_amount = row.operation_count * 3.33; // 예: 1회당 3.33L로 가정
+      } else if (row.device_type === 'heater') {
+        deviceLogs.heater.count = row.operation_count;
+        deviceLogs.heater.total_time = row.total_duration || 0;
+      } else if (row.device_type === 'cooler') {
+        deviceLogs.cooler.count = row.operation_count;
+        deviceLogs.cooler.total_time = row.total_duration || 0;
+      }
+    });
+
+    console.log(`[fetchDeviceLogs] farmId: ${farmId}, date: ${date}`, deviceLogs);
+    return deviceLogs;
+  } catch (error) {
+    console.error(`[fetchDeviceLogs] 오류: farmId=${farmId}, date=${date}`, error);
+    throw new Error('장치 로그 조회 실패');
+  } finally {
+    if (conn) conn.release();
+  }
+}
+
+// [리포트 생성] 평균 계산
+function average(arr) {
+  return arr.reduce((sum, val) => sum + val, 0) / arr.length;
+}
+
+// [리포트 생성] 소수점 둘째 자리 반올림
+function roundToTwo(num) {
+  return Math.round(num * 100) / 100;
+}
+
+// 리포트 불러오기기
+app.get('/get-reports/:farmId', async (req, res) => {
+  let conn;
+  try {
+    const { farmId } = req.params;
+    conn = await db.getConnection();
+    const selectQuery = `
+      SELECT id, farm_id, date, sensor_summary, sensor_changes, device_logs, ai_analysis, created_at
+      FROM reports
+      WHERE farm_id = ?
+      ORDER BY created_at DESC
+      LIMIT 10
+    `;
+    const reports = await conn.query(selectQuery, [farmId]);
+
+    const formattedReports = reports.map(report => {
+      // JSON 필드가 문자열인지 객체인지 확인
+      const sensorSummary = typeof report.sensor_summary === 'string' ? JSON.parse(report.sensor_summary) : report.sensor_summary;
+      const sensorChanges = typeof report.sensor_changes === 'string' ? JSON.parse(report.sensor_changes) : report.sensor_changes;
+      const deviceLogs = typeof report.device_logs === 'string' ? JSON.parse(report.device_logs) : report.device_logs;
+
+      return {
+        id: Number(report.id), // BigInt를 Number로 변환
+        farmId: Number(report.farm_id),
+        date: report.date.toISOString().split('T')[0],
+        sensorSummary,
+        sensorChanges,
+        deviceLogs,
+        aiAnalysis: report.ai_analysis,
+        createdAt: report.created_at
+      };
+    });
+
+    res.json(formattedReports);
+  } catch (error) {
+    console.error('리포트 조회 오류:', error);
+    res.status(500).json({ error: '리포트 조회 실패' });
+  } finally {
+    if (conn) conn.release();
+  }
+});
+
 app.listen(PORT, '0.0.0.0', () => {
   console.log('서버가 실행 중입니다.');
 });
-
-// 닉네임 중복 확인 API
-// app.get('/check-username', async (req, res) => {
-//   const { username } = req.query;
-//   const query = 'SELECT * FROM users WHERE username = ?';
-//   let conn;
-
-//   try {
-//     conn = await db.getConnection();
-//     const results = await conn.query(query, [username]);
-
-//     if (results.length > 0) {
-//       console.log(`[GET /check-username] 이미 사용 중인 닉네임: ${username}`);
-//       return res.status(400).json({ message: '이미 사용 중인 닉네임입니다.' });
-//     }
-
-//     console.log(`[GET /check-username] 사용 가능한 닉네임: ${username}`);
-//     res.status(200).json({ message: '사용 가능한 닉네임입니다.' });
-//   } catch (err) {
-//     console.error('[GET /check-username] 쿼리 실행 실패:', err);
-//     return res.status(500).json({ message: '서버 오류' });
-//   } finally {
-//     if (conn) conn.release();
-//   }
-// });
-
-// 날짜별 센서 데이터
-// app.get('/sensors/data', (req, res) => {
-//   const { date, userId, farmId } = req.query;
-
-//   // 필수 파라미터 검증
-//   if (!date || !userId || !farmId) {
-//       return res.status(400).json({ error: "date, userId, farmId가 필요합니다." });
-//   }
-
-//   const query = `
-//       SELECT 
-//           temperature, 
-//           humidity, 
-//           soil_moisture, 
-//           co2, 
-//           CONVERT_TZ(created_at, '+00:00', '+09:00') AS created_at
-//       FROM sensors 
-//       WHERE user_id = ? 
-//       AND farm_id = ? 
-//       AND DATE(created_at) = ?
-//       ORDER BY created_at ASC
-//   `;
-
-//   db.query(query, [userId, farmId, date], (err, results) => {
-//       if (err) {
-//           console.error('[GET /sensors/data] DB 오류:', err);
-//           return res.status(500).json({ error: 'DB 오류 발생' });
-//       }
-
-//       console.log(`[GET /sensors/data] ${date} 데이터 조회 성공: ${results.length}개 반환`, results);
-
-//       // 데이터를 그대로 응답
-//       res.json(results);
-//   });
-// });
-
-// 통계 데이터 조회 API
-// app.get('/sensors/average', (req, res) => {
-//   const { type, userId, farmId } = req.query;
-
-//   if (!userId || !farmId) {
-//     return res.status(400).send('userId와 farmId가 필요합니다.');
-//   }
-
-//   let groupBy = '';
-//   if (type === 'day') {
-//     groupBy = 'DATE(created_at)';
-//   } else if (type === 'week') {
-//     groupBy = 'YEARWEEK(created_at)';
-//   } else if (type === 'month') {
-//     groupBy = 'DATE_FORMAT(created_at, "%Y-%m")';
-//   } else {
-//     return res.status(400).send('유효하지 않은 type 파라미터입니다.');
-//   }
-
-//   const query = `
-//     SELECT 
-//       ${groupBy} AS period, 
-//       AVG(temperature) AS avg_temperature, 
-//       AVG(humidity) AS avg_humidity, 
-//       AVG(soil_moisture) AS avg_soil_moisture,
-//       AVG(co2) AS avg_co2
-//     FROM sensors
-//     WHERE user_id = ? AND farm_id = ?
-//     GROUP BY period
-//     ORDER BY period ASC`;
-
-//   db.query(query, [userId, farmId], (err, results) => {
-//     if (err) {
-//       console.error('[GET /sensors/average] DB 오류:', err);
-//       return res.status(500).send('DB 오류 발생');
-//     }
-//     console.log('[GET /sensors/average] 통계 데이터 조회 성공', results);
-//     res.json(results);
-//   });
-// });
