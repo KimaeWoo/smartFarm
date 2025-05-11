@@ -104,38 +104,42 @@ app.post('/login', async (req, res) => {
   let conn;
 
   try {
+    console.log('로그인 요청 수신:', { user_id });
     conn = await db.getConnection();
     const results = await conn.query(query, [user_id]);
 
     if (results.length === 0) {
+      console.log('사용자 없음:', user_id);
       return res.status(401).json({ message: '존재하지 않는 이메일입니다.' });
     }
 
     const user = results[0];
-
-    // 비밀번호 비교
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      console.log(`[POST /login] 로그인 실패: ${user_id} - 잘못된 비밀번호`);
+      console.log('비밀번호 불일치:', user_id);
       return res.status(401).json({ message: '잘못된 비밀번호입니다.' });
     }
 
-    // JWT 토큰 생성
     const token = jwt.sign(
       { user_id: user.user_id, username: user.username },
       JWT_SECRET,
-      { expiresIn: '1h' } // 토큰 만료 시간 (1시간)
+      { expiresIn: '1h' }
     );
+    console.log('JWT 생성 성공:', token);
 
-    console.log(`[POST /login] 로그인 성공: ${user_id}`);
-    return res.json({
+    const responseData = {
       message: '로그인 성공',
-      token, // 클라이언트에 토큰 반환
+      token,
       user_id: user.user_id,
-    });
+    };
+    console.log('응답 데이터:', responseData);
+
+    res.setHeader('Content-Type', 'application/json');
+    res.status(200).json(responseData);
+    console.log(`[POST /login] 로그인 성공: ${user_id}, 응답 전송 완료`);
   } catch (err) {
-    console.error('[POST /login] DB 오류:', err.stack);
-    return res.status(500).json({ message: 'DB 오류' });
+    console.error('[POST /login] 오류:', err.stack);
+    return res.status(500).json({ message: '서버 오류', error: err.message });
   } finally {
     if (conn) conn.release();
   }
