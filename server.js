@@ -205,7 +205,8 @@ app.get('/getFarms', authenticateToken, async(req, res) => {
 
 // 농장 추가하기
 app.post('/addFarm', authenticateToken, async (req, res) => {
-  const { user_id, farm_name, farm_location, farm_type } = req.body;
+  const user_id = req.user.user_id; // JWT에서 추출
+  const { farm_name, farm_location, farm_type } = req.body; // body에서 user_id 제거
   const insertFarmQuery = `
     INSERT INTO farms (user_id, farm_name, farm_location, farm_type)
     VALUES (?, ?, ?, ?)
@@ -232,7 +233,7 @@ app.post('/addFarm', authenticateToken, async (req, res) => {
     // 1. 농장 삽입
     const farmResult = await conn.query(insertFarmQuery, [user_id, farm_name, farm_location, farm_type]);
     const farm_id = farmResult.insertId;
-    console.log('[POST /addFarm] 농장 추가 성공');
+    console.log(`[POST /addFarm] 농장 추가 성공: user_id=${user_id}, farm_id=${farm_id}`);
 
     // 2. devices 초기화
     await conn.query(insertDeviceQuery, [farm_id]);
@@ -250,19 +251,19 @@ app.post('/addFarm', authenticateToken, async (req, res) => {
     console.log('[POST /addFarm] farm_conditions 복사 성공');
 
     await conn.commit();
-    return res.json({ message: '농장 추가 성공' });
+    return res.json({ message: '농장 추가 성공', farm_id });
   } catch (err) {
     if (conn) await conn.rollback();
-    console.error('[POST /addFarm] DB 오류:', err);
-    return res.status(500).json({ message: 'DB 오류' });
+    console.error('[POST /addFarm] DB 오류:', err.stack);
+    return res.status(500).json({ message: 'DB 오류', error: err.message });
   } finally {
     if (conn) conn.release();
   }
 });
 
 // 농장 삭제
-app.post('/delFarm', async (req, res) => {
-  const farmIds = req.body.farm_ids; // farm_ids 배열이 전달됨
+app.post('/delFarm', authenticateToken, async (req, res) => {
+  const farmIds = req.body.farm_ids; // 요청 body에서 farm_ids 배열 받기
   const deleteDevicesQuery = `DELETE FROM devices WHERE farm_id IN (?)`;
   const deleteSensorsQuery = `DELETE FROM sensors WHERE farm_id IN (?)`;
   const deleteFarmsQuery = `DELETE FROM farms WHERE farm_id IN (?)`;
