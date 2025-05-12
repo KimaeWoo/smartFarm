@@ -1167,7 +1167,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const icon = getIconForType(alarm.type);
 
         const contentTd = document.createElement("td");
-        contentTd.innerHTML = `${icon} ${alarm.content}`; // textContent 대신 innerHTML 사용
+        contentTd.innerHTML = `${icon} ${alarm.content}`;
 
         const createdAtTd = document.createElement("td");
         createdAtTd.textContent = formatDateTime(alarm.created_at);
@@ -1191,11 +1191,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   function getIconForType(type) {
     switch (type) {
       case "위험":
-        return '<i class="fas fa-exclamation-circle"></i>';
+        return '<i class="fas fa-exclamation-circle icon-circle icon-danger"></i>';
       case "경고":
-        return '<i class="fas fa-exclamation-triangle"></i>';
+        return '<i class="fas fa-exclamation-triangle icon-circle icon-warning"></i>';
       case "완료":
-        return '<i class="fas fa-check-circle"></i>';
+        return '<i class="fas fa-check-circle icon-circle icon-success"></i>';
       default:
         return '';
     }
