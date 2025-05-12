@@ -401,6 +401,51 @@ document.addEventListener("DOMContentLoaded", async () => {
     return true
   }
 
+  // 챗봇 기능
+  const chatInput = document.getElementById("chat-input-field");
+  const sendButton = document.getElementById("send-button");
+  const chatMessages = document.querySelector(".chat-messages");
+
+  function sendMessage() {
+    if (!chatInput || !chatMessages) return;
+    
+    const message = chatInput.value.trim();
+    if (message === "") return;
+    
+    // 사용자 메시지 추가
+    const userMessageDiv = document.createElement("div");
+    userMessageDiv.className = "message user";
+    userMessageDiv.innerHTML = `<div class="message-content">${message}</div>`;
+    chatMessages.appendChild(userMessageDiv);
+    
+    // 입력 필드 초기화
+    chatInput.value = "";
+    
+    // 스크롤을 맨 아래로 이동
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+    // 봇 응답 (실제로는 서버에서 응답을 받아야 함)
+    setTimeout(() => {
+      const botMessageDiv = document.createElement("div");
+      botMessageDiv.className = "message bot";
+      botMessageDiv.innerHTML = `<div class="message-content">죄송합니다. 현재 챗봇 서비스를 준비 중입니다.</div>`;
+      chatMessages.appendChild(botMessageDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }, 1000);
+  }
+
+  if (sendButton) {
+    sendButton.addEventListener("click", sendMessage);
+  }
+
+  if (chatInput) {
+    chatInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        sendMessage();
+      }
+    });
+  }
+  
   async function fetchSensorData() {
     try {
       // if (!userId) {
