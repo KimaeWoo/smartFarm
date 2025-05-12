@@ -196,6 +196,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       const data = await response.json();
 
       const { harvestDays, startDate } = data;
+      console.log("start-farm 응답:", data);
+      console.log("harvestDays:", harvestDays);
+      console.log("startDate:", startDate);
       if (!harvestDays || !startDate) {
         throw new Error("작물 정보 누락");
       }
@@ -251,42 +254,41 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function updateGrowthStatus(growthRate, harvestDays, startDate) {
-    growthRate = Math.min(growthRate, 100)
-    const growthRateEl = document.getElementById("growth-rate")
+    growthRate = Math.max(0, Math.min(growthRate, 100)); // 0~100으로 보정
+
+    const growthRateEl = document.getElementById("growth-rate");
     if (growthRateEl) {
-      growthRateEl.textContent = `${growthRate}%`
+      growthRateEl.textContent = `${Math.round(growthRate)}%`;
     }
-    const growthCircle = document.getElementById("growth-circle");
+
     if (growthCircle) {
-      const degree = (growthRate / 100) * 360;
-      growthCircle.style.background = `conic-gradient(#10b981 ${degree}deg, #e5e7eb ${degree}deg 360deg)`;
+      growthCircle.style.background = `conic-gradient(#10b981 ${growthRate}%, #e5e7eb ${growthRate}%)`;
     }
 
-    const formattedStartDate = formatDateYMD(new Date(startDate))
-    const startDateEl = document.getElementById("start-date")
+    const formattedStartDate = formatDateYMD(new Date(startDate));
+    const startDateEl = document.getElementById("start-date");
     if (startDateEl) {
-      startDateEl.textContent = `시작일: ${formattedStartDate}`
+      startDateEl.textContent = `시작일: ${formattedStartDate}`;
     }
 
-    const today = new Date()
-    const startDateObj = new Date(startDate)
-    const harvestDate = new Date(startDateObj)
-    harvestDate.setDate(harvestDate.getDate() + harvestDays)
-    const timeDiff = harvestDate - today
-    const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24))
+    const today = new Date();
+    const harvestDate = new Date(startDate);
+    harvestDate.setDate(harvestDate.getDate() + harvestDays);
+    const timeDiff = harvestDate - today;
+    const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
 
-    const dDayEl = document.getElementById("d-day")
+    const dDayEl = document.getElementById("d-day");
     if (dDayEl) {
       if (daysLeft > 0) {
-        dDayEl.textContent = `D-Day: ${daysLeft}일 남음`
+        dDayEl.textContent = `D-Day: ${daysLeft}일 남음`;
       } else if (daysLeft === 0) {
-        dDayEl.textContent = `D-Day: 오늘 수확 가능`
+        dDayEl.textContent = `D-Day: 오늘 수확 가능`;
       } else {
-        dDayEl.textContent = `D-Day: 수확 완료`
+        dDayEl.textContent = `D-Day: 수확 완료`;
       }
     }
 
-    updateGrowthStageByRate(growthRate)
+    updateGrowthStageByRate(growthRate);
   }
 
   function updateGrowthStageByRate(growthRate) {
