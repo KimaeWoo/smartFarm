@@ -1652,6 +1652,7 @@ footer {
   animation: spin 2s linear infinite;
 }
 
+/* 알림 배너와 리스트에 공통으로 적용되는 아이콘 스타일 */
 .banner-icon {
   display: inline-flex;
   justify-content: center;
@@ -1674,4 +1675,9 @@ footer {
 
 .banner-icon.success {
   background-color: #10b981; /* 초록색 (완료) */
+}
+
+/* 테이블 내 아이콘과 텍스트 정렬 보정 */
+#alarm-list-table td {
+  vertical-align: middle; /* 아이콘과 텍스트를 세로 중앙 정렬 */
 }
