@@ -6,14 +6,13 @@
   <title>스마트팜 대시보드</title>
   <link href="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.css" rel="stylesheet" />
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
-  <link href="details.css" rel="stylesheet" />
+  <link href="details_style.css" rel="stylesheet" />
 </head>
 <body>
   <header>
     <div class="header-container">
       <div class="header-left">
         <h1 class="header-title">스마트팜 대시보드</h1>
-        <!-- 이미지 대신 아이콘 사용 -->
         <button class="mode-toggle" id="mode-toggle" onclick="toggleMode()">
           <i class="fas fa-sun"></i>
         </button>
@@ -87,18 +86,31 @@
         <div class="growth-info">
           <h2>식물 성장도</h2>
           <div class="growth-status">
-            <div class="growth-circle">
-              <div class="growth-circle-inner">
-                <span class="growth-rate" id="growth-rate">45%</span>
-              </div>
+            <div class="growth-image-container">
+              <img src="images/씨앗.png" alt="식물 성장 단계" id="plantImage" class="plant-image">
             </div>
             <div class="growth-details">
-              <p class="growth-text" id="growthText">현재 성장 단계: 성장</p>
+              <div class="growth-circle-container">
+                <div class="growth-circle">
+                  <div class="growth-circle-inner">
+                    <span class="growth-rate" id="growth-rate">45%</span>
+                  </div>
+                </div>
+                <p class="growth-text" id="growthText">현재 성장 단계: 성장</p>
+              </div>
               <div class="stage-indicator">
-                <div class="stage active" data-stage="씨앗"><span class="stage-label">씨앗</span></div>
-                <div class="stage active" data-stage="새싹"><span class="stage-label">새싹</span></div>
-                <div class="stage active" data-stage="성장"><span class="stage-label">성장</span></div>
-                <div class="stage" data-stage="열매"><span class="stage-label">열매</span></div>
+                <div class="stage active" data-stage="씨앗">
+                  <span class="stage-label">씨앗</span>
+                </div>
+                <div class="stage active" data-stage="새싹">
+                  <span class="stage-label">새싹</span>
+                </div>
+                <div class="stage active" data-stage="성장">
+                  <span class="stage-label">성장</span>
+                </div>
+                <div class="stage" data-stage="열매">
+                  <span class="stage-label">열매</span>
+                </div>
               </div>
               <div class="growth-info-details">
                 <div class="info-row">
@@ -427,6 +439,6 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
-  <script src="details.js"></script>
+  <script src="details_script.js"></script>
 </body>
 </html>
