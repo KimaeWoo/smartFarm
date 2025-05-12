@@ -1191,7 +1191,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const icon = getIconForType(alarm.type);
 
         const contentTd = document.createElement("td");
-        contentTd.innerHTML = `${icon} ${alarm.content}`;
+        contentTd.textContent = alarm.content;
 
         const createdAtTd = document.createElement("td");
         createdAtTd.textContent = formatDateTime(alarm.created_at);
@@ -1200,7 +1200,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         deviceTd.textContent = alarm.device || "장치 없음";
 
         const typeTd = document.createElement("td");
-        typeTd.textContent = alarm.type;
+        typeTd.innerHTML = `${icon} ${alarm.type}`;
 
         tr.appendChild(contentTd);
         tr.appendChild(createdAtTd);
