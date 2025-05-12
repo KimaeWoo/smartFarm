@@ -303,7 +303,7 @@ function renderFarmCards(filteredFarms = allFarms) {
       
       sensorFields.forEach(({ key, value }) => {
         if (value !== null && value !== undefined) {
-          const sensorStatus = getSensorStatus(type, value, farm.farm_id);
+          const sensorStatus = getSensorStatus(key, value, farm.farm_id);
           sensorsHtml += `
             <div class="sensor">
               <div class="sensor-icon">
@@ -456,7 +456,7 @@ async function loadFarmData() {
           farmDevices[farm.farm_id] = deviceData;
         }
         // 🔸 최적 조건 데이터
-        const conditionRes = await fetch(`${API_BASE_URL}/getFarmConditions/${farmId}`, {
+        const conditionRes = await fetch(`${API_BASE_URL}/getFarmConditions/${farm.farmId}`, {
           headers: { 'Authorization': `Bearer ${token}` },
         });
         if (conditionRes.ok) {
