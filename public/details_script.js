@@ -1191,11 +1191,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   function getIconForType(type) {
     switch (type) {
       case "위험":
-        return '<i class="fas fa-exclamation-circle icon-circle icon-danger"></i>';
+        return '<span class="banner-icon danger"><i class="fas fa-exclamation-circle"></i></span>';
       case "경고":
-        return '<i class="fas fa-exclamation-triangle icon-circle icon-warning"></i>';
+        return '<span class="banner-icon warning"><i class="fas fa-exclamation-triangle"></i></span>';
       case "완료":
-        return '<i class="fas fa-check-circle icon-circle icon-success"></i>';
+        return '<span class="banner-icon success"><i class="fas fa-check-circle"></i></span>';
       default:
         return '';
     }
