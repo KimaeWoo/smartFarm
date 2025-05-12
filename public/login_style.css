@@ -7,17 +7,60 @@
 
 body {
     display: flex;
-    justify-content: center;
-    align-items: center;
+    flex-direction: column;
     min-height: 100vh;
     background-color: #f5f5f5;
+}
+
+header {
+    background-color: #ffffff;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 0.75rem 1.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.header-title {
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+.header-left {
+    display: flex;
+    justify-content: flex-start;
+    gap: 10px;
+    align-items: center;
+}
+
+.header-right {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    align-items: center;
+}
+
+main {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
 }
 
 .container {
     position: relative;
     width: 400px;
     height: 600px;
-    /* 높이 증가 */
     background-color: white;
     border-radius: 10px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
@@ -129,7 +172,6 @@ h2 {
     text-decoration: underline;
 }
 
-/* 중복확인 버튼 스타일 */
 .input-with-button {
     display: flex;
     gap: 10px;
@@ -154,16 +196,24 @@ h2 {
     background-color: #2e7d32;
 }
 
-/* 결과 메시지 스타일 */
 .result-message {
     font-size: 12px;
     margin-top: 5px;
 }
 
-.result-message.success {
-    color: green;
+footer {
+    background-color: #ffffff;
+    border-top: 1px solid #e0e0e0;
+    padding: 1rem;
+    text-align: center;
 }
 
-.result-message.error {
-    color: red;
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.footer-container p {
+    font-size: 14px;
+    color: #666;
 }
