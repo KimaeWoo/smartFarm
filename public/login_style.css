@@ -7,60 +7,54 @@
 
 body {
     display: flex;
-    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     min-height: 100vh;
     background-color: #f5f5f5;
 }
 
 header {
-    background-color: #ffffff;
-    border-bottom: 1px solid #e0e0e0;
-    padding: 0.75rem 1.5rem;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  background-color: var(--card-bg);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0.75rem 1.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .header-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    max-width: 1200px;
-    margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .header-title {
-    font-size: 1.25rem;
-    font-weight: bold;
+  font-size: 1.25rem;
+  font-weight: bold;
 }
 
 .header-left {
-    display: flex;
-    justify-content: flex-start;
-    gap: 10px;
-    align-items: center;
+  display: flex;
+  justify-content: flex-start;
+  gap: 10px;
+  align-items: center;
 }
 
 .header-right {
-    display: flex;
-    justify-content: flex-end;
-    gap: 15px;
-    align-items: center;
-}
-
-main {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  align-items: center;
 }
 
 .container {
     position: relative;
     width: 400px;
     height: 600px;
+    /* 높이 증가 */
     background-color: white;
     border-radius: 10px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
@@ -209,21 +203,4 @@ h2 {
 
 .result-message.error {
     color: red;
-}
-
-footer {
-    background-color: #ffffff;
-    border-top: 1px solid #e0e0e0;
-    padding: 1rem;
-    text-align: center;
-}
-
-.footer-container {
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.footer-container p {
-    font-size: 14px;
-    color: #666;
 }
