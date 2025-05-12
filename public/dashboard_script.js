@@ -456,7 +456,7 @@ async function loadFarmData() {
           farmDevices[farm.farm_id] = deviceData;
         }
         // 🔸 최적 조건 데이터
-        const conditionRes = await fetch(`${API_BASE_URL}/getFarmConditions/${farm.farmId}`, {
+        const conditionRes = await fetch(`${API_BASE_URL}/getFarmConditions/${farm.farm_id}`, {
           headers: { 'Authorization': `Bearer ${token}` },
         });
         if (conditionRes.ok) {
