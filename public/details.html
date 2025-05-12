@@ -90,26 +90,28 @@
               <img src="images/씨앗.png" alt="식물 성장 단계" id="plantImage" class="plant-image">
             </div>
             <div class="growth-details">
-              <div class="growth-circle-container">
-                <div class="growth-circle">
-                  <div class="growth-circle-inner">
-                    <span class="growth-rate" id="growth-rate">45%</span>
+              <div class="growth-progress">
+                <div class="growth-circle-container">
+                  <div class="growth-circle">
+                    <div class="growth-circle-inner">
+                      <span class="growth-rate" id="growth-rate">45%</span>
+                    </div>
                   </div>
+                  <p class="growth-text" id="growthText">현재 성장 단계: 성장</p>
                 </div>
-                <p class="growth-text" id="growthText">현재 성장 단계: 성장</p>
-              </div>
-              <div class="stage-indicator">
-                <div class="stage active" data-stage="씨앗">
-                  <span class="stage-label">씨앗</span>
-                </div>
-                <div class="stage active" data-stage="새싹">
-                  <span class="stage-label">새싹</span>
-                </div>
-                <div class="stage active" data-stage="성장">
-                  <span class="stage-label">성장</span>
-                </div>
-                <div class="stage" data-stage="열매">
-                  <span class="stage-label">열매</span>
+                <div class="stage-indicator">
+                  <div class="stage active" data-stage="씨앗">
+                    <span class="stage-label">씨앗</span>
+                  </div>
+                  <div class="stage active" data-stage="새싹">
+                    <span class="stage-label">새싹</span>
+                  </div>
+                  <div class="stage active" data-stage="성장">
+                    <span class="stage-label">성장</span>
+                  </div>
+                  <div class="stage" data-stage="열매">
+                    <span class="stage-label">열매</span>
+                  </div>
                 </div>
               </div>
               <div class="growth-info-details">
@@ -121,6 +123,14 @@
                   <i class="fas fa-hourglass-half info-icon"></i>
                   <span id="d-day">D-Day: 15일 남음</span>
                 </div>
+                <div class="info-row">
+                  <i class="fas fa-seedling info-icon"></i>
+                  <span>작물: 토마토</span>
+                </div>
+                <div class="info-row">
+                  <i class="fas fa-thermometer-half info-icon"></i>
+                  <span>최적 온도: 20°C ~ 30°C</span>
+                </div>
               </div>
             </div>
           </div>
@@ -131,19 +141,31 @@
         <h2>알림</h2>
         <div class="alarm">
           <div class="alarm-content">
-            <p class="text-bg" id="danger">🔴 위험</p>
-            <p class="text-md" id="danger-head">온도가 너무 높습니다</p>
-            <p class="text-md" id="danger-time">2023년 5월 12일 13:45분</p>
+            <div class="alarm-icon danger">
+              <i class="fas fa-exclamation-circle"></i>
+            </div>
+            <div class="alarm-text">
+              <p class="alarm-title">온도가 너무 높습니다</p>
+              <p class="alarm-time">2023년 5월 12일 13:45분</p>
+            </div>
           </div>
           <div class="alarm-content">
-            <p class="text-bg" id="warning">🟡 경고</p>
-            <p class="text-md" id="warning-head">토양 수분이 낮아지고 있습니다</p>
-            <p class="text-md" id="warning-time">2023년 5월 12일 12:30분</p>
+            <div class="alarm-icon warning">
+              <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="alarm-text">
+              <p class="alarm-title">토양 수분이 낮아지고 있습니다</p>
+              <p class="alarm-time">2023년 5월 12일 12:30분</p>
+            </div>
           </div>
           <div class="alarm-content">
-            <p class="text-bg" id="complete">🟢 완료</p>
-            <p class="text-md" id="complete-head">급수 완료</p>
-            <p class="text-md" id="complete-time">2023년 5월 12일 11:15분</p>
+            <div class="alarm-icon success">
+              <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="alarm-text">
+              <p class="alarm-title">급수 완료</p>
+              <p class="alarm-time">2023년 5월 12일 11:15분</p>
+            </div>
           </div>
         </div>
       </div>
@@ -161,7 +183,7 @@
     <div class="tab-content active" id="current-tab">
       <!-- 센서 패널 -->
       <div class="sensor-grid">
-        <div class="card">
+        <div class="card sensor-card">
           <div class="card-header">
             <div class="card-title"><i class="fas fa-temperature-high" style="color: var(--temp-color);"></i> 온도</div>
           </div>
@@ -178,7 +200,7 @@
           </div>
         </div>
 
-        <div class="card">
+        <div class="card sensor-card">
           <div class="card-header">
             <div class="card-title"><i class="fas fa-tint" style="color: var(--humidity-color);"></i> 습도</div>
           </div>
@@ -195,7 +217,7 @@
           </div>
         </div>
 
-        <div class="card">
+        <div class="card sensor-card">
           <div class="card-header">
             <div class="card-title"><i class="fas fa-leaf" style="color: var(--soil-color);"></i> 토양 수분</div>
           </div>
@@ -212,7 +234,7 @@
           </div>
         </div>
 
-        <div class="card">
+        <div class="card sensor-card">
           <div class="card-header">
             <div class="card-title"><i class="fas fa-wind" style="color: var(--co2-color);"></i> CO2</div>
           </div>
@@ -233,7 +255,7 @@
       <!-- 장치 제어 패널 -->
       <div class="card">
         <div class="card-header">
-          <div class="card-title">장치 제어</div>
+          <div class="card-title"><i class="fas fa-sliders-h"></i> 장치 제어</div>
           <div class="card-description">스마트팜 장치를 원격으로 제어합니다</div>
         </div>
         <div class="card-content">
