@@ -214,6 +214,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       const growthRate = ((harvestDays - daysLeft) / harvestDays) * 100;
 
       updateGrowthStatus(growthRate, harvestDays, startDate);
+
+      // 농장 상태 갱신
+      await fetchFarmStatus();
+
+      alert("농장이 성공적으로 시작되었습니다.");
     } catch (error) {
       console.error("농장 시작 실패:", error);
       alert("농장 시작 중 오류 발생");
@@ -251,9 +256,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (growthRateEl) {
       growthRateEl.textContent = `${growthRate}%`
     }
-
+    const growthCircle = document.getElementById("growth-circle");
     if (growthCircle) {
-      growthCircle.style.background = `conic-gradient(#10b981 ${growthRate}%, #e5e7eb ${growthRate}%)`
+      const degree = (growthRate / 100) * 360;
+      growthCircle.style.background = `conic-gradient(#10b981 ${degree}deg, #e5e7eb ${degree}deg 360deg)`;
     }
 
     const formattedStartDate = formatDateYMD(new Date(startDate))
@@ -1110,57 +1116,57 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   async function fetchAlarm() {
     try {
-      const response = await fetch(`${API_BASE_URL}/getAlarm?farm_id=${farmId}`)
-      if (!response.ok) throw new Error("네트워크 오류:" + response.statusText)
-      const data = await response.json()
-      allAlarms = data.sort((a, b) => a.type.localeCompare(b.type) || new Date(b.created_at) - new Date(a.created_at))
+      const response = await fetch(`${API_BASE_URL}/getAlarm?farm_id=${farmId}`);
+      if (!response.ok) throw new Error("네트워크 오류:" + response.statusText);
+      const data = await response.json();
+      allAlarms = data.sort((a, b) => a.type.localeCompare(b.type) || new Date(b.created_at) - new Date(a.created_at));
       const latestDanger = allAlarms.find((alarm) => alarm.type === "위험") || {
         content: "알림 없음",
         created_at: "시간",
-      }
+      };
       const latestWarning = allAlarms.find((alarm) => alarm.type === "경고") || {
         content: "알림 없음",
         created_at: "시간",
-      }
+      };
       const latestComplete = allAlarms.find((alarm) => alarm.type === "완료") || {
         content: "알림 없음",
         created_at: "시간",
-      }
+      };
 
-      const dangerHeadEl = document.getElementById("danger-head")
-      const dangerTimeEl = document.getElementById("danger-time")
-      const warningHeadEl = document.getElementById("warning-head")
-      const warningTimeEl = document.getElementById("warning-time")
-      const completeHeadEl = document.getElementById("complete-head")
-      const completeTimeEl = document.getElementById("complete-time")
+      const dangerHeadEl = document.querySelector(".danger-head");
+      const dangerTimeEl = document.querySelector(".danger-time");
+      const warningHeadEl = document.querySelector(".warning-head");
+      const warningTimeEl = document.querySelector(".warning-time");
+      const completeHeadEl = document.querySelector(".complete-head");
+      const completeTimeEl = document.querySelector(".complete-time");
 
       if (latestDanger.content !== "알림 없음" && dangerHeadEl && dangerTimeEl) {
-        dangerHeadEl.innerHTML = `${getIconForType("위험")} ${latestDanger.content}` // 아이콘 추가
-        dangerTimeEl.textContent = formatDateTime(latestDanger.created_at)
+        dangerHeadEl.innerHTML = `${getIconForType("위험")} ${latestDanger.content}`;
+        dangerTimeEl.textContent = formatDateTime(latestDanger.created_at);
       } else if (dangerHeadEl && dangerTimeEl) {
-        dangerHeadEl.textContent = "알림 없음"
-        dangerTimeEl.textContent = "시간"
+        dangerHeadEl.textContent = "알림 없음";
+        dangerTimeEl.textContent = "시간";
       }
 
       if (latestWarning.content !== "알림 없음" && warningHeadEl && warningTimeEl) {
-        warningHeadEl.innerHTML = `${getIconForType("경고")} ${latestWarning.content}` // 아이콘 추가
-        warningTimeEl.textContent = formatDateTime(latestWarning.created_at)
+        warningHeadEl.innerHTML = `${getIconForType("경고")} ${latestWarning.content}`;
+        warningTimeEl.textContent = formatDateTime(latestWarning.created_at);
       } else if (warningHeadEl && warningTimeEl) {
-        warningHeadEl.textContent = "알림 없음"
-        warningTimeEl.textContent = "시간"
+        warningHeadEl.textContent = "알림 없음";
+        warningTimeEl.textContent = "시간";
       }
 
       if (latestComplete.content !== "알림 없음" && completeHeadEl && completeTimeEl) {
-        completeHeadEl.innerHTML = `${getIconForType("완료")} ${latestComplete.content}` // 아이콘 추가
-        completeTimeEl.textContent = formatDateTime(latestComplete.created_at)
+        completeHeadEl.innerHTML = `${getIconForType("완료")} ${latestComplete.content}`;
+        completeTimeEl.textContent = formatDateTime(latestComplete.created_at);
       } else if (completeHeadEl && completeTimeEl) {
-        completeHeadEl.textContent = "알림 없음"
-        completeTimeEl.textContent = "시간"
+        completeHeadEl.textContent = "알림 없음";
+        completeTimeEl.textContent = "시간";
       }
     } catch (error) {
-      console.error("알림 불러오기 실패:", error)
+      console.error("알림 불러오기 실패:", error);
     }
-    fetchAlarmList()
+    fetchAlarmList();
   }
 
   function fetchAlarmList() {
