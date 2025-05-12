@@ -174,47 +174,41 @@ function calculateFarmStatus(sensors, farm_id) {
 }
 
 // 경고 메시지 생성
-function generateAlerts(sensors) {
+function generateAlerts(sensors, farm_id) {
   if (!sensors) return [];
-  
+
   const alerts = [];
-  
-  if (sensors.temperature !== null && sensors.temperature !== undefined) {
-    if (sensors.temperature > 30) {
-      alerts.push({ type: "온도 경고", message: `온도가 너무 높습니다 (${sensors.temperature}°C)` });
-    } else if (sensors.temperature < 15) {
-      alerts.push({ type: "온도 경고", message: `온도가 너무 낮습니다 (${sensors.temperature}°C)` });
-    } else if (sensors.temperature > 28 || sensors.temperature < 18) {
-      alerts.push({ type: "온도 경고", message: `온도가 적정 범위를 벗어났습니다 (${sensors.temperature}°C)` });
+  const conditions = farmOptimalConditions[farm_id];
+  if (!conditions) return alerts;
+
+  const checkAndPush = (key, unit, name) => {
+    const value = sensors[key];
+    const condition = conditions[key];
+    if (value === null || value === undefined || !condition) return;
+
+    const { optimal_min, optimal_max } = condition;
+
+    if (value < optimal_min - 2 || value > optimal_max + 2) {
+      alerts.push({
+        type: `${name} 경고`,
+        message: `${name}가 위험 수치를 벗어났습니다 (${value}${unit})`
+      });
+    } else if (value < optimal_min || value > optimal_max) {
+      alerts.push({
+        type: `${name} 주의`,
+        message: `${name}가 최적 범위를 벗어났습니다 (${value}${unit})`
+      });
     }
-  }
-  
-  if (sensors.humidity !== null && sensors.humidity !== undefined) {
-    if (sensors.humidity < 30) {
-      alerts.push({ type: "습도 경고", message: `습도가 너무 낮습니다 (${sensors.humidity}%)` });
-    } else if (sensors.humidity > 80) {
-      alerts.push({ type: "습도 경고", message: `습도가 너무 높습니다 (${sensors.humidity}%)` });
-    }
-  }
-  
-  if (sensors.soil_moisture !== null && sensors.soil_moisture !== undefined) {
-    if (sensors.soil_moisture < 20) {
-      alerts.push({ type: "토양수분 경고", message: `토양이 매우 건조합니다 (${sensors.soil_moisture}%)` });
-    } else if (sensors.soil_moisture < 30) {
-      alerts.push({ type: "토양수분 경고", message: `토양이 건조합니다 (${sensors.soil_moisture}%)` });
-    }
-  }
-  
-  if (sensors.co2 !== null && sensors.co2 !== undefined) {
-    if (sensors.co2 > 800) {
-      alerts.push({ type: "CO2 경고", message: `CO2 농도가 너무 높습니다 (${sensors.co2}ppm)` });
-    } else if (sensors.co2 > 600) {
-      alerts.push({ type: "CO2 경고", message: `CO2 농도가 높습니다 (${sensors.co2}ppm)` });
-    }
-  }
-  
+  };
+
+  checkAndPush('temperature', '°C', '온도');
+  checkAndPush('humidity', '%', '습도');
+  checkAndPush('soil_moisture', '%', '토양수분');
+  checkAndPush('co2', 'ppm', 'CO2');
+
   return alerts;
 }
+
 
 // 메시지 표시
 function showMessage(message, type = 'error') {
