@@ -851,6 +851,35 @@ app.post('/updateFarmCondition', async (req, res) => {
   }
 });
 
+app.post("/chatbot", async (req, res) => {
+  const userMessage = req.body.message;
+
+  if (!userMessage) {
+    return res.status(400).json({ error: "메시지를 입력하세요." });
+  }
+
+  try {
+    const openaiRes = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "gpt-3.5-turbo",
+        messages: [{ role: "user", content: userMessage }]
+      })
+    });
+
+    const data = await openaiRes.json();
+    const reply = data.choices?.[0]?.message?.content || "답변을 가져오지 못했습니다.";
+    res.json({ reply });
+  } catch (err) {
+    console.error("OpenAI 호출 오류:", err);
+    res.status(500).json({ error: "OpenAI 호출 중 오류 발생" });
+  }
+});
+
 // reports 테이블 생성 (최초 실행 시)
 async function initializeDatabase() {
   let conn;

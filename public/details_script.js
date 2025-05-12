@@ -430,48 +430,52 @@ document.addEventListener("DOMContentLoaded", async () => {
   // 챗봇 기능
   const chatInput = document.getElementById("chat-input-field");
   const sendButton = document.getElementById("send-button");
-  const chatMessages = document.querySelector(".chat-messages");
 
-  function sendMessage() {
-    if (!chatInput || !chatMessages) return;
-    
-    const message = chatInput.value.trim();
-    if (message === "") return;
-    
-    // 사용자 메시지 추가
-    const userMessageDiv = document.createElement("div");
-    userMessageDiv.className = "message user";
-    userMessageDiv.innerHTML = `<div class="message-content">${message}</div>`;
-    chatMessages.appendChild(userMessageDiv);
-    
-    // 입력 필드 초기화
+  // 메시지 전송 함수
+  async function sendChatMessage() {
+    const input = chatInput.value.trim();
+    if (!input) return;
+
+    addMessageToChat("user", input);
     chatInput.value = "";
-    
-    // 스크롤을 맨 아래로 이동
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-    
-    // 봇 응답 (실제로는 서버에서 응답을 받아야 함)
-    setTimeout(() => {
-      const botMessageDiv = document.createElement("div");
-      botMessageDiv.className = "message bot";
-      botMessageDiv.innerHTML = `<div class="message-content">죄송합니다. 현재 챗봇 서비스를 준비 중입니다.</div>`;
-      chatMessages.appendChild(botMessageDiv);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-    }, 1000);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/chatbot`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ message: input })
+      });
+
+      const data = await response.json();
+      addMessageToChat("bot", data.reply || "답변 없음");
+    } catch (error) {
+      addMessageToChat("bot", "서버 오류 발생");
+    }
   }
 
-  if (sendButton) {
-    sendButton.addEventListener("click", sendMessage);
+  // 전송 버튼 클릭
+  sendButton.addEventListener("click", sendChatMessage);
+
+  // 🔹 엔터 키 입력 처리
+  chatInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault(); // form 제출 방지
+      sendChatMessage();
+    }
+  });
+
+  // 채팅 메시지 출력 함수
+  function addMessageToChat(role, text) {
+    const container = document.querySelector(".chat-messages");
+    const message = document.createElement("div");
+    message.className = `message ${role}`;
+    message.innerHTML = `<div class="message-content">${text}</div>`;
+    container.appendChild(message);
+    container.scrollTop = container.scrollHeight;
   }
 
-  if (chatInput) {
-    chatInput.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") {
-        sendMessage();
-      }
-    });
-  }
-  
   async function fetchSensorData() {
     try {
       // if (!userId) {
