@@ -1232,6 +1232,329 @@ footer {
   --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
 }
 
+/* 모달 스타일 */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  overflow-y: auto;
+}
+
+.modal-content {
+  position: relative;
+  background-color: var(--card-bg);
+  margin: 2rem auto;
+  width: 90%;
+  max-width: 900px;
+  border-radius: var(--border-radius);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  padding: 1.25rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--text-color);
+}
+
+.modal-close {
+  font-size: 1.75rem;
+  color: var(--muted-color);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.modal-close:hover {
+  color: var(--danger-color);
+}
+
+.modal-body {
+  padding: 1.5rem;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.modal-footer {
+  padding: 1.25rem;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+/* 리포트 섹션 스타일 */
+.report-section {
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.report-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.report-section-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.report-date {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--primary-color);
+}
+
+/* 센서 요약 그리드 */
+.sensor-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.sensor-summary-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  background-color: var(--secondary-color);
+}
+
+.sensor-summary-item.temp i {
+  color: var(--temp-color);
+}
+
+.sensor-summary-item.humidity i {
+  color: var(--humidity-color);
+}
+
+.sensor-summary-item.soil i {
+  color: var(--soil-color);
+}
+
+.sensor-summary-item.co2 i {
+  color: var(--co2-color);
+}
+
+.sensor-summary-item i {
+  font-size: 1.5rem;
+}
+
+.sensor-summary-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.sensor-summary-label {
+  font-size: 0.85rem;
+  color: var(--muted-color);
+}
+
+.sensor-summary-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+/* 센서 변화 스타일 */
+.sensor-changes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.25rem;
+}
+
+.sensor-change-item {
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  background-color: var(--secondary-color);
+}
+
+.sensor-change-item h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sensor-change-values {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.max-value, .min-value {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.change-label {
+  font-size: 0.85rem;
+  color: var(--muted-color);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.change-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.change-time {
+  font-size: 0.8rem;
+  color: var(--muted-color);
+}
+
+/* 장치 로그 스타일 */
+.device-logs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.device-log-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  background-color: var(--secondary-color);
+}
+
+.device-log-icon {
+  width: 3rem;
+  height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 1.5rem;
+}
+
+.device-log-icon.led {
+  background-color: rgba(250, 204, 21, 0.2);
+  color: var(--led-color);
+}
+
+.device-log-icon.fan {
+  background-color: rgba(59, 130, 246, 0.2);
+  color: var(--fan-color);
+}
+
+.device-log-icon.water {
+  background-color: rgba(6, 182, 212, 0.2);
+  color: var(--water-color);
+}
+
+.device-log-icon.heater {
+  background-color: rgba(239, 68, 68, 0.2);
+  color: var(--heater-color);
+}
+
+.device-log-icon.cooler {
+  background-color: rgba(99, 102, 241, 0.2);
+  color: var(--cooler-color);
+}
+
+.device-log-content {
+  flex: 1;
+}
+
+.device-log-content h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.device-log-content p {
+  font-size: 0.9rem;
+  color: var(--text-color);
+}
+
+/* AI 분석 스타일 */
+.ai-analysis {
+  padding: 1.25rem;
+  border-radius: var(--border-radius);
+  background-color: var(--secondary-color);
+  border-left: 4px solid var(--primary-color);
+}
+
+.ai-analysis-content {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-color);
+}
+
+/* 버튼 스타일 */
+.download-btn, .close-btn {
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--border-radius);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: none;
+}
+
+.download-btn {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.download-btn:hover {
+  background-color: #2563eb;
+  transform: translateY(-2px);
+}
+
+.close-btn {
+  background-color: var(--secondary-color);
+  color: var(--text-color);
+}
+
+.close-btn:hover {
+  background-color: #d1d5db;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .banner-container {
@@ -1262,6 +1585,17 @@ footer {
   
   .sensor-tabs {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .sensor-summary-grid,
+  .sensor-changes,
+  .device-logs {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-content {
+    width: 95%;
+    margin: 1rem auto;
   }
 }
 
@@ -1297,6 +1631,10 @@ footer {
   .growth-circle-inner {
     width: 48px;
     height: 48px;
+  }
+
+  .sensor-change-values {
+    flex-direction: column;
   }
 }
 
