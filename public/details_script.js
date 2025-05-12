@@ -1116,19 +1116,28 @@ document.addEventListener("DOMContentLoaded", async () => {
       const completeHeadEl = document.getElementById("complete-head")
       const completeTimeEl = document.getElementById("complete-time")
 
-      if (latestDanger.content != "알림 없음" && dangerHeadEl && dangerTimeEl) {
-        dangerHeadEl.textContent = latestDanger.content
+      if (latestDanger.content !== "알림 없음" && dangerHeadEl && dangerTimeEl) {
+        dangerHeadEl.innerHTML = `${getIconForType("위험")} ${latestDanger.content}` // 아이콘 추가
         dangerTimeEl.textContent = formatDateTime(latestDanger.created_at)
+      } else if (dangerHeadEl && dangerTimeEl) {
+        dangerHeadEl.textContent = "알림 없음"
+        dangerTimeEl.textContent = "시간"
       }
 
-      if (latestWarning.content != "알림 없음" && warningHeadEl && warningTimeEl) {
-        warningHeadEl.textContent = latestWarning.content
+      if (latestWarning.content !== "알림 없음" && warningHeadEl && warningTimeEl) {
+        warningHeadEl.innerHTML = `${getIconForType("경고")} ${latestWarning.content}` // 아이콘 추가
         warningTimeEl.textContent = formatDateTime(latestWarning.created_at)
+      } else if (warningHeadEl && warningTimeEl) {
+        warningHeadEl.textContent = "알림 없음"
+        warningTimeEl.textContent = "시간"
       }
 
-      if (latestComplete.content != "알림 없음" && completeHeadEl && completeTimeEl) {
-        completeHeadEl.textContent = latestComplete.content
+      if (latestComplete.content !== "알림 없음" && completeHeadEl && completeTimeEl) {
+        completeHeadEl.innerHTML = `${getIconForType("완료")} ${latestComplete.content}` // 아이콘 추가
         completeTimeEl.textContent = formatDateTime(latestComplete.created_at)
+      } else if (completeHeadEl && completeTimeEl) {
+        completeHeadEl.textContent = "알림 없음"
+        completeTimeEl.textContent = "시간"
       }
     } catch (error) {
       console.error("알림 불러오기 실패:", error)
@@ -1155,10 +1164,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       filteredAlarms.forEach((alarm) => {
         const tr = document.createElement("tr")
-        const emoji = getEmojiForType(alarm.type)
+        const icon = getIconForType(alarm.type)
 
         const contentTd = document.createElement("td")
-        contentTd.textContent = emoji + " " + alarm.content
+        contentTd.textContent = icon + " " + alarm.content
 
         const createdAtTd = document.createElement("td")
         createdAtTd.textContent = formatDateTime(alarm.created_at)
@@ -1179,16 +1188,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  function getEmojiForType(type) {
+  function getIconForType(type) {
     switch (type) {
       case "위험":
-        return "🔴"
+        return '<i class="fas fa-exclamation-circle"></i>';
       case "경고":
-        return "🟡"
+        return '<i class="fas fa-exclamation-triangle"></i>';
       case "완료":
-        return "🟢"
+        return '<i class="fas fa-check-circle"></i>';
       default:
-        return ""
+        return '';
     }
   }
 
