@@ -154,8 +154,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   
   const userId = sessionStorage.getItem("user_id")
   const farmId = sessionStorage.getItem("farm_id")
+  const farmType = sessionStorage.getItem("farm_type")
   const userName = sessionStorage.getItem("user_name")
   const farmName = sessionStorage.getItem("farm_name")
+
   const username = document.getElementById("username")
   const farmNameText = document.getElementById("farmname")
   const startButton = document.getElementById("start-farm-btn")
@@ -166,6 +168,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const humidOptimal = document.getElementById("humid-optimal")
   const soilOptimal = document.getElementById("soil-optimal")
   const co2Optimal = document.getElementById("co2-optimal")
+  
 
   function fetchData() {
     if (farmNameText) {
@@ -173,6 +176,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     if (username) {
       username.textContent = `${userName}님`
+    }
+    const farmtype = document.getElementById("farm-type")
+    if (farmtype) {
+      farmtype.textContent = farmType
     }
   }
 

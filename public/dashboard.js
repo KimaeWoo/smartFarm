@@ -689,10 +689,10 @@ document.addEventListener('DOMContentLoaded', function() {
     e.preventDefault();
     
     const userId = sessionStorage.getItem('user_id');
-    if (!userId) {
-      showMessage('사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.');
-      return;
-    }
+    // if (!userId) {
+    //   showMessage('사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.');
+    //   return;
+    // }
     
     const farmName = document.getElementById('farm-name').value;
     const farmLocation = document.getElementById('farm-location').value;
