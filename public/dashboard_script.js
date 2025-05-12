@@ -3,6 +3,7 @@ const API_BASE_URL = "https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app"
 let allFarms = [];
 let farmSensors = {};
 let farmDevices = {};
+let farmOptimalConditions = {};
 let isDeleteMode = false;
 let selectedFarmIds = [];
 
@@ -24,38 +25,18 @@ function getStatusClass(status) {
   }[status];
 }
 
-// 센서 상태 확인
-function getSensorStatus(type, value) {
+// 센서 상태 판단 (최적 조건 기반)
+function getSensorStatus(type, value, farm_id) {
   if (value === null || value === undefined) return '';
-  
-  switch(type) {
-    case 'temperature':
-      return value > 30 || value < 15 
-        ? 'critical' 
-        : value > 28 || value < 18 
-          ? 'warning' 
-          : '';
-    case 'humidity':
-      return value < 30 
-        ? 'critical' 
-        : value > 80 
-          ? 'warning' 
-          : '';
-    case 'soil_moisture':
-      return value < 20 
-        ? 'critical' 
-        : value < 30 
-          ? 'warning' 
-          : '';
-    case 'co2':
-      return value > 800 
-        ? 'critical' 
-        : value > 600 
-          ? 'warning' 
-          : '';
-    default:
-      return '';
-  }
+
+  const conditions = farmOptimalConditions[farm_id];
+  if (!conditions || !conditions[type]) return '';
+
+  const { optimal_min, optimal_max } = conditions[type];
+
+  if (value < optimal_min - 2 || value > optimal_max + 2) return 'critical';
+  if (value < optimal_min || value > optimal_max) return 'warning';
+  return 'healthy';
 }
 
 // 센서 아이콘 가져오기
@@ -174,19 +155,19 @@ function getControlName(type) {
 }
 
 // 농장 상태 계산
-function calculateFarmStatus(sensors) {
+function calculateFarmStatus(sensors, farm_id) {
   if (!sensors) return 'healthy';
-  
-  const criticalCount = Object.entries(sensors).filter(([key, value]) => {
-    if (key === 'id' || key === 'farm_id' || key === 'created_at') return false;
-    return getSensorStatus(key, value) === 'critical';
-  }).length;
-  
-  const warningCount = Object.entries(sensors).filter(([key, value]) => {
-    if (key === 'id' || key === 'farm_id' || key === 'created_at') return false;
-    return getSensorStatus(key, value) === 'warning';
-  }).length;
-  
+
+  const entries = Object.entries(sensors).filter(([key]) => !['id', 'farm_id', 'created_at'].includes(key));
+  let criticalCount = 0;
+  let warningCount = 0;
+
+  entries.forEach(([key, value]) => {
+    const status = getSensorStatus(key, value, farm_id);
+    if (status === 'critical') criticalCount++;
+    else if (status === 'warning') warningCount++;
+  });
+
   if (criticalCount > 0) return 'critical';
   if (warningCount > 0) return 'warning';
   return 'healthy';
@@ -267,8 +248,8 @@ function renderFarmCards(filteredFarms = allFarms) {
   filteredFarms.forEach(farm => {
     const sensors = farmSensors[farm.farm_id];
     const devices = farmDevices[farm.farm_id];
-    const status = calculateFarmStatus(sensors);
-    const alerts = generateAlerts(sensors);
+    const status = calculateFarmStatus(sensors, farm.farm_id);
+    const alerts = generateAlerts(sensors, farm.farm_id);
     
     const card = document.createElement('div');
     card.className = `farm-card ${status === 'critical' ? 'critical' : ''}`;
@@ -322,7 +303,7 @@ function renderFarmCards(filteredFarms = allFarms) {
       
       sensorFields.forEach(({ key, value }) => {
         if (value !== null && value !== undefined) {
-          const status = getSensorStatus(key, value);
+          const sensorStatus = getSensorStatus(type, value, farm.farm_id);
           sensorsHtml += `
             <div class="sensor">
               <div class="sensor-icon">
@@ -473,6 +454,13 @@ async function loadFarmData() {
         if (devicesResponse.ok) {
           const deviceData = await devicesResponse.json();
           farmDevices[farm.farm_id] = deviceData;
+        }
+        // 🔸 최적 조건 데이터
+        const conditionRes = await fetch(`${API_BASE_URL}/getFarmConditions/${farmId}`, {
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+        if (conditionRes.ok) {
+          farmOptimalConditions[farmId] = await conditionRes.json();
         }
       } catch (err) {
         console.error(`농장 ID ${farm.farm_id}의 데이터를 불러오는데 실패했습니다:`, err);
