@@ -183,35 +183,46 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  if (startButton) {
-    startButton.addEventListener("click", () => {
-      startButton.style.display = "none"
-      cropInfo.classList.add("visible")
-      fetch(`${API_BASE_URL}/start-farm`, {
+  async function startFarm() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/start-farm`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ farmId }),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.harvestDays) {
-            const harvestDays = data.harvestDays
-            const today = new Date()
-            const startDate = new Date()
-            const harvestDate = new Date(startDate)
-            harvestDate.setDate(harvestDate.getDate() + harvestDays)
-            const timeDiff = harvestDate - today
-            const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24))
-            document.getElementById("d-day").textContent = `D-Day: ${daysLeft > 0 ? daysLeft + "일 남음" : "수확 가능"}`
-            const growthRate = ((harvestDays - daysLeft) / harvestDays) * 100
-            growthCircle.style.background = `conic-gradient(#10b981 ${growthRate}%, #e5e7eb ${growthRate}%)`
-            growthText.textContent = `${Math.round(growthRate)}%`
-          }
-          location.reload();
-        })
-        .catch((error) => alert("오류 발생"))
-    })
+      });
+
+      if (!response.ok) throw new Error("서버 오류");
+
+      const data = await response.json();
+
+      const { harvestDays, startDate } = data;
+      if (!harvestDays || !startDate) {
+        throw new Error("작물 정보 누락");
+      }
+
+      // 버튼 숨김, 작물 정보 표시
+      if (startButton) startButton.style.display = "none";
+      if (cropInfo) cropInfo.classList.add("visible");
+
+      // 성장률 계산 및 UI 갱신
+      const today = new Date();
+      const startDateObj = new Date(startDate);
+      const harvestDate = new Date(startDateObj);
+      harvestDate.setDate(harvestDate.getDate() + harvestDays);
+      const timeDiff = harvestDate - today;
+      const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
+      const growthRate = ((harvestDays - daysLeft) / harvestDays) * 100;
+
+      updateGrowthStatus(growthRate, harvestDays, startDate);
+    } catch (error) {
+      console.error("농장 시작 실패:", error);
+      alert("농장 시작 중 오류 발생");
+    }
   }
+
+  if (startButton) {
+  startButton.addEventListener("click", startFarm);
+}
 
   // 농장 정보 가져오기
   function fetchFarmStatus() {
