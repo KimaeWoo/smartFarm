@@ -179,7 +179,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     const farmtype = document.getElementById("farm-type")
     if (farmtype) {
-      farmtype.textContent = farmType
+      farmtype.textContent = `작물: ${farmType}`
     }
   }
 
