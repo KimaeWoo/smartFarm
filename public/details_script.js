@@ -1146,45 +1146,45 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function fetchAlarmList() {
-    const alarmListTableBody = document.querySelector("#alarm-list-table tbody")
-    const alarmFilter = document.querySelector("#alarm-filter")
+    const alarmListTableBody = document.querySelector("#alarm-list-table tbody");
+    const alarmFilter = document.querySelector("#alarm-filter");
     if (!alarmListTableBody || !alarmFilter) {
-      console.error("필터 또는 테이블 요소를 찾을 수 없습니다.")
-      return
+      console.error("필터 또는 테이블 요소를 찾을 수 없습니다.");
+      return;
     }
 
-    const selectedType = alarmFilter.value
-    alarmListTableBody.innerHTML = ""
+    const selectedType = alarmFilter.value;
+    alarmListTableBody.innerHTML = "";
 
     if (allAlarms.length === 0) {
-      alarmListTableBody.innerHTML = '<tr><td colspan="4">알림이 없습니다.</td></tr>'
+      alarmListTableBody.innerHTML = '<tr><td colspan="4">알림이 없습니다.</td></tr>';
     } else {
-      const sortedAlarms = allAlarms.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-      const filteredAlarms = sortedAlarms.filter((alarm) => !selectedType || alarm.type === selectedType)
+      const sortedAlarms = allAlarms.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      const filteredAlarms = sortedAlarms.filter((alarm) => !selectedType || alarm.type === selectedType);
 
       filteredAlarms.forEach((alarm) => {
-        const tr = document.createElement("tr")
-        const icon = getIconForType(alarm.type)
+        const tr = document.createElement("tr");
+        const icon = getIconForType(alarm.type);
 
-        const contentTd = document.createElement("td")
-        contentTd.textContent = icon + " " + alarm.content
+        const contentTd = document.createElement("td");
+        contentTd.innerHTML = `${icon} ${alarm.content}`; // textContent 대신 innerHTML 사용
 
-        const createdAtTd = document.createElement("td")
-        createdAtTd.textContent = formatDateTime(alarm.created_at)
+        const createdAtTd = document.createElement("td");
+        createdAtTd.textContent = formatDateTime(alarm.created_at);
 
-        const deviceTd = document.createElement("td")
-        deviceTd.textContent = alarm.device || "장치 없음"
+        const deviceTd = document.createElement("td");
+        deviceTd.textContent = alarm.device || "장치 없음";
 
-        const typeTd = document.createElement("td")
-        typeTd.textContent = alarm.type
+        const typeTd = document.createElement("td");
+        typeTd.textContent = alarm.type;
 
-        tr.appendChild(contentTd)
-        tr.appendChild(createdAtTd)
-        tr.appendChild(deviceTd)
-        tr.appendChild(typeTd)
+        tr.appendChild(contentTd);
+        tr.appendChild(createdAtTd);
+        tr.appendChild(deviceTd);
+        tr.appendChild(typeTd);
 
-        alarmListTableBody.appendChild(tr)
-      })
+        alarmListTableBody.appendChild(tr);
+      });
     }
   }
 
