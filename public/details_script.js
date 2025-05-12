@@ -1141,7 +1141,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const completeTimeEl = document.querySelector(".complete-time");
 
       if (latestDanger.content !== "알림 없음" && dangerHeadEl && dangerTimeEl) {
-        dangerHeadEl.innerHTML = `${getIconForType("위험")} ${latestDanger.content}`;
+        dangerHeadEl.innerHTML = latestDanger.content;
         dangerTimeEl.textContent = formatDateTime(latestDanger.created_at);
       } else if (dangerHeadEl && dangerTimeEl) {
         dangerHeadEl.textContent = "알림 없음";
@@ -1149,7 +1149,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
 
       if (latestWarning.content !== "알림 없음" && warningHeadEl && warningTimeEl) {
-        warningHeadEl.innerHTML = `${getIconForType("경고")} ${latestWarning.content}`;
+        warningHeadEl.innerHTML =latestWarning.content;
         warningTimeEl.textContent = formatDateTime(latestWarning.created_at);
       } else if (warningHeadEl && warningTimeEl) {
         warningHeadEl.textContent = "알림 없음";
@@ -1157,7 +1157,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
 
       if (latestComplete.content !== "알림 없음" && completeHeadEl && completeTimeEl) {
-        completeHeadEl.innerHTML = `${getIconForType("완료")} ${latestComplete.content}`;
+        completeHeadEl.innerHTML = latestComplete.content;
         completeTimeEl.textContent = formatDateTime(latestComplete.created_at);
       } else if (completeHeadEl && completeTimeEl) {
         completeHeadEl.textContent = "알림 없음";
