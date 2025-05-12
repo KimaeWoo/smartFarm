@@ -172,6 +172,7 @@ h2 {
     text-decoration: underline;
 }
 
+/* 중복확인 버튼 스타일 */
 .input-with-button {
     display: flex;
     gap: 10px;
@@ -196,9 +197,18 @@ h2 {
     background-color: #2e7d32;
 }
 
+/* 결과 메시지 스타일 */
 .result-message {
     font-size: 12px;
     margin-top: 5px;
+}
+
+.result-message.success {
+    color: green;
+}
+
+.result-message.error {
+    color: red;
 }
 
 footer {
