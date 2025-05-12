@@ -455,12 +455,11 @@ async function loadFarmData() {
           const deviceData = await devicesResponse.json();
           farmDevices[farm.farm_id] = deviceData;
         }
-        // 🔸 최적 조건 데이터
         const conditionRes = await fetch(`${API_BASE_URL}/getFarmConditions/${farm.farm_id}`, {
           headers: { 'Authorization': `Bearer ${token}` },
         });
         if (conditionRes.ok) {
-          farmOptimalConditions[farmId] = await conditionRes.json();
+          farmOptimalConditions[farm.farm_id] = await conditionRes.json();
         }
       } catch (err) {
         console.error(`농장 ID ${farm.farm_id}의 데이터를 불러오는데 실패했습니다:`, err);
