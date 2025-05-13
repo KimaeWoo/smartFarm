@@ -262,7 +262,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const growthCircle = document.getElementById("growth-circle")
     if (growthCircle) {
-      growthCircle.style.background = `conic-gradient(#10b981 0deg ${growthRate * 3.6}deg, #e5e7eb ${growthRate * 3.6}deg 360deg)`;
+      growthCircle.style.background = `conic-gradient(#ffffff 0deg ${growthRate * 3.6}deg, rgba(255,255,255,0.3) ${growthRate * 3.6}deg 360deg)`;
+
     }
 
     const formattedStartDate = formatDateYMD(new Date(startDate));
