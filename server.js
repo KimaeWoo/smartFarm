@@ -185,6 +185,7 @@ app.get('/getName', async (req,res) => {
 
 // 농장 목록 불러오기
 app.get('/getFarms', async(req, res) => {
+  const user_id = req.query.user_id;
   const query = `SELECT farm_id, farm_name, farm_location, farm_type, farm_active FROM farms WHERE user_id = ?`;
   let conn;
 
