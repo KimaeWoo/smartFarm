@@ -42,6 +42,14 @@ if (logoutButton) {
   })
 }
 
+const dashboardtButton = document.getElementById("farmname")
+if (dashboardtButton) {
+  dashboardtButton.addEventListener("click", () => {
+    sessionStorage.removeItem("farm_id")
+    window.location.href = "dashboard.html"
+  })
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
   const today = new Date()
   const currentDate = new Date()
@@ -168,7 +176,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const soilOptimal = document.getElementById("soil-optimal")
   const co2Optimal = document.getElementById("co2-optimal")
   
-
   function fetchData() {
     if (farmNameText) {
       farmNameText.textContent = farmName
