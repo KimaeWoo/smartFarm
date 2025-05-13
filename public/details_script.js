@@ -165,6 +165,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const farmType = sessionStorage.getItem("farm_type")
   const userName = sessionStorage.getItem("user_name")
   const farmName = sessionStorage.getItem("farm_name")
+  const farmLocation = sessionStorage.getItem("farm_location")
 
   const username = document.getElementById("username")
   const farmNameText = document.getElementById("farmname")
@@ -186,6 +187,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     const farmtype = document.getElementById("farm-type")
     if (farmtype) {
       farmtype.textContent = `작물: ${farmType}`
+    }
+
+    const farmlocation = document.getElementById("farm-location")
+    if (farmlocation) {
+      farmlocation.textContent = `위치: ${farmLocation}`
     }
   }
 
