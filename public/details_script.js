@@ -162,7 +162,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const farmNameText = document.getElementById("farmname")
   const startButton = document.getElementById("start-farm-btn")
   const cropInfo = document.getElementById("crop-info")
-  const growthCircle = document.getElementById("growth-circle")
   const growthText = document.getElementById("growth-rate")
   const tempOptimal = document.getElementById("temp-optimal")
   const humidOptimal = document.getElementById("humid-optimal")
@@ -261,8 +260,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       growthRateEl.textContent = `${Math.round(growthRate)}%`;
     }
 
+    const growthCircle = document.getElementById("growth-circle")
     if (growthCircle) {
-      growthCircle.style.background = `conic-gradient(#10b981 ${growthRate}%, #e5e7eb ${growthRate}%)`;
+      growthCircle.style.background = `conic-gradient(#10b981 0deg ${growthRate * 3.6}deg, #e5e7eb ${growthRate * 3.6}deg 360deg)`;
     }
 
     const formattedStartDate = formatDateYMD(new Date(startDate));

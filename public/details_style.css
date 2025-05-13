@@ -264,7 +264,7 @@ main {
   width: 70px;
   height: 70px;
   border-radius: 50%;
-  background: conic-gradient(#ffffff 45%, rgba(255, 255, 255, 0.3) 45%);
+  background: conic-gradient(#ffffff 0%, rgba(255, 255, 255, 0.3) 0%);
   display: flex;
   justify-content: center;
   align-items: center;
