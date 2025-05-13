@@ -616,25 +616,31 @@ document.addEventListener('DOMContentLoaded', function() {
   
   document.getElementById('filter-critical').addEventListener('click', function() {
     setActiveFilter('critical');
-    const filteredFarms = allFarms.filter(farm => 
-      calculateFarmStatus(farmSensors[farm.farm_id]) === 'critical'
-    );
+    const filteredFarms = allFarms.filter(farm => {
+      const sensors = farmSensors[farm.farm_id];
+      if (!sensors) return false;
+      return calculateFarmStatus(sensors, farm.farm_id) === 'critical';
+    });
     renderFarmCards(filteredFarms);
   });
-  
+
   document.getElementById('filter-warning').addEventListener('click', function() {
     setActiveFilter('warning');
-    const filteredFarms = allFarms.filter(farm => 
-      calculateFarmStatus(farmSensors[farm.farm_id]) === 'warning'
-    );
+    const filteredFarms = allFarms.filter(farm => {
+      const sensors = farmSensors[farm.farm_id];
+      if (!sensors) return false;
+      return calculateFarmStatus(sensors, farm.farm_id) === 'warning';
+    });
     renderFarmCards(filteredFarms);
   });
-  
+
   document.getElementById('filter-healthy').addEventListener('click', function() {
     setActiveFilter('healthy');
-    const filteredFarms = allFarms.filter(farm => 
-      calculateFarmStatus(farmSensors[farm.farm_id]) === 'healthy'
-    );
+    const filteredFarms = allFarms.filter(farm => {
+      const sensors = farmSensors[farm.farm_id];
+      if (!sensors) return false;
+      return calculateFarmStatus(sensors, farm.farm_id) === 'healthy';
+    });
     renderFarmCards(filteredFarms);
   });
   
