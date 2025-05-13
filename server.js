@@ -184,8 +184,7 @@ app.get('/getName', async (req,res) => {
 });
 
 // 농장 목록 불러오기
-app.get('/getFarms', authenticateToken, async(req, res) => {
-  const user_id = req.user.user_id; // JWT에서 추출한 user_id
+app.get('/getFarms', async(req, res) => {
   const query = `SELECT farm_id, farm_name, farm_location, farm_type, farm_active FROM farms WHERE user_id = ?`;
   let conn;
 

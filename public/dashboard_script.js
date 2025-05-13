@@ -402,7 +402,6 @@ async function loadFarmData() {
   try {
     // 세션스토리지에서 user_id 가져오기
     const userId = sessionStorage.getItem('user_id');
-    const token = sessionStorage.getItem('token'); // 저장된 토큰 가져오기
 
     // if (!userId) {
     //   showMessage('사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.');
@@ -412,7 +411,6 @@ async function loadFarmData() {
     // 농장 목록 불러오기
     const farmsResponse = await fetch(`${API_BASE_URL}/getFarms?user_id=${userId}`, {
       headers: {
-        'Authorization': `Bearer ${token}`, // 토큰 포함
         'Content-Type': 'application/json',
       },
     });
@@ -431,7 +429,6 @@ async function loadFarmData() {
         // 센서 데이터 불러오기
         const sensorsResponse = await fetch(`${API_BASE_URL}/sensors/status?farm_id=${farm.farm_id}`, {
           headers: {
-            'Authorization': `Bearer ${token}`, // 토큰 포함
           },
         });
         if (sensorsResponse.ok) {
@@ -442,7 +439,6 @@ async function loadFarmData() {
         // 제어장치 데이터 불러오기
         const devicesResponse = await fetch(`${API_BASE_URL}/devices/status?farm_id=${farm.farm_id}`, {
           headers: {
-            'Authorization': `Bearer ${token}`, // 토큰 포함
           },
         });
         if (devicesResponse.ok) {
@@ -450,7 +446,6 @@ async function loadFarmData() {
           farmDevices[farm.farm_id] = deviceData;
         }
         const conditionRes = await fetch(`${API_BASE_URL}/getFarmConditions/${farm.farm_id}`, {
-          headers: { 'Authorization': `Bearer ${token}` },
         });
         if (conditionRes.ok) {
           farmOptimalConditions[farm.farm_id] = await conditionRes.json();
