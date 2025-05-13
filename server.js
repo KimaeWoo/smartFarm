@@ -627,7 +627,8 @@ app.post('/start-farm', async (req, res) => {
       return res.status(500).send('작물 정보 조회 실패');
     }
 
-    const harvestDays = cropResult.harvest_days;
+    const harvestDays = cropResult[0].harvest_days;
+
     console.log(`[POST /start-farm] ${farmId} 농장 시작 성공 `);
     res.json({ message: 'success', harvestDays, startDate: currentDate });
   } catch (err) {
