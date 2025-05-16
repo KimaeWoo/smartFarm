@@ -412,6 +412,8 @@ app.post('/sensors', async (req, res) => {
 
     // 2. 이상값 감지 로직
     const [conditions] = await conn.query(conditionQuery, [farm_id]);
+    
+    console.log('[POST /sensors] farm_conditions:', conditions);
 
     if (!Array.isArray(conditions) || conditions.length === 0) {
       console.warn(`[POST /sensors] farm_id ${farm_id}에 대한 조건 정보 없음`);
