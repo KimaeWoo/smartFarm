@@ -97,24 +97,6 @@ app.post('/signup', async (req, res) => {
   }
 });
 
-// JWT 검증 미들웨어
-const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; // Bearer <token>
-
-  if (!token) {
-    return res.status(401).json({ message: '인증 토큰이 필요합니다.' });
-  }
-
-  jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) {
-      return res.status(403).json({ message: '유효하지 않은 토큰입니다.' });
-    }
-    req.user = user; // 요청 객체에 사용자 정보 추가
-    next();
-  });
-};
-
 // FCM 토큰 등록
 app.post('/register-fcm-token', authenticateToken, async (req, res) => {
   const user_id = req.user.user_id;
@@ -145,6 +127,26 @@ app.post('/register-fcm-token', authenticateToken, async (req, res) => {
   }
 });
 
+// JWT 검증 미들웨어
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1]; // Bearer <token>
+
+  if (!token) {
+    return res.status(401).json({ message: '인증 토큰이 필요합니다.' });
+  }
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).json({ message: '유효하지 않은 토큰입니다.' });
+    }
+    req.user = user; // 요청 객체에 사용자 정보 추가
+    next();
+  });
+};
+
+const FCM_SERVER_KEY = process.env.FCM_SERVER_KEY;
+
 async function sendPushNotificationToUser(farm_id, message) {
   let conn;
   try {
@@ -162,23 +164,24 @@ async function sendPushNotificationToUser(farm_id, message) {
     );
     if (!tokenRow || !tokenRow.fcm_token) return;
 
-    const expoPushToken = tokenRow.fcm_token;
+    const token = tokenRow.fcm_token;
 
-    // Expo 푸시 서버에 전송
-    await axios.post('https://exp.host/--/api/v2/push/send', {
-      to: expoPushToken,
-      title: '🚨 스마트팜 경고',
-      body: message,
-      sound: 'default',
+    await axios.post('https://fcm.googleapis.com/fcm/send', {
+      to: token,
+      notification: {
+        title: '🚨 스마트팜 경고',
+        body: message,
+      }
     }, {
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        Authorization: `key=${FCM_SERVER_KEY}`,
       }
     });
 
-    console.log(`[Expo Push] 알림 전송 성공: ${message}`);
+    console.log(`[FCM] 알림 전송 성공: ${message}`);
   } catch (err) {
-    console.error('[Expo Push] 알림 전송 실패:', err.message);
+    console.error('[FCM] 알림 전송 실패:', err.message);
   } finally {
     if (conn) conn.release();
   }
@@ -393,6 +396,12 @@ app.post('/sensors', async (req, res) => {
   `;
 
   const selectQuery = `SELECT * FROM sensors WHERE id = ?`;
+  const conditionQuery = `
+    SELECT condition_type, optimal_min, optimal_max 
+    FROM farm_conditions 
+    WHERE farm_id = ?
+  `;
+
   let conn;
 
   try {
@@ -403,39 +412,41 @@ app.post('/sensors', async (req, res) => {
     const insertedId = result.insertId;
 
     // 2. 삽입된 데이터 조회
-    const [sensor] = await conn.query(selectQuery, [insertedId]);
+    const [sensorRows] = await conn.query(selectQuery, [insertedId]);
+    const sensor = sensorRows[0];
     console.log('[POST /sensors] 삽입된 센서값:', sensor);
 
     // 3. 이상값 감지 로직
-    const [conditions] = await conn.query(
-      `SELECT condition_type, optimal_min, optimal_max FROM farm_conditions WHERE farm_id = ?`,
-      [farm_id]
-    );
+    const [conditions] = await conn.query(conditionQuery, [farm_id]);
 
-    const sensorValues = { temperature, humidity, soil_moisture, co2 };
-    if (!global.abnormalSensorStatus) global.abnormalSensorStatus = {};
+    if (!Array.isArray(conditions) || conditions.length === 0) {
+      console.warn(`[POST /sensors] farm_id ${farm_id}에 대한 조건 정보 없음`);
+    } else {
+      const sensorValues = { temperature, humidity, soil_moisture, co2 };
+      if (!global.abnormalSensorStatus) global.abnormalSensorStatus = {};
 
-    for (const row of conditions) {
-      const { condition_type, optimal_min, optimal_max } = row;
-      const value = sensorValues[condition_type];
-      const key = `${farm_id}_${condition_type}`;
-      const now = Date.now();
+      for (const row of conditions) {
+        const { condition_type, optimal_min, optimal_max } = row;
+        const value = parseFloat(sensorValues[condition_type]);
+        const key = `${farm_id}_${condition_type}`;
+        const now = Date.now();
 
-      const isOut = value < optimal_min || value > optimal_max;
+        const isOut = value < optimal_min || value > optimal_max;
 
-      if (isOut) {
-        if (!global.abnormalSensorStatus[key]) {
-          global.abnormalSensorStatus[key] = { count: 1, firstTime: now, notified: false };
+        if (isOut) {
+          if (!global.abnormalSensorStatus[key]) {
+            global.abnormalSensorStatus[key] = { count: 1, firstTime: now, notified: false };
+          } else {
+            global.abnormalSensorStatus[key].count += 1;
+          }
+
+          if (global.abnormalSensorStatus[key].count >= 12 && !global.abnormalSensorStatus[key].notified) {
+            global.abnormalSensorStatus[key].notified = true;
+            await sendPushNotificationToUser(farm_id, `📡 ${condition_type} 값이 1분 이상 이상 상태입니다.`);
+          }
         } else {
-          global.abnormalSensorStatus[key].count += 1;
+          global.abnormalSensorStatus[key] = null;
         }
-
-        if (global.abnormalSensorStatus[key].count >= 12 && !global.abnormalSensorStatus[key].notified) {
-          global.abnormalSensorStatus[key].notified = true;
-          await sendPushNotificationToUser(farm_id, `📡 ${condition_type} 값이 1분 이상 이상 상태입니다.`);
-        }
-      } else {
-        global.abnormalSensorStatus[key] = null;
       }
     }
 
