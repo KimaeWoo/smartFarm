@@ -383,6 +383,7 @@ app.post('/delFarm', authenticateToken, async (req, res) => {
 });
 
 // 센서 데이터 저장 및 이상값 감지
+// 센서 데이터 저장 및 이상값 감지
 app.post('/sensors', async (req, res) => {
   const { farm_id, temperature, humidity, soil_moisture, co2, created_at } = req.body;
 
@@ -395,7 +396,6 @@ app.post('/sensors', async (req, res) => {
     VALUES (?, ?, ?, ?, ?, ?)
   `;
 
-  const selectQuery = `SELECT * FROM sensors WHERE id = ?`;
   const conditionQuery = `
     SELECT condition_type, optimal_min, optimal_max 
     FROM farm_conditions 
@@ -408,20 +408,9 @@ app.post('/sensors', async (req, res) => {
     conn = await db.getConnection();
 
     // 1. DB에 센서값 저장
-    const result = await conn.query(insertQuery, [farm_id, temperature, humidity, soil_moisture, co2, timestamp]);
-    const insertedId = result.insertId;
+    await conn.query(insertQuery, [farm_id, temperature, humidity, soil_moisture, co2, timestamp]);
 
-    // 2. 삽입된 데이터 조회
-    const [sensorResult] = await conn.query(selectQuery, [insertedId]);
-    const sensor = sensorResult && sensorResult.length > 0 ? sensorResult[0] : null;
-
-    if (!sensor) {
-      console.warn(`[POST /sensors] ID ${insertedId}에 대한 센서 데이터 조회 실패`);
-    } else {
-      console.log('[POST /sensors] 삽입된 센서값:', sensor);
-    }
-
-    // 3. 이상값 감지 로직
+    // 2. 이상값 감지 로직
     const [conditions] = await conn.query(conditionQuery, [farm_id]);
 
     if (!Array.isArray(conditions) || conditions.length === 0) {
