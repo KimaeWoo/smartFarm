@@ -97,6 +97,75 @@ app.post('/signup', async (req, res) => {
   }
 });
 
+// FCM 토큰 등록
+app.post('/register-fcm-token', authenticateToken, async (req, res) => {
+  const user_id = req.user.user_id;
+  const { fcm_token } = req.body;
+
+  if (!fcm_token) {
+    return res.status(400).json({ message: 'fcm_token이 필요합니다' });
+  }
+
+  let conn;
+  try {
+    conn = await db.getConnection();
+
+    const upsertQuery = `
+      INSERT INTO user_tokens (user_id, fcm_token)
+      VALUES (?, ?)
+      ON DUPLICATE KEY UPDATE fcm_token = VALUES(fcm_token)
+    `;
+
+    await conn.query(upsertQuery, [user_id, fcm_token]);
+    console.log(`[POST /register-fcm-token] FCM 토큰 등록 성공 - ${user_id}`);
+    return res.json({ message: '토큰 등록 성공' });
+  } catch (err) {
+    console.error('[POST /register-fcm-token] DB 오류:', err);
+    return res.status(500).json({ message: 'DB 오류' });
+  } finally {
+    if (conn) conn.release();
+  }
+});
+
+async function sendPushNotificationToUser(farm_id, message) {
+  let conn;
+  try {
+    conn = await db.getConnection();
+
+    const [user] = await conn.query(
+      `SELECT user_id FROM farms WHERE farm_id = ? LIMIT 1`,
+      [farm_id]
+    );
+    if (!user || !user.user_id) return;
+
+    const [tokenRow] = await conn.query(
+      `SELECT fcm_token FROM user_tokens WHERE user_id = ? LIMIT 1`,
+      [user.user_id]
+    );
+    if (!tokenRow || !tokenRow.fcm_token) return;
+
+    const expoPushToken = tokenRow.fcm_token;
+
+    // Expo 푸시 서버에 전송
+    await axios.post('https://exp.host/--/api/v2/push/send', {
+      to: expoPushToken,
+      title: '🚨 스마트팜 경고',
+      body: message,
+      sound: 'default',
+    }, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    console.log(`[Expo Push] 알림 전송 성공: ${message}`);
+  } catch (err) {
+    console.error('[Expo Push] 알림 전송 실패:', err.message);
+  } finally {
+    if (conn) conn.release();
+  }
+}
+
 // 로그인
 app.post('/login', async (req, res) => {
   const { user_id, password } = req.body;
@@ -206,7 +275,8 @@ app.get('/getFarms', async(req, res) => {
 // 농장 추가하기
 app.post('/addFarm', authenticateToken, async (req, res) => {
   const user_id = req.user.user_id; // JWT에서 추출
-  const { farm_name, farm_location, farm_type } = req.body; // body에서 user_id 제거
+  const { farm_name, farm_location, farm_type } = req.body;
+
   const insertFarmQuery = `
     INSERT INTO farms (user_id, farm_name, farm_location, farm_type)
     VALUES (?, ?, ?, ?)
@@ -250,6 +320,26 @@ app.post('/addFarm', authenticateToken, async (req, res) => {
     }
     console.log('[POST /addFarm] farm_conditions 복사 성공');
 
+    // 4. 하드웨어 서버로 farm_id, farm_type, 최적 수치 전송
+    const optimalConditions = {};
+    for (const row of cropConditions) {
+      optimalConditions[row.condition_type] = {
+        optimal_min: row.optimal_min,
+        optimal_max: row.optimal_max
+      };
+    }
+
+    try {
+      await axios.post('http://14.54.126.218:8000/init-farm-data', {
+        farm_id,
+        farm_type,
+        conditions: optimalConditions
+      });
+      console.log(`[POST /addFarm] 하드웨어 서버로 전송 성공`);
+    } catch (axiosError) {
+      console.error(`[POST /addFarm] 하드웨어 서버 전송 실패:`, axiosError.message);
+    }
+
     await conn.commit();
     return res.json({ message: '농장 추가 성공', farm_id });
   } catch (err) {
@@ -289,38 +379,67 @@ app.post('/delFarm', authenticateToken, async (req, res) => {
   }
 });
 
-// 센서 데이터 저장
+// 센서 데이터 저장 및 이상값 감지
 app.post('/sensors', async (req, res) => {
   const { farm_id, temperature, humidity, soil_moisture, co2, created_at } = req.body;
-  
-  // created_at이 없으면 현재 시간을 한국 시간으로 설정
+
   const timestamp = created_at 
     ? moment.tz(created_at, "Asia/Seoul").format('YYYY-MM-DD HH:mm:ss') 
     : moment().tz("Asia/Seoul").format('YYYY-MM-DD HH:mm:ss');
-  
-  const query = `INSERT INTO sensors (farm_id, temperature, humidity, soil_moisture, co2, created_at) VALUES (?, ?, ?, ?, ?, ?)`;
+
+  const insertQuery = `
+    INSERT INTO sensors (farm_id, temperature, humidity, soil_moisture, co2, created_at)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `;
+
   const selectQuery = `SELECT * FROM sensors WHERE id = ?`;
   let conn;
-  
+
   try {
     conn = await db.getConnection();
-    const results = await conn.query(query, [farm_id, temperature, humidity, soil_moisture, co2, timestamp]);
-  
-    // 방금 삽입된 튜플의 id 가져오기
-    const insertedId = results.insertId;
 
-    try {
-      const selectResults = await conn.query(selectQuery, [insertedId]);
-      console.log('[POST /sensors] 삽입된 데이터:', selectResults[0]);
-      res.json({ message: '센서 데이터 저장 성공' });
-    
-      // 저장된 센서 데이터를 기반으로 제어 여부 체크 및 실행
-      //Controldevice(farm_id, temperature, humidity, soil_moisture, co2);
-      
-    } catch (err) {
-      console.error('[POST /sensors] 데이터 조회 오류:', err);
-      return res.status(500).json({ message: 'DB 오류' });
+    // 1. DB에 센서값 저장
+    const result = await conn.query(insertQuery, [farm_id, temperature, humidity, soil_moisture, co2, timestamp]);
+    const insertedId = result.insertId;
+
+    // 2. 삽입된 데이터 조회
+    const [sensor] = await conn.query(selectQuery, [insertedId]);
+    console.log('[POST /sensors] 삽입된 센서값:', sensor);
+
+    // 3. 이상값 감지 로직
+    const [conditions] = await conn.query(
+      `SELECT condition_type, optimal_min, optimal_max FROM farm_conditions WHERE farm_id = ?`,
+      [farm_id]
+    );
+
+    const sensorValues = { temperature, humidity, soil_moisture, co2 };
+    if (!global.abnormalSensorStatus) global.abnormalSensorStatus = {};
+
+    for (const row of conditions) {
+      const { condition_type, optimal_min, optimal_max } = row;
+      const value = sensorValues[condition_type];
+      const key = `${farm_id}_${condition_type}`;
+      const now = Date.now();
+
+      const isOut = value < optimal_min || value > optimal_max;
+
+      if (isOut) {
+        if (!global.abnormalSensorStatus[key]) {
+          global.abnormalSensorStatus[key] = { count: 1, firstTime: now, notified: false };
+        } else {
+          global.abnormalSensorStatus[key].count += 1;
+        }
+
+        if (global.abnormalSensorStatus[key].count >= 12 && !global.abnormalSensorStatus[key].notified) {
+          global.abnormalSensorStatus[key].notified = true;
+          await sendPushNotificationToUser(farm_id, `📡 ${condition_type} 값이 1분 이상 이상 상태입니다.`);
+        }
+      } else {
+        global.abnormalSensorStatus[key] = null;
+      }
     }
+
+    return res.json({ message: '센서 데이터 저장 성공' });
   } catch (err) {
     console.error('[POST /sensors] DB 오류:', err);
     return res.status(500).json({ message: 'DB 오류' });
