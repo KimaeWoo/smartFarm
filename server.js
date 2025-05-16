@@ -383,7 +383,6 @@ app.post('/delFarm', authenticateToken, async (req, res) => {
 });
 
 // 센서 데이터 저장 및 이상값 감지
-// 센서 데이터 저장 및 이상값 감지
 app.post('/sensors', async (req, res) => {
   const { farm_id, temperature, humidity, soil_moisture, co2, created_at } = req.body;
 
@@ -408,12 +407,11 @@ app.post('/sensors', async (req, res) => {
     conn = await db.getConnection();
 
     // 1. DB에 센서값 저장
-    await conn.query(insertQuery, [farm_id, temperature, humidity, soil_moisture, co2, timestamp]);
+    const [result] = await conn.query(insertQuery, [farm_id, temperature, humidity, soil_moisture, co2, timestamp]);
+    const insertedId = result.insertId;
 
-    // 2. 이상값 감지 로직
+    // 2. farm_conditions 테이블에서 조건 조회
     const [conditions] = await conn.query(conditionQuery, [farm_id]);
-    
-    console.log('[POST /sensors] farm_conditions:', conditions);
 
     if (!Array.isArray(conditions) || conditions.length === 0) {
       console.warn(`[POST /sensors] farm_id ${farm_id}에 대한 조건 정보 없음`);
