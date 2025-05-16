@@ -51,6 +51,66 @@ if (dashboardtButton) {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
+  let pendingDevice = null;
+
+  function showDurationModal(device) {
+    pendingDevice = device;
+    document.getElementById("durationModal").style.display = "flex";
+  }
+
+  document.querySelectorAll(".switch input[type='checkbox']").forEach((input) => {
+    input.addEventListener("change", (e) => {
+      e.preventDefault();
+      e.target.checked = !e.target.checked; // 잠시 되돌림
+      const device = e.target.id.split("-")[0];
+      showDurationModal(device);
+    });
+  });
+
+  document.querySelectorAll(".time-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.getElementById("customDuration").value = btn.dataset.minutes;
+    });
+  });
+
+  document.getElementById("cancelDuration").addEventListener("click", () => {
+    document.getElementById("durationModal").style.display = "none";
+    pendingDevice = null;
+  });
+
+  document.getElementById("confirmDuration").addEventListener("click", () => {
+    const minutes = parseInt(document.getElementById("customDuration").value);
+    if (!minutes || minutes <= 0) {
+      alert("유효한 시간을 입력하세요");
+      return;
+    }
+    const seconds = minutes * 60;
+    toggleDeviceWithDuration(pendingDevice, seconds);
+    document.getElementById("durationModal").style.display = "none";
+  });
+
+  async function toggleDeviceWithDuration(device, duration) {
+    const switchElement = document.getElementById(`${device}-switch`);
+    const status = !switchElement.checked;
+    try {
+      const response = await fetch(`${API_BASE_URL}/devices/force-status`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          farm_id: sessionStorage.getItem("farm_id"),
+          device,
+          status,
+          duration
+        })
+      });
+      if (!response.ok) throw new Error("요청 실패");
+      switchElement.checked = status;
+      updateSwitchUI(device, status);
+    } catch (err) {
+      alert("장치 제어 실패: " + err.message);
+    }
+  }
+  
   const today = new Date()
   const currentDate = new Date()
 
@@ -241,8 +301,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   if (startButton) {
-  startButton.addEventListener("click", startFarm);
-}
+    startButton.addEventListener("click", startFarm);
+  }
 
   // 농장 정보 가져오기
   function fetchFarmStatus() {

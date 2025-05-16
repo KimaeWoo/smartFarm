@@ -539,10 +539,10 @@ app.post('/devices/:deviceId/status', async (req, res) => {
 
 // 제어장치 상태 강제 변경
 app.post('/devices/force-status', async (req, res) => {
-  const { farm_id, device, status } = req.body;
+  const { farm_id, device, status, duration } = req.body;
 
-  if (!farm_id || !device) {
-    return res.status(400).json({ message: '잘못된 요청입니다. 모든 필드가 필요합니다.' });
+  if (!farm_id || !device || duration == null) {
+    return res.status(400).json({ message: '잘못된 요청입니다. 모든 필드(farm_id, device, status, duration)가 필요합니다.' });
   }
 
   const query = `UPDATE devices SET ${device} = ? WHERE farm_id = ?`;
@@ -552,16 +552,18 @@ app.post('/devices/force-status', async (req, res) => {
     conn = await db.getConnection();
     await conn.query(query, [status, farm_id]);
     console.log(`[/devices/force-status] ${device} 상태 변경 성공`);
+
     const status_val = status ? 1 : 0;
-    
-    // 다른 서버 API 호출
+
+    // H/W 서버로 상태 + 지속시간 전송
     await axios.post('http://14.54.126.218:8000/update', {
       farm_id,
       devices: device,
-      status: status_val
+      status: status_val,
+      duration  // 지속 시간 (초 단위)
     });
 
-    console.log('[/devices/force-status] H/W 서버에 상태 전달 성공');
+    console.log('[/devices/force-status] H/W 서버에 상태 및 지속시간 전달 성공');
     return res.json({ message: '제어장치 상태 강제 변경 성공' });
 
   } catch (err) {
@@ -571,6 +573,7 @@ app.post('/devices/force-status', async (req, res) => {
     if (conn) conn.release();
   }
 });
+
 
 // 실시간 데이터 불러오기 (1시간 단위 평균)
 app.get('/realtime-data', async (req, res) => {
