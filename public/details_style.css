@@ -1337,22 +1337,96 @@ footer {
   justify-content: center;
   align-items: center;
 }
+
 .modal-device-content {
-  background-color: white;
-  padding: 20px;
-  border-radius: 8px;
-  width: 300px;
+  background-color: var(--card-bg);
+  padding: 1.25rem;
+  border-radius: var(--border-radius);
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  animation: modalFadeIn 0.3s ease;
+}
+
+.quick-times {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.time-btn {
+  padding: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
   text-align: center;
-}
-
-.quick-times .time-btn {
-  margin: 5px;
-  padding: 6px 10px;
+  border-radius: var(--border-radius);
+  background-color: var(--secondary-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.modal-actions button {
-  margin: 10px 5px;
+.time-btn:hover {
+  background-color: var(--primary-color);
+  color: white;
+  transform: translateY(-2px);
+}
+
+.custom-time {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.custom-time label {
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.custom-time input {
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: 0.9rem;
+  text-align: center;
+  transition: border-color 0.2s ease;
+}
+
+.custom-time input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.confirm-btn {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+}
+
+.confirm-btn:hover {
+  background-color: #2563eb;
+  transform: translateY(-2px);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 480px) {
+  .modal-device-content {
+    width: 95%;
+    padding: 1rem;
+  }
+
+  .quick-times {
+    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+  }
+
+  .time-btn {
+    padding: 0.4rem;
+    font-size: 0.85rem;
+  }
 }
 
 /* 리포트 섹션 스타일 */

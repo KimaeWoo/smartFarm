@@ -631,23 +631,28 @@
   </div>
   <div class="modal-device" id="durationModal">
     <div class="modal-device-content">
-      <h3>지속 시간 선택</h3>
-      <div class="quick-times">
-        <button class="time-btn" data-minutes="1">1분</button>
-        <button class="time-btn" data-minutes="5">5분</button>
-        <button class="time-btn" data-minutes="10">10분</button>
-        <button class="time-btn" data-minutes="15">15분</button>
-        <button class="time-btn" data-minutes="30">30분</button>
-        <button class="time-btn" data-minutes="60">1시간</button>
-        <button class="time-btn" data-minutes="180">3시간</button>
+      <div class="modal-header">
+        <h2><i class="fas fa-clock"></i> 지속 시간 선택</h2>
+        <span class="modal-close" id="closeDuration">&times;</span>
       </div>
-      <div class="custom-time">
-        <label>직접 입력 (분):</label>
-        <input type="number" id="customDuration" placeholder="예: 45" min="1" style="width: 80px;" />
+      <div class="modal-body">
+        <div class="quick-times">
+          <button class="time-btn btn" data-minutes="1">1분</button>
+          <button class="time-btn btn" data-minutes="5">5분</button>
+          <button class="time-btn btn" data-minutes="10">10분</button>
+          <button class="time-btn btn" data-minutes="15">15분</button>
+          <button class="time-btn btn" data-minutes="30">30분</button>
+          <button class="time-btn btn" data-minutes="60">1시간</button>
+          <button class="time-btn btn" data-minutes="180">3시간</button>
+        </div>
+        <div class="custom-time">
+          <label for="customDuration" class="setting-label">직접 입력 (분):</label>
+          <input type="number" id="customDuration" min="1" class="setting-inputs">
+        </div>
       </div>
-      <div class="modal-actions">
-        <button id="confirmDuration">확인</button>
-        <button id="cancelDuration">취소</button>
+      <div class="modal-footer">
+        <button class="btn close-btn" id="cancelDuration">취소</button>
+        <button class="btn confirm-btn" id="confirmDuration">확인</button>
       </div>
     </div>
   </div>
