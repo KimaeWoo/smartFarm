@@ -426,6 +426,8 @@ app.post('/sensors', async (req, res) => {
         const key = `${farm_id}_${condition_type}`;
         const now = Date.now();
 
+        console.log(`[POST /sensors] condition_type: ${condition_type}, value: ${value}, optimal_min: ${optimal_min}, optimal_max: ${optimal_max}`);
+
         const isOut = value < optimal_min || value > optimal_max;
 
         if (isOut) {
@@ -440,7 +442,7 @@ app.post('/sensors', async (req, res) => {
             await sendPushNotificationToUser(farm_id, `📡 ${condition_type} 값이 1분 이상 이상 상태입니다.`);
           }
         } else {
-          global.abnormalSensorStatus[key] = null;
+          delete global.abnormalSensorStatus[key];
         }
       }
     }
