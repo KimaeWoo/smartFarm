@@ -412,9 +412,14 @@ app.post('/sensors', async (req, res) => {
     const insertedId = result.insertId;
 
     // 2. 삽입된 데이터 조회
-    const [sensorRows] = await conn.query(selectQuery, [insertedId]);
-    const sensor = sensorRows[0];
-    console.log('[POST /sensors] 삽입된 센서값:', sensor);
+    const [sensorResult] = await conn.query(selectQuery, [insertedId]);
+    const sensor = sensorResult && sensorResult.length > 0 ? sensorResult[0] : null;
+
+    if (!sensor) {
+      console.warn(`[POST /sensors] ID ${insertedId}에 대한 센서 데이터 조회 실패`);
+    } else {
+      console.log('[POST /sensors] 삽입된 센서값:', sensor);
+    }
 
     // 3. 이상값 감지 로직
     const [conditions] = await conn.query(conditionQuery, [farm_id]);
