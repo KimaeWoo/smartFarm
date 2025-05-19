@@ -145,7 +145,7 @@ app.post('/register-fcm-token', authenticateToken, async (req, res) => {
   }
 });
 
-const FCM_SERVER_KEY = process.env.FCM_SERVER_KEY;
+const EXPO_PUSH_API_URL = 'https://exp.host/--/api/v2/push/send';
 
 async function sendPushNotificationToUser(farm_id, message) {
   let conn;
@@ -159,29 +159,30 @@ async function sendPushNotificationToUser(farm_id, message) {
     if (!user || !user.user_id) return;
 
     const [tokenRow] = await conn.query(
-      `SELECT fcm_token FROM user_tokens WHERE user_id = ? LIMIT 1`,
+      `SELECT expo_push_token FROM user_tokens WHERE user_id = ? LIMIT 1`,
       [user.user_id]
     );
-    if (!tokenRow || !tokenRow.fcm_token) return;
+    if (!tokenRow || !tokenRow.expo_push_token) return;
 
-    const token = tokenRow.fcm_token;
+    const expoToken = tokenRow.expo_push_token;
 
-    await axios.post('https://fcm.googleapis.com/fcm/send', {
-      to: token,
-      notification: {
-        title: '🚨 스마트팜 경고',
-        body: message,
-      }
-    }, {
+    const payload = {
+      to: expoToken,
+      sound: 'default',
+      title: '🚨 스마트팜 경고',
+      body: message,
+      data: { farm_id },
+    };
+
+    await axios.post(EXPO_PUSH_API_URL, payload, {
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `key=${FCM_SERVER_KEY}`,
-      }
+      },
     });
 
-    console.log(`[FCM] 알림 전송 성공: ${message}`);
+    console.log(`[Expo Push] 알림 전송 성공: ${message}`);
   } catch (err) {
-    console.error('[FCM] 알림 전송 실패:', err.message);
+    console.error('[Expo Push] 알림 전송 실패:', err.message);
   } finally {
     if (conn) conn.release();
   }
