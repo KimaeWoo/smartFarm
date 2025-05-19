@@ -333,7 +333,7 @@ app.post('/addFarm', authenticateToken, async (req, res) => {
     }
 
     try {
-      await axios.post('http://14.54.126.218:8000/init-farm-data', {
+      await axios.post('https://api.hotpotato.me/init-farm-data', {
         farm_id,
         farm_type,
         conditions: optimalConditions
@@ -556,7 +556,7 @@ app.post('/devices/force-status', async (req, res) => {
     const status_val = status ? 1 : 0;
 
     // H/W 서버로 상태 + 지속시간 전송
-    await axios.post('http://14.54.126.218:8000/update', {
+    await axios.post('https://api.hotpotato.me/update', {
       farm_id,
       devices: device,
       status: status_val,
@@ -954,7 +954,7 @@ app.post('/updateFarmCondition', async (req, res) => {
 
     // 하드웨어 서버로 최적 수치 전송
     try {
-      await axios.post('http://14.54.126.218:8000/level', {
+      await axios.post('https://api.hotpotato.me/level', {
         temperature: { optimal_min: tempMin, optimal_max: tempMax },
         humidity: { optimal_min: humidMin, optimal_max: humidMax },
         soil_moisture: { optimal_min: soilMin, optimal_max: soilMax },
