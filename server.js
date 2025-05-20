@@ -152,14 +152,14 @@ async function sendPushNotificationToUser(farm_id, message) {
   try {
     conn = await db.getConnection();
 
-    // 쿼리 결과 구조분해
-    const [rows] = await conn.query(
+    const rows = await conn.query(
       `SELECT user_id FROM farms WHERE farm_id = ?`,
       [farm_id]
     );
 
     console.log('쿼리 결과 rows:', rows);
-    console.log('길이:',rows.loength);
+    console.log('길이:', rows.length);
+
     if (!rows || rows.length === 0) {
       console.warn('rows가 없거나 빈 배열입니다');
       return;
@@ -453,7 +453,7 @@ app.post('/sensors', async (req, res) => {
             global.abnormalSensorStatus[key].count += 1;
           }
 
-          if (global.abnormalSensorStatus[key].count >= 12 && !global.abnormalSensorStatus[key].notified) {
+          if (global.abnormalSensorStatus[key].count >= 1 && !global.abnormalSensorStatus[key].notified) {
             global.abnormalSensorStatus[key].notified = true;
             await sendPushNotificationToUser(farm_id, `📡 ${condition_type} 값이 1분 이상 이상 상태입니다.`);
           }
