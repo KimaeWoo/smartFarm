@@ -115,13 +115,13 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-// 토큰 등록
+// FCM token 등록 API
 app.post('/register-fcm-token', authenticateToken, async (req, res) => {
   const user_id = req.user.user_id;
-  const { expo_push_token } = req.body; 
+  const { fcm_token } = req.body;
 
-  if (!expo_push_token) {
-    return res.status(400).json({ message: 'expo_push_token이 필요합니다' });
+  if (!fcm_token) {
+    return res.status(400).json({ message: 'fcm_token이 필요합니다' });
   }
 
   let conn;
@@ -129,13 +129,13 @@ app.post('/register-fcm-token', authenticateToken, async (req, res) => {
     conn = await db.getConnection();
 
     const upsertQuery = `
-      INSERT INTO user_tokens (user_id, expo_push_token)
+      INSERT INTO user_tokens (user_id, fcm_token)
       VALUES (?, ?)
-      ON DUPLICATE KEY UPDATE expo_push_token = VALUES(expo_push_token)
+      ON DUPLICATE KEY UPDATE fcm_token = VALUES(fcm_token)
     `;
 
-    await conn.query(upsertQuery, [user_id, expo_push_token]);
-    console.log(`[POST /register-fcm-token] Expo Push 토큰 등록 성공 - ${user_id}`);
+    await conn.query(upsertQuery, [user_id, fcm_token]);
+    console.log(`[POST /register-fcm-token] FCM 토큰 등록 성공 - ${user_id}`);
     return res.json({ message: '토큰 등록 성공' });
   } catch (err) {
     console.error('[POST /register-fcm-token] DB 오류:', err);
@@ -145,66 +145,57 @@ app.post('/register-fcm-token', authenticateToken, async (req, res) => {
   }
 });
 
-const EXPO_PUSH_API_URL = 'https://exp.host/--/api/v2/push/send';
+const admin = require('firebase-admin');
+const serviceAccount = require('./firebase-key.json');
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
 
 async function sendPushNotificationToUser(farm_id, message) {
   let conn;
   try {
     conn = await db.getConnection();
 
-    const rows = await conn.query(
+    const [farm] = await conn.query(
       `SELECT user_id FROM farms WHERE farm_id = ?`,
       [farm_id]
     );
 
-    console.log('쿼리 결과 rows:', rows);
-    console.log('길이:', rows.length);
-
-    if (!rows || rows.length === 0) {
-      console.warn('rows가 없거나 빈 배열입니다');
+    if (!farm || farm.length === 0) {
+      console.warn('farm_id에 해당하는 유저 없음');
       return;
     }
 
-    const userId = rows[0].user_id;
+    const userId = farm[0].user_id;
 
-    if (!userId) {
-      console.warn('user_id가 없습니다');
-      return;
-    }
-
-    console.log('user_id:', userId);
-
-    const tokenRows = await conn.query(
-      `SELECT expo_push_token FROM user_tokens WHERE user_id = ? LIMIT 1`,
+    const [tokenResult] = await conn.query(
+      `SELECT fcm_token FROM user_tokens WHERE user_id = ? LIMIT 1`,
       [userId]
     );
 
-    console.log('tokenRows:', tokenRows);
-
-    if (!tokenRows || tokenRows.length === 0 || !tokenRows[0].expo_push_token) {
-      console.warn(`[Expo Push] expo_push_token 없음 - user_id: ${userId}`);
+    if (!tokenResult || tokenResult.length === 0 || !tokenResult[0].fcm_token) {
+      console.warn(`FCM 토큰 없음 - user_id: ${userId}`);
       return;
     }
 
-    const expoToken = tokenRows[0].expo_push_token;
+    const fcmToken = tokenResult[0].fcm_token;
 
     const payload = {
-      to: expoToken,
-      sound: 'default',
-      title: '🚨 스마트팜 경고',
-      body: message,
-      data: { farm_id },
+      token: fcmToken,
+      notification: {
+        title: '🚨 스마트팜 경고',
+        body: message,
+      },
+      data: {
+        farm_id: String(farm_id),
+      },
     };
 
-    const response = await axios.post(EXPO_PUSH_API_URL, payload, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    console.log('[Expo Push] 알림 전송 결과:', response.data);
+    const response = await admin.messaging().send(payload);
+    console.log('[FCM Push] 전송 성공:', response);
   } catch (err) {
-    console.error('[Expo Push] 알림 전송 실패:', err);
+    console.error('[FCM Push] 전송 실패:', err);
   } finally {
     if (conn) conn.release();
   }
