@@ -162,9 +162,12 @@ async function sendPushNotificationToUser(farm_id, message) {
       `SELECT fcm_token FROM user_tokens WHERE user_id = ? LIMIT 1`,
       [user.user_id]
     );
-    if (!tokenRow || !tokenRow.expo_push_token) return;
+    if (!tokenRow || !tokenRow.fcm_token) {
+      console.warn(`[Expo Push] FCM 토큰 없음 - user_id: ${user.user_id}`);
+      return;
+    }
+    const expoToken = tokenRow.fcm_token;
 
-    const expoToken = tokenRow.expo_push_token;
 
     const payload = {
       to: expoToken,
