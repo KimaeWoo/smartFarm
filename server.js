@@ -152,20 +152,27 @@ async function sendPushNotificationToUser(farm_id, message) {
   try {
     conn = await db.getConnection();
 
-    const rows = await conn.query(
+    // 쿼리 결과 구조분해
+    const [rows] = await conn.query(
       `SELECT user_id FROM farms WHERE farm_id = ?`,
       [farm_id]
     );
 
     console.log('쿼리 결과 rows:', rows);
-
-    if (!rows) {
-      console.warn('rows가 undefined입니다');
-    } else if (!rows.user_id) {
-      console.warn('user_id가 없습니다');
+    console.log('길이:',rows.loength);
+    if (!rows || rows.length === 0) {
+      console.warn('rows가 없거나 빈 배열입니다');
+      return;
     }
-    console.log('user_id:', rows.user_id);
-    const userId = rows.user_id;
+
+    const userId = rows[0].user_id;
+
+    if (!userId) {
+      console.warn('user_id가 없습니다');
+      return;
+    }
+
+    console.log('user_id:', userId);
 
     const [tokenRows] = await conn.query(
       `SELECT expo_push_token FROM user_tokens WHERE user_id = ? LIMIT 1`,
