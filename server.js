@@ -115,13 +115,13 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-// FCM 토큰 등록
+// 토큰 등록
 app.post('/register-fcm-token', authenticateToken, async (req, res) => {
   const user_id = req.user.user_id;
-  const { fcm_token } = req.body;
+  const { expo_push_token } = req.body; 
 
-  if (!fcm_token) {
-    return res.status(400).json({ message: 'fcm_token이 필요합니다' });
+  if (!expo_push_token) {
+    return res.status(400).json({ message: 'expo_push_token이 필요합니다' });
   }
 
   let conn;
@@ -129,13 +129,13 @@ app.post('/register-fcm-token', authenticateToken, async (req, res) => {
     conn = await db.getConnection();
 
     const upsertQuery = `
-      INSERT INTO user_tokens (user_id, fcm_token)
+      INSERT INTO user_tokens (user_id, expo_push_token)
       VALUES (?, ?)
-      ON DUPLICATE KEY UPDATE fcm_token = VALUES(fcm_token)
+      ON DUPLICATE KEY UPDATE expo_push_token = VALUES(expo_push_token)
     `;
 
-    await conn.query(upsertQuery, [user_id, fcm_token]);
-    console.log(`[POST /register-fcm-token] FCM 토큰 등록 성공 - ${user_id}`);
+    await conn.query(upsertQuery, [user_id, expo_push_token]);
+    console.log(`[POST /register-fcm-token] Expo Push 토큰 등록 성공 - ${user_id}`);
     return res.json({ message: '토큰 등록 성공' });
   } catch (err) {
     console.error('[POST /register-fcm-token] DB 오류:', err);
@@ -152,11 +152,10 @@ async function sendPushNotificationToUser(farm_id, message) {
   try {
     conn = await db.getConnection();
 
-    const [rows, fields] = await conn.query(
+    const [rows] = await conn.query(
       `SELECT user_id FROM farms WHERE farm_id = ? LIMIT 1`,
       [farm_id]
     );
-    console.log('[Expo Push] 사용자 조회 rows:', rows);
 
     if (!rows || rows.length === 0 || !rows[0].user_id) {
       console.warn(`[Expo Push] 사용자 없음 - farm_id: ${farm_id}`);
@@ -164,20 +163,18 @@ async function sendPushNotificationToUser(farm_id, message) {
     }
 
     const userId = rows[0].user_id;
-    console.log(`[Expo Push] user_id: ${userId}`);
 
     const [tokenRows] = await conn.query(
-      `SELECT fcm_token FROM user_tokens WHERE user_id = ? LIMIT 1`,
-      [userId] // 여기서 user.user_id 대신 userId를 사용
+      `SELECT expo_push_token FROM user_tokens WHERE user_id = ? LIMIT 1`,
+      [userId]
     );
-    const tokenRow = tokenRows[0];
-    if (!tokenRow || !tokenRow.fcm_token) {
-      console.warn(`[Expo Push] FCM 토큰 없음 - user_id: ${userId}`);
+
+    if (!tokenRows || tokenRows.length === 0 || !tokenRows[0].expo_push_token) {
+      console.warn(`[Expo Push] expo_push_token 없음 - user_id: ${userId}`);
       return;
     }
 
-    const expoToken = tokenRow.fcm_token;
-    console.log(`[Expo Push] expoToken: ${expoToken}`);
+    const expoToken = tokenRows[0].expo_push_token;
 
     const payload = {
       to: expoToken,
@@ -186,8 +183,6 @@ async function sendPushNotificationToUser(farm_id, message) {
       body: message,
       data: { farm_id },
     };
-
-    console.log('[Expo Push] 전송 payload:', JSON.stringify(payload));
 
     const response = await axios.post(EXPO_PUSH_API_URL, payload, {
       headers: {
