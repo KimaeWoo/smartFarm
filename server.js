@@ -168,11 +168,11 @@ async function sendPushNotificationToUser(farm_id, message) {
 
     const [tokenRows] = await conn.query(
       `SELECT fcm_token FROM user_tokens WHERE user_id = ? LIMIT 1`,
-      [user.user_id]
+      [userId] // user.user_id 대신 userId 사용
     );
     const tokenRow = tokenRows[0];
     if (!tokenRow || !tokenRow.fcm_token) {
-      console.warn(`[Expo Push] FCM 토큰 없음 - user_id: ${user.user_id}`);
+      console.warn(`[Expo Push] FCM 토큰 없음 - user_id: ${userId}`);
       return;
     }
 
