@@ -158,6 +158,7 @@ async function sendPushNotificationToUser(farm_id, message) {
     );
     const user = userRows[0];
     if (!user || !user.user_id) {
+      console.log('[Expo Push] userRows:', userRows);
       console.warn(`[Expo Push] 사용자 없음 - farm_id: ${farm_id}`);
       return;
     }
