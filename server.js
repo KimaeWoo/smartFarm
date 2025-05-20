@@ -152,22 +152,30 @@ async function sendPushNotificationToUser(farm_id, message) {
   try {
     conn = await db.getConnection();
 
-    const [user] = await conn.query(
+    const [userRows] = await conn.query(
       `SELECT user_id FROM farms WHERE farm_id = ? LIMIT 1`,
       [farm_id]
     );
-    if (!user || !user.user_id) return;
+    const user = userRows[0];
+    if (!user || !user.user_id) {
+      console.warn(`[Expo Push] 사용자 없음 - farm_id: ${farm_id}`);
+      return;
+    }
 
-    const [tokenRow] = await conn.query(
+    console.log(`[Expo Push] user_id: ${user.user_id}`);
+
+    const [tokenRows] = await conn.query(
       `SELECT fcm_token FROM user_tokens WHERE user_id = ? LIMIT 1`,
       [user.user_id]
     );
+    const tokenRow = tokenRows[0];
     if (!tokenRow || !tokenRow.fcm_token) {
       console.warn(`[Expo Push] FCM 토큰 없음 - user_id: ${user.user_id}`);
       return;
     }
-    const expoToken = tokenRow.fcm_token;
 
+    const expoToken = tokenRow.fcm_token;
+    console.log(`[Expo Push] expoToken: ${expoToken}`);
 
     const payload = {
       to: expoToken,
@@ -177,15 +185,17 @@ async function sendPushNotificationToUser(farm_id, message) {
       data: { farm_id },
     };
 
-    await axios.post(EXPO_PUSH_API_URL, payload, {
+    console.log('[Expo Push] 전송 payload:', JSON.stringify(payload));
+
+    const response = await axios.post(EXPO_PUSH_API_URL, payload, {
       headers: {
         'Content-Type': 'application/json',
       },
     });
 
-    console.log(`[Expo Push] 알림 전송 성공: ${message}`);
+    console.log('[Expo Push] 알림 전송 결과:', response.data);
   } catch (err) {
-    console.error('[Expo Push] 알림 전송 실패:', err.message);
+    console.error('[Expo Push] 알림 전송 실패:', err);
   } finally {
     if (conn) conn.release();
   }
