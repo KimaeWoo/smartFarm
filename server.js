@@ -157,8 +157,15 @@ async function sendPushNotificationToUser(farm_id, message) {
       [farm_id]
     );
 
-    if (!rows || rows.length === 0 || !rows[0].user_id) {
-      console.warn(`[Expo Push] 사용자 없음 - farm_id: ${farm_id}`);
+    console.log('쿼리 결과 rows:', rows);
+
+    if (!rows || rows.length === 0) {
+      console.warn(`[Expo Push] farm_id에 해당하는 농장 없음 - farm_id: ${farm_id}`);
+      return;
+    }
+
+    if (!rows[0].user_id) {
+      console.warn(`[Expo Push] user_id 컬럼이 없음 - farm_id: ${farm_id}`);
       return;
     }
 
