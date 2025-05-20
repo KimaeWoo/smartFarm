@@ -156,9 +156,10 @@ async function sendPushNotificationToUser(farm_id, message) {
       `SELECT user_id FROM farms WHERE farm_id = ? LIMIT 1`,
       [farm_id]
     );
+    console.log('[Expo Push] userRows:', userRows);
+
     const user = userRows[0];
     if (!user || !user.user_id) {
-      console.log('[Expo Push] userRows:', userRows);
       console.warn(`[Expo Push] 사용자 없음 - farm_id: ${farm_id}`);
       return;
     }
