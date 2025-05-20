@@ -174,10 +174,12 @@ async function sendPushNotificationToUser(farm_id, message) {
 
     console.log('user_id:', userId);
 
-    const [tokenRows] = await conn.query(
+    const tokenRows = await conn.query(
       `SELECT expo_push_token FROM user_tokens WHERE user_id = ? LIMIT 1`,
       [userId]
     );
+
+    console.log('tokenRows:', tokenRows);
 
     if (!tokenRows || tokenRows.length === 0 || !tokenRows[0].expo_push_token) {
       console.warn(`[Expo Push] expo_push_token 없음 - user_id: ${userId}`);
