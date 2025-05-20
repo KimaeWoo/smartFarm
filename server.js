@@ -159,7 +159,7 @@ async function sendPushNotificationToUser(farm_id, message) {
     if (!user || !user.user_id) return;
 
     const [tokenRow] = await conn.query(
-      `SELECT expo_push_token FROM user_tokens WHERE user_id = ? LIMIT 1`,
+      `SELECT fcm_token FROM user_tokens WHERE user_id = ? LIMIT 1`,
       [user.user_id]
     );
     if (!tokenRow || !tokenRow.expo_push_token) return;
