@@ -153,21 +153,18 @@ async function sendPushNotificationToUser(farm_id, message) {
     conn = await db.getConnection();
 
     const rows = await conn.query(
-      `SELECT user_id FROM farms WHERE farm_id = ? LIMIT 1`,
+      `SELECT user_id FROM farms WHERE farm_id = ?`,
       [farm_id]
     );
 
     console.log('쿼리 결과 rows:', rows);
 
-    if (!rows || !rows.user_id) {
-      console.warn(`[Expo Push] farm_id에 해당하는 사용자 없음 - farm_id: ${farm_id}`);
-      return;
-    }
     if (!rows) {
       console.warn('rows가 undefined입니다');
     } else if (!rows.user_id) {
       console.warn('user_id가 없습니다');
     }
+    console.log('user_id:', rows.user_id);
     const userId = rows.user_id;
 
     const [tokenRows] = await conn.query(
