@@ -168,7 +168,7 @@ async function sendPushNotificationToUser(farm_id, message) {
 
     const [tokenRows] = await conn.query(
       `SELECT fcm_token FROM user_tokens WHERE user_id = ? LIMIT 1`,
-      [userId] // user.user_id 대신 userId 사용
+      [userId] // 여기서 user.user_id 대신 userId를 사용
     );
     const tokenRow = tokenRows[0];
     if (!tokenRow || !tokenRow.fcm_token) {
