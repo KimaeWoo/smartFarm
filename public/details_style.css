@@ -2,7 +2,7 @@
 
 :root {
   --bg-color: #0a0a1a;
-  --card-bg: rgba(16, 18, 27, 0.7);
+  --card-bg: rgba(19, 23, 41, 0.768);
   --neon-primary: #00c4c4;
   --neon-secondary: #d000d0;
   --neon-tertiary: #5b00c3;
@@ -242,7 +242,7 @@ main {
   border-radius: var(--border-radius);
   padding: 1.25rem;
   color: white;
-  box-shadow: var(--glass-shadow);
+  /* box-shadow: var(--glass-shadow); */
   display: flex;
   flex-direction: column;
   border: var(--glass-border);
@@ -294,11 +294,11 @@ main {
   text-transform: uppercase;
   letter-spacing: 1px;
   font-family: "Orbitron", sans-serif;
-  box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+  /* box-shadow: 0 0 15px rgba(0, 255, 255, 0.3); */
 }
 
 .start-farm-button:hover {
-  background: linear-gradient(90deg, var(--neon-primary), var(--neon-tertiary));
+  /* background: linear-gradient(90deg, var(--neon-primary), var(--neon-tertiary)); */
   transform: translateY(-2px);
   box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
 }
@@ -320,21 +320,21 @@ main {
   background-color: rgba(0, 0, 0, 0.3);
   border-radius: 10px;
   padding: 0.5rem;
-  box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+  /* box-shadow: 0 0 15px rgba(0, 255, 255, 0.3); */
   transition: transform 0.3s ease;
   border: var(--glass-border);
 }
 
 .growth-image-container:hover {
   transform: scale(1.05);
-  box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+  /* box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); */
 }
 
 .plant-image {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
-  filter: drop-shadow(0 0 5px var(--neon-primary));
+  /* filter: drop-shadow(0 0 5px var(--neon-primary)); */
 }
 
 .growth-details {
@@ -423,7 +423,7 @@ main {
   position: relative;
   z-index: 1;
   transition: all 0.3s ease;
-  box-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
+  /* box-shadow: 0 0 5px rgba(0, 255, 255, 0.3); */
 }
 
 .stage.active {
@@ -627,7 +627,7 @@ main {
   border-bottom: 2px solid var(--neon-primary);
   color: var(--neon-primary);
   font-weight: 600;
-  text-shadow: 0 0 10px var(--neon-primary);
+  /* text-shadow: 0 0 10px var(--neon-primary); */
 }
 
 .tab-content {
@@ -659,9 +659,9 @@ main {
 }
 
 .card {
-  background-color: var(--glass-bg);
+  background-color: var(--card-bg);
   border-radius: var(--border-radius);
-  box-shadow: var(--glass-shadow);
+  /* box-shadow: var(--glass-shadow); */
   overflow: hidden;
   margin-bottom: 1rem;
   transition: all 0.3s ease;
@@ -684,7 +684,7 @@ main {
 
 .card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+  /* box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); */
 }
 
 .card:hover::before {
@@ -805,22 +805,22 @@ main {
 
 .progress-bar.temp {
   background-color: var(--temp-color);
-  box-shadow: 0 0 10px var(--temp-color);
+  /* box-shadow: 0 0 10px var(--temp-color); */
 }
 
 .progress-bar.humidity {
   background-color: var(--humidity-color);
-  box-shadow: 0 0 10px var(--humidity-color);
+  /* box-shadow: 0 0 10px var(--humidity-color); */
 }
 
 .progress-bar.soil {
   background-color: var(--soil-color);
-  box-shadow: 0 0 10px var(--soil-color);
+  /* box-shadow: 0 0 10px var(--soil-color); */
 }
 
 .progress-bar.co2 {
   background-color: var(--co2-color);
-  box-shadow: 0 0 10px var(--co2-color);
+  /* box-shadow: 0 0 10px var(--co2-color); */
 }
 
 .flex-col {
@@ -863,11 +863,11 @@ main {
   border: var(--glass-border);
 }
 
-.device-item:hover {
+/* .device-item:hover {
   background-color: rgba(0, 255, 255, 0.1);
   transform: translateY(-5px);
   box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
-}
+} */
 
 .device-icon {
   width: 3.5rem;
@@ -1256,29 +1256,29 @@ input:checked + .slider:before {
 .sensor-tab.active.temp {
   background-color: rgba(255, 94, 94, 0.2);
   color: var(--temp-color);
-  box-shadow: 0 0 10px var(--temp-color);
-  text-shadow: 0 0 5px var(--temp-color);
+  /* box-shadow: 0 0 10px var(--temp-color);
+  text-shadow: 0 0 5px var(--temp-color); */
 }
 
 .sensor-tab.active.humidity {
   background-color: rgba(0, 255, 255, 0.2);
   color: var(--humidity-color);
-  box-shadow: 0 0 10px var(--humidity-color);
-  text-shadow: 0 0 5px var(--humidity-color);
+  /* box-shadow: 0 0 10px var(--humidity-color);
+  text-shadow: 0 0 5px var(--humidity-color); */
 }
 
 .sensor-tab.active.soil {
   background-color: rgba(255, 204, 0, 0.2);
   color: var(--soil-color);
-  box-shadow: 0 0 10px var(--soil-color);
-  text-shadow: 0 0 5px var(--soil-color);
+  /* box-shadow: 0 0 10px var(--soil-color);
+  text-shadow: 0 0 5px var(--soil-color); */
 }
 
 .sensor-tab.active.co2 {
   background-color: rgba(51, 255, 153, 0.2);
   color: var(--co2-color);
-  box-shadow: 0 0 10px var(--co2-color);
-  text-shadow: 0 0 5px var(--co2-color);
+  /* box-shadow: 0 0 10px var(--co2-color);
+  text-shadow: 0 0 5px var(--co2-color); */
 }
 
 .sensor-chart {
