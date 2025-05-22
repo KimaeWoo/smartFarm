@@ -1184,7 +1184,7 @@ app.post('/generate-report', async (req, res) => {
       max_tokens: 300,
     });
 
-    const aiAnalysis = response.choices[0].message.content.trim();
+    let aiAnalysis = response.choices[0].message.content.trim();
 
     // AI 응답이 예상 형식을 따르지 않을 경우 보정
     const expectedLines = [
@@ -1198,7 +1198,7 @@ app.post('/generate-report', async (req, res) => {
         return matchingLine;
       }).join('\n');
     }
-    
+
     // 리포트 저장
     console.log('리포트 데이터베이스 저장');
     const insertQuery = `
