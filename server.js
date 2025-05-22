@@ -1056,7 +1056,7 @@ app.post('/generate-report', async (req, res) => {
   let conn;
   try {
     console.log('리포트 생성 요청 수신:', req.body);
-    const { farmId, date } = req.body;
+    const { farmId, date, cropType } = req.body;
 
     // 입력 데이터 검증
     if (!farmId || !date) {
@@ -1080,15 +1080,45 @@ app.post('/generate-report', async (req, res) => {
       'SELECT id FROM reports WHERE farm_id = ? AND date = ?',
       [farmId, date]
     );
-    console.log('중복 리포트 조회 결과:', queryResult);
-
-    // MariaDB 버전에 따라 결과 처리
     let existingReport = Array.isArray(queryResult) ? queryResult : queryResult?.rows || [];
-    console.log('기존 리포트:', existingReport);
-
     if (existingReport.length > 0) {
       return res.status(409).json({ error: '해당 날짜의 리포트가 이미 존재합니다.' });
     }
+
+    // 작물 종류 및 최적 조건 조회
+    let optimalConditions = {};
+    let growthStage = { stage: '미지정', progress: 0 };
+    if (!cropType) {
+      const farmQuery = `
+        SELECT f.farm_type, f.start_date, c.harvest_days
+        FROM farms f
+        JOIN crops c ON f.farm_type = c.name
+        WHERE f.farm_id = ?
+      `;
+      const farmResult = await conn.query(farmQuery, [farmId]);
+      if (farmResult.length > 0) {
+        req.body.cropType = farmResult[0].farm_type;
+        if (farmResult[0].start_date && farmResult[0].harvest_days) {
+          growthStage = getGrowthStage(farmResult[0].start_date, farmResult[0].harvest_days);
+        }
+      } else {
+        req.body.cropType = '일반 작물';
+      }
+    }
+
+    const conditionsQuery = `
+      SELECT condition_type, optimal_min, optimal_max
+      FROM farm_conditions
+      WHERE farm_id = ?
+    `;
+    const conditionsResult = await conn.query(conditionsQuery, [farmId]);
+    conditionsResult.forEach(row => {
+      optimalConditions[row.condition_type] = {
+        optimal_min: row.optimal_min,
+        optimal_max: row.optimal_max,
+      };
+    });
+    req.body.optimalConditions = optimalConditions;
 
     // 센서 데이터 조회
     console.log('센서 데이터 조회');
@@ -1151,10 +1181,31 @@ app.post('/generate-report', async (req, res) => {
     console.log('제어 장치 조회');
     const deviceLogs = await fetchDeviceLogs(farmId, date);
 
-    // AI 분석 생성 (수정된 프롬프트)
+    // 이상 징후 알림 조회
+    const alarmsQuery = `
+      SELECT content, device, type
+      FROM alarms
+      WHERE farm_id = ? AND created_at LIKE ?
+    `;
+    const recentAlarms = await conn.query(alarmsQuery, [farmId, `${date}%`]);
+
+    // 이상 징후 탐지 (예: 온도 높음인데 팬 작동 없음)
+    const criticalIssues = [];
+    if (sensorChanges.max_temperature.value > optimalConditions.temperature?.optimal_max * 1.2 && deviceLogs.fan.count === 0) {
+      criticalIssues.push(`고온 (${sensorChanges.max_temperature.value}℃)에도 환기팬 작동 없음`);
+    }
+    if (sensorChanges.max_humidity.value > optimalConditions.humidity?.optimal_max * 1.2 && deviceLogs.fan.count === 0) {
+      criticalIssues.push(`고습 (${sensorChanges.max_humidity.value}%)에도 환기팬 작동 없음`);
+    }
+    if (sensorChanges.max_co2.value > optimalConditions.co2?.optimal_max * 1.5) {
+      criticalIssues.push(`CO₂ 급등 (${sensorChanges.max_co2.value}ppm)`);
+      await sendPushNotificationToUser(farmId, `🚨 CO₂ 농도 ${sensorChanges.max_co2.value}ppm 급등! 즉시 환기 점검 필요`);
+    }
+
+    // AI 분석 생성
     console.log('AI 분석 생성');
     const prompt = `
-      다음은 스마트팜의 일일 리포트용 데이터입니다. 센서 요약, 수치 변화, 제어 장치 작동 기록, 그리고 데이터 신뢰성 및 이상 징후 정보를 기반으로 아래 출력 형식에 따라 간결하고 명확하게 요약하세요.
+      당신은 스마트팜 데이터 분석 전문가입니다. 아래 데이터를 기반으로, 지정된 작물(${req.body.cropType || '일반 작물'})의 생육 조건과 성장 단계(${growthStage.stage}, 진행률 ${growthStage.progress}%)를 고려하여 간결하고 명확한 일일 리포트 요약을 작성하세요. 데이터 신뢰성, 이상 징후, 작물 건강에 대한 통찰, 실용적인 개선 제안을 포함하고, 각 항목을 한 줄로 간소화하세요.
 
       데이터:
       1. 센서 측정 요약:
@@ -1166,15 +1217,31 @@ app.post('/generate-report', async (req, res) => {
       3. 제어 장치 작동 기록:
       ${JSON.stringify(deviceLogs, null, 2)}
 
-      출력 형식 (각 항목은 반드시 한 줄 요약, 이모지로 시작하며 줄바꿈 \n 포함):
-      
-      출력 형식:
-      🌡️ 온도: [안정적/변동 심함/높음/낮음], 평균 [수치]℃\n  
-      💧 습도: [적정/높음/낮음], 평균 [수치]%\n
-      🌱 토양 수분: [충분/부족/과다], 평균 [수치]%\n  
-      🌬️ CO₂ 농도: [안정적/변동 심함/높음/낮음], 평균 [수치]ppm\n  
-      ⚠️ 주요 문제: [예: 습도 센서 데이터 누락, 팬 미작동, CO₂ 과다 상승 등]\n
-      ✅ 개선 제안: [예: 습도 센서 점검 필요, 팬 설정 재확인, 현재 상태 유지 등]\n
+      4. 최근 알림 (경고):
+      ${JSON.stringify(recentAlarms, null, 2)}
+
+      5. 작물 정보 및 최적 조건:
+      - 작물 종류: ${req.body.cropType || '일반 작물'}
+      - 성장 단계: ${growthStage.stage} (진행률 ${growthStage.progress}%)
+      - 최적 온도: ${optimalConditions.temperature?.optimal_min || 20}-${optimalConditions.temperature?.optimal_max || 25}℃
+      - 최적 습도: ${optimalConditions.humidity?.optimal_min || 60}-${optimalConditions.humidity?.optimal_max || 80}%
+      - 최적 토양 수분: ${optimalConditions.soil_moisture?.optimal_min || 50}-${optimalConditions.soil_moisture?.optimal_max || 70}%
+      - 최적 CO₂: ${optimalConditions.co2?.optimal_min || 400}-${optimalConditions.co2?.optimal_max || 1000}ppm
+
+      6. 데이터 신뢰도:
+      - 온도 데이터 누락: ${((historyData.temperatureData.filter(v => v === 0 || v === null).length / historyData.temperatureData.length) * 100).toFixed(1)}%
+      - 습도 데이터 누락: ${((historyData.humidityData.filter(v => v === 0 || v === null).length / historyData.humidityData.length) * 100).toFixed(1)}%
+      - 토양 수분 데이터 누락: ${((historyData.soilData.filter(v => v === 0 || v === null).length / historyData.soilData.length) * 100).toFixed(1)}%
+      - CO₂ 데이터 누락: ${((historyData.co2Data.filter(v => v === 0 || v === null).length / historyData.co2Data.length) * 100).toFixed(1)}%
+
+      출력 형식 (이모지로 시작, 한 줄 요약, 줄바꿈 \n 포함):
+      🌡️ 온도: [상태], 평균 [수치]℃ (최적: [범위]℃) → [영향]\n
+      💧 습도: [상태], 평균 [수치]% (최적: [범위]%) → [영향]\n
+      🌱 토양 수분: [상태], 평균 [수치]% (최적: [범위]%) → [영향]\n
+      🌬️ CO₂: [상태], 평균 [수치]ppm (최적: [범위]ppm) → [영향]\n
+      ⚠️ 주요 문제: [문제 요약]\n
+      ✅ 개선 제안: [실용적인 제안]\n
+      📊 데이터 신뢰도: [정상/일부 누락/심각한 누락]\n
     `;
 
     const response = await openai.chat.completions.create({
@@ -1183,14 +1250,14 @@ app.post('/generate-report', async (req, res) => {
         { role: 'system', content: '당신은 스마트팜 데이터 분석 전문가입니다. 지정된 형식을 정확히 따르고, 간결하고 명확하게 요약하세요.' },
         { role: 'user', content: prompt },
       ],
-      max_tokens: 300,
+      max_tokens: 400,
     });
 
     let aiAnalysis = response.choices[0].message.content.trim();
 
-    // AI 응답이 예상 형식을 따르지 않을 경우 보정
+    // AI 응답 형식 보정
     const expectedLines = [
-      '🌡️ 온도:', '💧 습도:', '🌱 토양 수분:', '🌬️ CO₂ 농도:', '⚠️ 주요 문제:', '✅ 개선 제안:'
+      '🌡️ 온도:', '💧 습도:', '🌱 토양 수분:', '🌬️ CO₂:', '⚠️ 주요 문제:', '✅ 개선 제안:', '📊 데이터 신뢰도:'
     ];
     const lines = aiAnalysis.split('\n');
     if (lines.length !== expectedLines.length || !lines.every((line, i) => line.startsWith(expectedLines[i]))) {
@@ -1219,40 +1286,56 @@ app.post('/generate-report', async (req, res) => {
     // 리포트 텍스트 생성
     const reportText = `
 📋 스마트팜 일일 리포트
-1. 날짜
-${date}
+📅 날짜: ${date}
 
-2. 센서 측정 요약
-평균 온도: ${sensorSummary.avg_temperature} ℃
-평균 습도: ${sensorSummary.avg_humidity} %
-평균 토양 수분: ${sensorSummary.avg_soil_moisture} %
-평균 CO₂ 농도: ${sensorSummary.avg_co2} ppm
+🌾 작물 정보
+- 작물: ${req.body.cropType || '일반 작물'}
+- 성장 단계: ${growthStage.stage} (진행률 ${growthStage.progress}%)
+- 최적 온도: ${optimalConditions.temperature?.optimal_min || 20}-${optimalConditions.temperature?.optimal_max || 25}℃
+- 최적 습도: ${optimalConditions.humidity?.optimal_min || 60}-${optimalConditions.humidity?.optimal_max || 80}%
+- 최적 토양 수분: ${optimalConditions.soil_moisture?.optimal_min || 50}-${optimalConditions.soil_moisture?.optimal_max || 70}%
+- 최적 CO₂: ${optimalConditions.co2?.optimal_min || 400}-${optimalConditions.co2?.optimal_max || 1000}ppm
 
-3. 센서 수치 변화
-최고 온도: ${sensorChanges.max_temperature.value} ℃ (시간: ${sensorChanges.max_temperature.time})
-최저 온도: ${sensorChanges.min_temperature.value} ℃ (시간: ${sensorChanges.min_temperature.time})
-최고 습도: ${sensorChanges.max_humidity.value} % (시간: ${sensorChanges.max_humidity.time})
-최저 습도: ${sensorChanges.min_humidity.value} % (시간: ${sensorChanges.min_humidity.time})
-최고 토양 수분: ${sensorChanges.max_soil_moisture.value} % (시간: ${sensorChanges.max_soil_moisture.time})
-최저 토양 수분: ${sensorChanges.min_soil_moisture.value} % (시간: ${sensorChanges.min_soil_moisture.time})
-최고 CO₂ 농도: ${sensorChanges.max_co2.value} ppm (시간: ${sensorChanges.max_co2.time})
-최저 CO₂ 농도: ${sensorChanges.min_co2.value} ppm (시간: ${sensorChanges.min_co2.time})
+📈 센서 요약
+- 온도: ${sensorSummary.avg_temperature}℃
+- 습도: ${sensorSummary.avg_humidity}%
+- 토양 수분: ${sensorSummary.avg_soil_moisture}%
+- CO₂: ${sensorSummary.avg_co2}ppm
 
-4. 제어 장치 작동 기록
-LED: ${deviceLogs.led.start ? `켜짐(시작: ${deviceLogs.led.start}, 종료: ${deviceLogs.led.end})` : '꺼짐'}
-환기팬: 작동 횟수 ${deviceLogs.fan.count}회, 총 작동 시간 ${deviceLogs.fan.total_time}분
-급수장치: 급수 횟수 ${deviceLogs.water.count}회, 총 급수량 ${deviceLogs.water.total_amount} L
-히터: 작동 횟수 ${deviceLogs.heater.count}회, 총 작동 시간 ${deviceLogs.heater.total_time}분
-쿨러: 작동 횟수 ${deviceLogs.cooler.count}회, 총 작동 시간 ${deviceLogs.cooler.total_time}분
+📊 센서 변화
+- 최고 온도: ${sensorChanges.max_temperature.value}℃ (${sensorChanges.max_temperature.time})
+- 최저 온도: ${sensorChanges.min_temperature.value}℃ (${sensorChanges.min_temperature.time})
+- 최고 습도: ${sensorChanges.max_humidity.value}% (${sensorChanges.max_humidity.time})
+- 최저 습도: ${sensorChanges.min_humidity.value}% (${sensorChanges.min_humidity.time})
+- 최고 토양 수분: ${sensorChanges.max_soil_moisture.value}% (${sensorChanges.max_soil_moisture.time})
+- 최저 토양 수분: ${sensorChanges.min_soil_moisture.value}% (${sensorChanges.min_soil_moisture.time})
+- 최고 CO₂: ${sensorChanges.max_co2.value}ppm (${sensorChanges.max_co2.time})
+- 최저 CO₂: ${sensorChanges.min_co2.value}ppm (${sensorChanges.min_co2.time})
 
-5. AI 분석 및 요약
+⚙️ 제어 장치
+- LED: ${deviceLogs.led.start ? `켜짐 (${deviceLogs.led.start}~${deviceLogs.led.end})` : '꺼짐'}
+- 환기팬: ${deviceLogs.fan.count}회, ${deviceLogs.fan.total_time}분
+- 급수: ${deviceLogs.water.count}회, ${deviceLogs.water.total_amount}L
+- 히터: ${deviceLogs.heater.count}회, ${deviceLogs.heater.total_time}분
+- 쿨러: ${deviceLogs.cooler.count}회, ${deviceLogs.cooler.total_time}분
+
+🤖 AI 분석
 ${aiAnalysis}
     `;
 
     res.json({
       reportText,
       reportId: Number(result.insertId),
-      aiAnalysis
+      aiAnalysis,
+      chartData: {
+        labels: historyData.timeLabels,
+        datasets: [
+          { label: '온도(℃)', data: historyData.temperatureData, borderColor: '#FF6384', fill: false },
+          { label: '습도(%)', data: historyData.humidityData, borderColor: '#36A2EB', fill: false },
+          { label: '토양 수분(%)', data: historyData.soilData, borderColor: '#4BC0C0', fill: false },
+          { label: 'CO₂(ppm)', data: historyData.co2Data, borderColor: '#FFCE56', fill: false },
+        ],
+      },
     });
   } catch (error) {
     console.error('리포트 생성 오류:', error);
@@ -1264,6 +1347,19 @@ ${aiAnalysis}
     if (conn) conn.release();
   }
 });
+
+// 성장 단계 계산 함수
+function getGrowthStage(startDate, harvestDays) {
+  const today = new Date();
+  const start = new Date(startDate);
+  const daysPassed = Math.floor((today - start) / (1000 * 3600 * 24));
+  const progress = (daysPassed / harvestDays) * 100;
+
+  if (progress < 20) return { stage: '발아기', progress: progress.toFixed(1) };
+  if (progress < 50) return { stage: '생장기', progress: progress.toFixed(1) };
+  if (progress < 80) return { stage: '개화기', progress: progress.toFixed(1) };
+  return { stage: '결실기', progress: progress.toFixed(1) };
+}
 
 // 리포트 센서 데이터 조회
 async function fetchHistoryDataFromDB(farmId, date) {
