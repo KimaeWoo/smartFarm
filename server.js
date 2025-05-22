@@ -1231,7 +1231,11 @@ LED: ${deviceLogs.led.start ? `켜짐(시작: ${deviceLogs.led.start}, 종료: $
 ${aiAnalysis}
     `;
 
-    res.json({ reportText, reportId: Number(result.insertId) });
+    res.json({
+      reportText,
+      reportId: Number(result.insertId),
+      aiAnalysis   // OpenAI로 받은 순수 분석 문자열
+    });
   } catch (error) {
     console.error('리포트 생성 오류:', error);
     if (error.code === 'ER_DUP_ENTRY') {
