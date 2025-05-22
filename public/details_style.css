@@ -979,10 +979,10 @@ main {
   box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
 }
 
-/* input:checked + .slider {
+input:checked + .slider {
   background-color: var(--neon-primary);
-  box-shadow: 0 0 10px var(--neon-primary);
-} */
+  /* box-shadow: 0 0 10px var(--neon-primary); */
+} 
 
 input:checked + .slider:before {
   transform: translateX(1.25rem);
