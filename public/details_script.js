@@ -1,3 +1,4 @@
+import { Chart } from "@/components/ui/chart"
 const API_BASE_URL = "https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app"
 
 const growthStages = [
@@ -51,47 +52,47 @@ if (dashboardtButton) {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-  let pendingDevice = null;
+  let pendingDevice = null
 
   function showDurationModal(device) {
-    pendingDevice = device;
-    document.getElementById("durationModal").style.display = "flex";
+    pendingDevice = device
+    document.getElementById("durationModal").style.display = "flex"
   }
 
   document.querySelectorAll(".switch input[type='checkbox']").forEach((input) => {
     input.addEventListener("change", (e) => {
-      e.preventDefault();
-      e.target.checked = !e.target.checked; // 잠시 되돌림
-      const device = e.target.id.split("-")[0];
-      showDurationModal(device);
-    });
-  });
+      e.preventDefault()
+      e.target.checked = !e.target.checked // 잠시 되돌림
+      const device = e.target.id.split("-")[0]
+      showDurationModal(device)
+    })
+  })
 
   document.querySelectorAll(".time-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
-      document.getElementById("customDuration").value = btn.dataset.minutes;
-    });
-  });
+      document.getElementById("customDuration").value = btn.dataset.minutes
+    })
+  })
 
   document.getElementById("cancelDuration").addEventListener("click", () => {
-    document.getElementById("durationModal").style.display = "none";
-    pendingDevice = null;
-  });
+    document.getElementById("durationModal").style.display = "none"
+    pendingDevice = null
+  })
 
   document.getElementById("confirmDuration").addEventListener("click", () => {
-    const minutes = parseInt(document.getElementById("customDuration").value);
+    const minutes = Number.parseInt(document.getElementById("customDuration").value)
     if (!minutes || minutes <= 0) {
-      alert("유효한 시간을 입력하세요");
-      return;
+      alert("유효한 시간을 입력하세요")
+      return
     }
-    const seconds = minutes * 60;
-    toggleDeviceWithDuration(pendingDevice, seconds);
-    document.getElementById("durationModal").style.display = "none";
-  });
+    const seconds = minutes * 60
+    toggleDeviceWithDuration(pendingDevice, seconds)
+    document.getElementById("durationModal").style.display = "none"
+  })
 
   async function toggleDeviceWithDuration(device, duration) {
-    const switchElement = document.getElementById(`${device}-switch`);
-    const status = !switchElement.checked;
+    const switchElement = document.getElementById(`${device}-switch`)
+    const status = !switchElement.checked
     try {
       const response = await fetch(`${API_BASE_URL}/devices/force-status`, {
         method: "POST",
@@ -100,17 +101,17 @@ document.addEventListener("DOMContentLoaded", async () => {
           farm_id: sessionStorage.getItem("farm_id"),
           device,
           status,
-          duration
-        })
-      });
-      if (!response.ok) throw new Error("요청 실패");
-      switchElement.checked = status;
-      updateSwitchUI(device, status);
+          duration,
+        }),
+      })
+      if (!response.ok) throw new Error("요청 실패")
+      switchElement.checked = status
+      updateSwitchUI(device, status)
     } catch (err) {
-      alert("장치 제어 실패: " + err.message);
+      alert("장치 제어 실패: " + err.message)
     }
   }
-  
+
   const today = new Date()
   const currentDate = new Date()
 
@@ -219,7 +220,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     })
   }
-  
+
   const userId = sessionStorage.getItem("user_id")
   const farmId = sessionStorage.getItem("farm_id")
   const farmType = sessionStorage.getItem("farm_type")
@@ -236,7 +237,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const humidOptimal = document.getElementById("humid-optimal")
   const soilOptimal = document.getElementById("soil-optimal")
   const co2Optimal = document.getElementById("co2-optimal")
-  
+
   function fetchData() {
     if (farmNameText) {
       farmNameText.textContent = farmName
@@ -261,47 +262,47 @@ document.addEventListener("DOMContentLoaded", async () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ farmId }),
-      });
+      })
 
-      if (!response.ok) throw new Error("서버 오류");
+      if (!response.ok) throw new Error("서버 오류")
 
-      const data = await response.json();
+      const data = await response.json()
 
-      const { harvestDays, startDate } = data;
-      console.log("start-farm 응답:", data);
-      console.log("harvestDays:", harvestDays);
-      console.log("startDate:", startDate);
+      const { harvestDays, startDate } = data
+      console.log("start-farm 응답:", data)
+      console.log("harvestDays:", harvestDays)
+      console.log("startDate:", startDate)
       if (!harvestDays || !startDate) {
-        throw new Error("작물 정보 누락");
+        throw new Error("작물 정보 누락")
       }
 
       // 버튼 숨김, 작물 정보 표시
-      if (startButton) startButton.style.display = "none";
-      if (cropInfo) cropInfo.classList.add("visible");
+      if (startButton) startButton.style.display = "none"
+      if (cropInfo) cropInfo.classList.add("visible")
 
       // 성장률 계산 및 UI 갱신
-      const today = new Date();
-      const startDateObj = new Date(startDate);
-      const harvestDate = new Date(startDateObj);
-      harvestDate.setDate(harvestDate.getDate() + harvestDays);
-      const timeDiff = harvestDate - today;
-      const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
-      const growthRate = ((harvestDays - daysLeft) / harvestDays) * 100;
+      const today = new Date()
+      const startDateObj = new Date(startDate)
+      const harvestDate = new Date(startDateObj)
+      harvestDate.setDate(harvestDate.getDate() + harvestDays)
+      const timeDiff = harvestDate - today
+      const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24))
+      const growthRate = ((harvestDays - daysLeft) / harvestDays) * 100
 
-      updateGrowthStatus(growthRate, harvestDays, startDate);
+      updateGrowthStatus(growthRate, harvestDays, startDate)
 
       // 농장 상태 갱신
-      await fetchFarmStatus();
+      await fetchFarmStatus()
 
-      alert("농장이 성공적으로 시작되었습니다.");
+      alert("농장이 성공적으로 시작되었습니다.")
     } catch (error) {
-      console.error("농장 시작 실패:", error);
-      alert("농장 시작 중 오류 발생");
+      console.error("농장 시작 실패:", error)
+      alert("농장 시작 중 오류 발생")
     }
   }
 
   if (startButton) {
-    startButton.addEventListener("click", startFarm);
+    startButton.addEventListener("click", startFarm)
   }
 
   // 농장 정보 가져오기
@@ -326,43 +327,42 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function updateGrowthStatus(growthRate, harvestDays, startDate) {
-    growthRate = Math.max(0, Math.min(growthRate, 100)); // 0~100으로 보정
+    growthRate = Math.max(0, Math.min(growthRate, 100)) // 0~100으로 보정
 
-    const growthRateEl = document.getElementById("growth-rate");
+    const growthRateEl = document.getElementById("growth-rate")
     if (growthRateEl) {
-      growthRateEl.textContent = `${Math.round(growthRate)}%`;
+      growthRateEl.textContent = `${Math.round(growthRate)}%`
     }
 
     const growthCircle = document.getElementById("growth-circle")
     if (growthCircle) {
-      growthCircle.style.background = `conic-gradient(#ffffff 0deg ${growthRate * 3.6}deg, rgba(255,255,255,0.3) ${growthRate * 3.6}deg 360deg)`;
-
+      growthCircle.style.background = `conic-gradient(#ffffff 0deg ${growthRate * 3.6}deg, rgba(255,255,255,0.3) ${growthRate * 3.6}deg 360deg)`
     }
 
-    const formattedStartDate = formatDateYMD(new Date(startDate));
-    const startDateEl = document.getElementById("start-date");
+    const formattedStartDate = formatDateYMD(new Date(startDate))
+    const startDateEl = document.getElementById("start-date")
     if (startDateEl) {
-      startDateEl.textContent = `시작일: ${formattedStartDate}`;
+      startDateEl.textContent = `시작일: ${formattedStartDate}`
     }
 
-    const today = new Date();
-    const harvestDate = new Date(startDate);
-    harvestDate.setDate(harvestDate.getDate() + harvestDays);
-    const timeDiff = harvestDate - today;
-    const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
+    const today = new Date()
+    const harvestDate = new Date(startDate)
+    harvestDate.setDate(harvestDate.getDate() + harvestDays)
+    const timeDiff = harvestDate - today
+    const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24))
 
-    const dDayEl = document.getElementById("d-day");
+    const dDayEl = document.getElementById("d-day")
     if (dDayEl) {
       if (daysLeft > 0) {
-        dDayEl.textContent = `D-Day: ${daysLeft}일 남음`;
+        dDayEl.textContent = `D-Day: ${daysLeft}일 남음`
       } else if (daysLeft === 0) {
-        dDayEl.textContent = `D-Day: 오늘 수확 가능`;
+        dDayEl.textContent = `D-Day: 오늘 수확 가능`
       } else {
-        dDayEl.textContent = `D-Day: 수확 완료`;
+        dDayEl.textContent = `D-Day: 수확 완료`
       }
     }
 
-    updateGrowthStageByRate(growthRate);
+    updateGrowthStageByRate(growthRate)
   }
 
   function updateGrowthStageByRate(growthRate) {
@@ -502,52 +502,52 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // 챗봇 기능
-  const chatInput = document.getElementById("chat-input-field");
-  const sendButton = document.getElementById("send-button");
+  const chatInput = document.getElementById("chat-input-field")
+  const sendButton = document.getElementById("send-button")
 
   // 메시지 전송 함수
   async function sendChatMessage() {
-    const input = chatInput.value.trim();
-    if (!input) return;
+    const input = chatInput.value.trim()
+    if (!input) return
 
-    addMessageToChat("user", input);
-    chatInput.value = "";
+    addMessageToChat("user", input)
+    chatInput.value = ""
 
     try {
       const response = await fetch(`${API_BASE_URL}/chatbot`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ message: input })
-      });
+        body: JSON.stringify({ message: input }),
+      })
 
-      const data = await response.json();
-      addMessageToChat("bot", data.reply || "답변 없음");
+      const data = await response.json()
+      addMessageToChat("bot", data.reply || "답변 없음")
     } catch (error) {
-      addMessageToChat("bot", "서버 오류 발생");
+      addMessageToChat("bot", "서버 오류 발생")
     }
   }
 
   // 전송 버튼 클릭
-  sendButton.addEventListener("click", sendChatMessage);
+  sendButton.addEventListener("click", sendChatMessage)
 
   // 🔹 엔터 키 입력 처리
   chatInput.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
-      event.preventDefault(); // form 제출 방지
-      sendChatMessage();
+      event.preventDefault() // form 제출 방지
+      sendChatMessage()
     }
-  });
+  })
 
   // 채팅 메시지 출력 함수
   function addMessageToChat(role, text) {
-    const container = document.querySelector(".chat-messages");
-    const message = document.createElement("div");
-    message.className = `message ${role}`;
-    message.innerHTML = `<div class="message-content">${text}</div>`;
-    container.appendChild(message);
-    container.scrollTop = container.scrollHeight;
+    const container = document.querySelector(".chat-messages")
+    const message = document.createElement("div")
+    message.className = `message ${role}`
+    message.innerHTML = `<div class="message-content">${text}</div>`
+    container.appendChild(message)
+    container.scrollTop = container.scrollHeight
   }
 
   async function fetchSensorData() {
@@ -1196,112 +1196,112 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   async function fetchAlarm() {
     try {
-      const response = await fetch(`${API_BASE_URL}/getAlarm?farm_id=${farmId}`);
-      if (!response.ok) throw new Error("네트워크 오류:" + response.statusText);
-      const data = await response.json();
-      allAlarms = data.sort((a, b) => a.type.localeCompare(b.type) || new Date(b.created_at) - new Date(a.created_at));
+      const response = await fetch(`${API_BASE_URL}/getAlarm?farm_id=${farmId}`)
+      if (!response.ok) throw new Error("네트워크 오류:" + response.statusText)
+      const data = await response.json()
+      allAlarms = data.sort((a, b) => a.type.localeCompare(b.type) || new Date(b.created_at) - new Date(a.created_at))
       const latestDanger = allAlarms.find((alarm) => alarm.type === "위험") || {
         content: "알림 없음",
         created_at: "시간",
-      };
+      }
       const latestWarning = allAlarms.find((alarm) => alarm.type === "경고") || {
         content: "알림 없음",
         created_at: "시간",
-      };
+      }
       const latestComplete = allAlarms.find((alarm) => alarm.type === "완료") || {
         content: "알림 없음",
         created_at: "시간",
-      };
+      }
 
-      const dangerHeadEl = document.querySelector(".danger-head");
-      const dangerTimeEl = document.querySelector(".danger-time");
-      const warningHeadEl = document.querySelector(".warning-head");
-      const warningTimeEl = document.querySelector(".warning-time");
-      const completeHeadEl = document.querySelector(".complete-head");
-      const completeTimeEl = document.querySelector(".complete-time");
+      const dangerHeadEl = document.querySelector(".danger-head")
+      const dangerTimeEl = document.querySelector(".danger-time")
+      const warningHeadEl = document.querySelector(".warning-head")
+      const warningTimeEl = document.querySelector(".warning-time")
+      const completeHeadEl = document.querySelector(".complete-head")
+      const completeTimeEl = document.querySelector(".complete-time")
 
       if (latestDanger.content !== "알림 없음" && dangerHeadEl && dangerTimeEl) {
-        dangerHeadEl.innerHTML = latestDanger.content;
-        dangerTimeEl.textContent = formatDateTime(latestDanger.created_at);
+        dangerHeadEl.innerHTML = latestDanger.content
+        dangerTimeEl.textContent = formatDateTime(latestDanger.created_at)
       } else if (dangerHeadEl && dangerTimeEl) {
-        dangerHeadEl.textContent = "알림 없음";
-        dangerTimeEl.textContent = "시간";
+        dangerHeadEl.textContent = "알림 없음"
+        dangerTimeEl.textContent = "시간"
       }
 
       if (latestWarning.content !== "알림 없음" && warningHeadEl && warningTimeEl) {
-        warningHeadEl.innerHTML =latestWarning.content;
-        warningTimeEl.textContent = formatDateTime(latestWarning.created_at);
+        warningHeadEl.innerHTML = latestWarning.content
+        warningTimeEl.textContent = formatDateTime(latestWarning.created_at)
       } else if (warningHeadEl && warningTimeEl) {
-        warningHeadEl.textContent = "알림 없음";
-        warningTimeEl.textContent = "시간";
+        warningHeadEl.textContent = "알림 없음"
+        warningTimeEl.textContent = "시간"
       }
 
       if (latestComplete.content !== "알림 없음" && completeHeadEl && completeTimeEl) {
-        completeHeadEl.innerHTML = latestComplete.content;
-        completeTimeEl.textContent = formatDateTime(latestComplete.created_at);
+        completeHeadEl.innerHTML = latestComplete.content
+        completeTimeEl.textContent = formatDateTime(latestComplete.created_at)
       } else if (completeHeadEl && completeTimeEl) {
-        completeHeadEl.textContent = "알림 없음";
-        completeTimeEl.textContent = "시간";
+        completeHeadEl.textContent = "알림 없음"
+        completeTimeEl.textContent = "시간"
       }
     } catch (error) {
-      console.error("알림 불러오기 실패:", error);
+      console.error("알림 불러오기 실패:", error)
     }
-    fetchAlarmList();
+    fetchAlarmList()
   }
 
   function fetchAlarmList() {
-    const alarmListTableBody = document.querySelector("#alarm-list-table tbody");
-    const alarmFilter = document.querySelector("#alarm-filter");
+    const alarmListTableBody = document.querySelector("#alarm-list-table tbody")
+    const alarmFilter = document.querySelector("#alarm-filter")
     if (!alarmListTableBody || !alarmFilter) {
-      console.error("필터 또는 테이블 요소를 찾을 수 없습니다.");
-      return;
+      console.error("필터 또는 테이블 요소를 찾을 수 없습니다.")
+      return
     }
 
-    const selectedType = alarmFilter.value;
-    alarmListTableBody.innerHTML = "";
+    const selectedType = alarmFilter.value
+    alarmListTableBody.innerHTML = ""
 
     if (allAlarms.length === 0) {
-      alarmListTableBody.innerHTML = '<tr><td colspan="4">알림이 없습니다.</td></tr>';
+      alarmListTableBody.innerHTML = '<tr><td colspan="4">알림이 없습니다.</td></tr>'
     } else {
-      const sortedAlarms = allAlarms.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-      const filteredAlarms = sortedAlarms.filter((alarm) => !selectedType || alarm.type === selectedType);
+      const sortedAlarms = allAlarms.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+      const filteredAlarms = sortedAlarms.filter((alarm) => !selectedType || alarm.type === selectedType)
 
       filteredAlarms.forEach((alarm) => {
-        const tr = document.createElement("tr");
-        const icon = getIconForType(alarm.type);
+        const tr = document.createElement("tr")
+        const icon = getIconForType(alarm.type)
 
-        const contentTd = document.createElement("td");
-        contentTd.textContent = alarm.content;
+        const contentTd = document.createElement("td")
+        contentTd.textContent = alarm.content
 
-        const createdAtTd = document.createElement("td");
-        createdAtTd.textContent = formatDateTime(alarm.created_at);
+        const createdAtTd = document.createElement("td")
+        createdAtTd.textContent = formatDateTime(alarm.created_at)
 
-        const deviceTd = document.createElement("td");
-        deviceTd.textContent = alarm.device || "장치 없음";
+        const deviceTd = document.createElement("td")
+        deviceTd.textContent = alarm.device || "장치 없음"
 
-        const typeTd = document.createElement("td");
-        typeTd.innerHTML = `${icon} ${alarm.type}`;
+        const typeTd = document.createElement("td")
+        typeTd.innerHTML = `${icon} ${alarm.type}`
 
-        tr.appendChild(contentTd);
-        tr.appendChild(createdAtTd);
-        tr.appendChild(deviceTd);
-        tr.appendChild(typeTd);
+        tr.appendChild(contentTd)
+        tr.appendChild(createdAtTd)
+        tr.appendChild(deviceTd)
+        tr.appendChild(typeTd)
 
-        alarmListTableBody.appendChild(tr);
-      });
+        alarmListTableBody.appendChild(tr)
+      })
     }
   }
 
   function getIconForType(type) {
     switch (type) {
       case "위험":
-        return '<span class="banner-icon danger"><i class="fas fa-exclamation-circle"></i></span>';
+        return '<span class="banner-icon danger"><i class="fas fa-exclamation-circle"></i></span>'
       case "경고":
-        return '<span class="banner-icon warning"><i class="fas fa-exclamation-triangle"></i></span>';
+        return '<span class="banner-icon warning"><i class="fas fa-exclamation-triangle"></i></span>'
       case "완료":
-        return '<span class="banner-icon success"><i class="fas fa-check-circle"></i></span>';
+        return '<span class="banner-icon success"><i class="fas fa-check-circle"></i></span>'
       default:
-        return '';
+        return ""
     }
   }
 
@@ -1326,32 +1326,201 @@ document.addEventListener("DOMContentLoaded", async () => {
   // 리포트 생성 함수
   async function generateReport() {
     try {
-      const today = new Date();
-      const formattedDate = formatDateYMD(today); // YYYY-MM-DD 형식으로 변환
-  
+      // 실시간 리포트 모달 표시
+      const liveReportModal = document.getElementById("liveReportModal")
+      const reportProgressBar = document.getElementById("report-progress-bar")
+      const reportProgressPercentage = document.getElementById("report-progress-percentage")
+      const reportStatusText = document.getElementById("report-status-text")
+      const reportContentContainer = document.getElementById("report-content-container")
+      const reportContent = document.getElementById("report-content")
+      const reportLoadingSkeleton = document.getElementById("report-loading-skeleton")
+      const downloadLiveReportBtn = document.getElementById("downloadLiveReportBtn")
+      const reportCurrentDate = document.getElementById("report-current-date")
+
+      if (
+        !liveReportModal ||
+        !reportProgressBar ||
+        !reportProgressPercentage ||
+        !reportStatusText ||
+        !reportContentContainer ||
+        !reportContent ||
+        !reportLoadingSkeleton ||
+        !downloadLiveReportBtn ||
+        !reportCurrentDate
+      ) {
+        throw new Error("필요한 DOM 요소를 찾을 수 없습니다.")
+      }
+
+      // 현재 날짜 표시
+      const today = new Date()
+      const formattedDate = formatDateYMD(today) // YYYY-MM-DD 형식으로 변환
+      reportCurrentDate.textContent = `${today.getFullYear()}년 ${today.getMonth() + 1}월 ${today.getDate()}일`
+
+      // 모달 초기화 및 표시
+      reportProgressBar.style.width = "0%"
+      reportProgressPercentage.textContent = "0%"
+      reportStatusText.textContent = "데이터 분석 중"
+      reportContent.textContent = ""
+      reportContentContainer.classList.add("hidden")
+      reportLoadingSkeleton.classList.remove("hidden")
+      downloadLiveReportBtn.disabled = true
+      liveReportModal.style.display = "flex"
+
+      // 데이터 분석 단계 시뮬레이션 (실제로는 서버에서 처리)
+      await simulateProgress("데이터 분석 중", 0, 30, reportProgressBar, reportProgressPercentage, reportStatusText)
+
+      // 리포트 생성 요청
       const response = await fetch(`${API_BASE_URL}/generate-report`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           farmId,
           date: formattedDate,
         }),
-      });
-  
+      })
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || '리포트 생성 실패');
+        const errorData = await response.json()
+        throw new Error(errorData.error || "리포트 생성 실패")
       }
-  
-      await response.json();
-      alert('리포트가 성공적으로 생성되었습니다.');
-      fetchReports(); // 리포트 목록 새로고침
+
+      // 리포트 데이터 가져오기
+      const reportData = await response.json()
+
+      // 리포트 작성 단계 시뮬레이션
+      await simulateProgress("리포트 작성 중", 30, 70, reportProgressBar, reportProgressPercentage, reportStatusText)
+
+      // 로딩 스켈레톤 숨기고 컨텐츠 컨테이너 표시
+      reportLoadingSkeleton.classList.add("hidden")
+      reportContentContainer.classList.remove("hidden")
+
+      // 리포트 내용 타이핑 효과로 표시
+      await typeReportContent(reportContent, reportData.aiAnalysis || "AI 분석 데이터가 없습니다.")
+
+      // 완료 단계
+      await simulateProgress("리포트 생성 완료", 70, 100, reportProgressBar, reportProgressPercentage, reportStatusText)
+
+      // 다운로드 버튼 활성화
+      downloadLiveReportBtn.disabled = false
+
+      // 리포트 목록 새로고침
+      fetchReports()
     } catch (error) {
-      console.error('리포트 생성 오류:', error);
-      alert(error.message || '리포트 생성 중 오류가 발생했습니다.');
+      console.error("리포트 생성 오류:", error)
+      alert(error.message || "리포트 생성 중 오류가 발생했습니다.")
+
+      // 에러 발생 시 모달 닫기
+      const liveReportModal = document.getElementById("liveReportModal")
+      if (liveReportModal) {
+        liveReportModal.style.display = "none"
+      }
     }
   }
 
+  // 진행 상태 시뮬레이션 함수
+  async function simulateProgress(statusText, startPercent, endPercent, progressBar, percentageText, statusElement) {
+    statusElement.textContent = statusText
+
+    const duration = 1000 // 진행 시간 (밀리초)
+    const steps = 20 // 진행 단계 수
+    const increment = (endPercent - startPercent) / steps
+
+    for (let i = 0; i <= steps; i++) {
+      const currentPercent = startPercent + increment * i
+      progressBar.style.width = `${currentPercent}%`
+      percentageText.textContent = `${Math.round(currentPercent)}%`
+      await new Promise((resolve) => setTimeout(resolve, duration / steps))
+    }
+  }
+
+  // 타이핑 효과 함수
+  async function typeReportContent(element, text) {
+    element.textContent = ""
+
+    // 커서 요소 생성
+    const cursor = document.createElement("span")
+    cursor.className = "cursor"
+    element.appendChild(cursor)
+
+    const words = text.split(" ")
+
+    for (let i = 0; i < words.length; i++) {
+      // 단어 추가
+      const wordSpan = document.createElement("span")
+      wordSpan.textContent = words[i] + " "
+      element.insertBefore(wordSpan, cursor)
+
+      // 단어 사이 딜레이
+      const delay = Math.random() * 50 + 20 // 20-70ms 사이 랜덤 딜레이
+      await new Promise((resolve) => setTimeout(resolve, delay))
+
+      // 가끔 더 긴 딜레이 (마침표, 쉼표 등 후에)
+      if (words[i].endsWith(".") || words[i].endsWith(",") || words[i].endsWith("!") || words[i].endsWith("?")) {
+        await new Promise((resolve) => setTimeout(resolve, 300))
+      }
+    }
+
+    // 타이핑 완료 후 커서 제거
+    element.removeChild(cursor)
+  }
+
+  // 모달 닫기 이벤트 리스너 추가
+  document.addEventListener("DOMContentLoaded", () => {
+    // 기존 DOMContentLoaded 이벤트 내부에 추가하거나, 이미 있다면 그 안에 아래 코드를 추가하세요
+
+    const closeLiveReportModal = document.getElementById("closeLiveReportModal")
+    const closeLiveReportBtn = document.getElementById("closeLiveReportBtn")
+    const downloadLiveReportBtn = document.getElementById("downloadLiveReportBtn")
+    const liveReportModal = document.getElementById("liveReportModal")
+
+    if (closeLiveReportModal) {
+      closeLiveReportModal.addEventListener("click", () => {
+        liveReportModal.style.display = "none"
+      })
+    }
+
+    if (closeLiveReportBtn) {
+      closeLiveReportBtn.addEventListener("click", () => {
+        liveReportModal.style.display = "none"
+      })
+    }
+
+    if (downloadLiveReportBtn) {
+      downloadLiveReportBtn.addEventListener("click", () => {
+        // 현재 표시된 리포트 내용 가져오기
+        const reportContent = document.getElementById("report-content")
+        if (reportContent) {
+          const today = new Date()
+          const formattedDate = formatDateYMD(today)
+          const reportText = reportContent.textContent
+
+          // 다운로드 로직
+          const blob = new Blob([reportText], { type: "text/plain" })
+          const url = URL.createObjectURL(blob)
+          const a = document.createElement("a")
+          a.href = url
+          a.download = `스마트팜_리포트_${formattedDate}.txt`
+          document.body.appendChild(a)
+          a.click()
+          document.body.removeChild(a)
+          URL.revokeObjectURL(url)
+        }
+      })
+    }
+
+    // 모달 외부 클릭 시 닫기
+    window.addEventListener("click", (event) => {
+      if (event.target === liveReportModal) {
+        liveReportModal.style.display = "none"
+      }
+    })
+  })
+
+  // 리포트 생성 버튼 이벤트 리스너 수정 (기존 코드 대체)
+  const generateDiaryBtn = document.getElementById("generateDiaryBtn")
+  if (generateDiaryBtn) {
+    generateDiaryBtn.addEventListener("click", generateReport)
+  }
   // 리포트 목록 조회 함수
   async function fetchReports() {
     try {
@@ -1600,10 +1769,10 @@ ${report.aiAnalysis || "AI 분석 데이터가 없습니다."}
   })
 
   // 리포트 생성 버튼 이벤트
-  const generateDiaryBtn = document.getElementById("generateDiaryBtn")
-  if (generateDiaryBtn) {
-    generateDiaryBtn.addEventListener("click", generateReport)
-  }
+  //const generateDiaryBtn = document.getElementById("generateDiaryBtn")
+  //if (generateDiaryBtn) {
+  //  generateDiaryBtn.addEventListener("click", generateReport)
+  //}
 
   // 초기 데이터 로드
   fetchData()
