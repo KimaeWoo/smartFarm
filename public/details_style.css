@@ -1409,11 +1409,11 @@ input:checked + .slider:before {
   text-transform: uppercase;
   letter-spacing: 1px;
   font-family: "Orbitron", sans-serif;
-  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+  /* box-shadow: 0 0 10px rgba(0, 255, 255, 0.3); */
 }
 
 .generate-report-btn:hover {
-  background: linear-gradient(90deg, var(--neon-primary), var(--neon-tertiary));
+  /* background: linear-gradient(90deg, var(--neon-primary), var(--neon-tertiary)); */
   transform: translateY(-2px);
   box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
 }
@@ -1467,7 +1467,7 @@ input:checked + .slider:before {
   text-transform: uppercase;
   letter-spacing: 1px;
   font-family: "Orbitron", sans-serif;
-  text-shadow: 0 0 5px var(--neon-primary);
+  /* text-shadow: 0 0 5px var(--neon-primary); */
 }
 
 .report-count {
@@ -1510,7 +1510,7 @@ input:checked + .slider:before {
   margin-right: 12px;
   color: var(--neon-primary);
   font-size: 1.1rem;
-  text-shadow: 0 0 5px var(--neon-primary);
+  /* text-shadow: 0 0 5px var(--neon-primary); */
 }
 
 .diary-entry:hover {
@@ -1615,7 +1615,7 @@ footer {
   text-transform: uppercase;
   letter-spacing: 1px;
   font-family: "Orbitron", sans-serif;
-  text-shadow: 0 0 10px var(--neon-primary);
+  /* text-shadow: 0 0 10px var(--neon-primary); */
 }
 
 .modal-close {
@@ -1766,7 +1766,7 @@ footer {
   text-transform: uppercase;
   letter-spacing: 1px;
   font-family: "Orbitron", sans-serif;
-  text-shadow: 0 0 5px var(--neon-primary);
+  /* text-shadow: 0 0 5px var(--neon-primary); */
 }
 
 .report-date {
@@ -1801,22 +1801,22 @@ footer {
 
 .sensor-summary-item.temp i {
   color: var(--temp-color);
-  text-shadow: 0 0 5px var(--temp-color);
+  /* text-shadow: 0 0 5px var(--temp-color); */
 }
 
 .sensor-summary-item.humidity i {
   color: var(--humidity-color);
-  text-shadow: 0 0 5px var(--humidity-color);
+  /* text-shadow: 0 0 5px var(--humidity-color); */
 }
 
 .sensor-summary-item.soil i {
   color: var(--soil-color);
-  text-shadow: 0 0 5px var(--soil-color);
+  /* text-shadow: 0 0 5px var(--soil-color); */
 }
 
 .sensor-summary-item.co2 i {
   color: var(--co2-color);
-  text-shadow: 0 0 5px var(--co2-color);
+  /* text-shadow: 0 0 5px var(--co2-color); */
 }
 
 .sensor-summary-item i {
@@ -1876,22 +1876,22 @@ footer {
 
 .sensor-change-item:nth-child(1) h4 {
   color: var(--temp-color);
-  text-shadow: 0 0 5px var(--temp-color);
+  /* text-shadow: 0 0 5px var(--temp-color); */
 }
 
 .sensor-change-item:nth-child(2) h4 {
   color: var(--humidity-color);
-  text-shadow: 0 0 5px var(--humidity-color);
+  /* text-shadow: 0 0 5px var(--humidity-color); */
 }
 
 .sensor-change-item:nth-child(3) h4 {
   color: var(--soil-color);
-  text-shadow: 0 0 5px var(--soil-color);
+  /* text-shadow: 0 0 5px var(--soil-color); */
 }
 
 .sensor-change-item:nth-child(4) h4 {
   color: var(--co2-color);
-  text-shadow: 0 0 5px var(--co2-color);
+  /* text-shadow: 0 0 5px var(--co2-color); */
 }
 
 .sensor-change-values {
@@ -1963,36 +1963,36 @@ footer {
 .device-log-icon.led {
   background-color: rgba(255, 204, 0, 0.2);
   color: var(--led-color);
-  box-shadow: 0 0 10px var(--led-color);
-  text-shadow: 0 0 5px var(--led-color);
+  /* box-shadow: 0 0 10px var(--led-color);
+  text-shadow: 0 0 5px var(--led-color); */
 }
 
 .device-log-icon.fan {
   background-color: rgba(0, 255, 255, 0.2);
   color: var(--fan-color);
-  box-shadow: 0 0 10px var(--fan-color);
-  text-shadow: 0 0 5px var(--fan-color);
+  /* box-shadow: 0 0 10px var(--fan-color);
+  text-shadow: 0 0 5px var(--fan-color); */
 }
 
 .device-log-icon.water {
   background-color: rgba(0, 204, 255, 0.2);
   color: var(--water-color);
-  box-shadow: 0 0 10px var(--water-color);
-  text-shadow: 0 0 5px var(--water-color);
+  /* box-shadow: 0 0 10px var(--water-color);
+  text-shadow: 0 0 5px var(--water-color); */
 }
 
 .device-log-icon.heater {
   background-color: rgba(255, 94, 94, 0.2);
   color: var(--heater-color);
-  box-shadow: 0 0 10px var(--heater-color);
-  text-shadow: 0 0 5px var(--heater-color);
+  /* box-shadow: 0 0 10px var(--heater-color);
+  text-shadow: 0 0 5px var(--heater-color); */
 }
 
 .device-log-icon.cooler {
   background-color: rgba(119, 0, 255, 0.2);
   color: var(--cooler-color);
-  box-shadow: 0 0 10px var(--cooler-color);
-  text-shadow: 0 0 5px var(--cooler-color);
+  /* box-shadow: 0 0 10px var(--cooler-color);
+  text-shadow: 0 0 5px var(--cooler-color); */
 }
 
 .device-log-content {
@@ -2053,7 +2053,7 @@ footer {
 }
 
 .download-btn:hover {
-  background: linear-gradient(90deg, var(--neon-primary), var(--neon-tertiary));
+  /* background: linear-gradient(90deg, var(--neon-primary), var(--neon-tertiary)); */
   transform: translateY(-2px);
   box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
 }
