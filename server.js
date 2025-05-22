@@ -1052,7 +1052,6 @@ async function initializeDatabase() {
 initializeDatabase();
 
 // 리포트 생성 엔드포인트
-// 리포트 생성 엔드포인트 (수정된 부분만 강조)
 app.post('/generate-report', async (req, res) => {
   let conn;
   try {
@@ -1155,7 +1154,7 @@ app.post('/generate-report', async (req, res) => {
     // AI 분석 생성 (수정된 프롬프트)
     console.log('AI 분석 생성');
     const prompt = `
-      스마트팜 일일 리포트를 분석하고 아래 형식으로 간결하게 요약해주세요. 각 항목은 한 문장으로, bullet-point 형식으로 작성하세요. 불필요한 설명은 생략하고 핵심만 전달하세요.
+      스마트팜 일일 리포트를 분석하고 아래 형식으로 간결하게 요약해주세요. 각 항목은 한 문장으로, 지정된 이모지로 시작하며, 각 항목 사이에 줄바꿈(\\n)을 추가하세요. 제어 장치 작동 횟수가 0인 경우, 이를 주요 문제로 간주하고 지적하세요.
 
       데이터:
       1. 센서 측정 요약:
@@ -1168,21 +1167,21 @@ app.post('/generate-report', async (req, res) => {
       ${JSON.stringify(deviceLogs, null, 2)}
 
       출력 형식:
-      - 온도: [안정적/변동 심함/높음/낮음], 평균 [수치]℃
-      - 습도: [적정/높음/낮음], 평균 [수치]%
-      - 토양 수분: [충분/부족/과다], 평균 [수치]%
-      - CO₂ 농도: [안정적/변동 심함/높음/낮음], 평균 [수치]ppm
-      - 주요 문제: [문제점 간단히 서술, 없으면 "없음"]
-      - 개선 제안: [제안 간단히 서술, 없으면 "현재 상태 유지"]
+      🌡️ 온도: [안정적/변동 심함/높음/낮음], 평균 [수치]℃\\n
+      💧 습도: [적정/높음/낮음], 평균 [수치]%\\n
+      🌱 토양 수분: [충분/부족/과다], 평균 [수치]%\\n
+      🌬️ CO₂ 농도: [안정적/변동 심함/높음/낮음], 평균 [수치]ppm\\n
+      ⚠️ 주요 문제: [문제점 간단히 서술, 제어 장치 작동 횟수가 0인 경우 포함, 없으면 "없음"]\\n
+      ✅ 개선 제안: [제안 간단히 서술, 없으면 "현재 상태 유지"]
     `;
 
     const response = await openai.chat.completions.create({
       model: 'gpt-4',
       messages: [
-        { role: 'system', content: '당신은 스마트팜 데이터 분석 전문가입니다. 간결하고 명확하게 요약하세요.' },
+        { role: 'system', content: '당신은 스마트팜 데이터 분석 전문가입니다. 지정된 형식을 정확히 따르고, 간결하고 명확하게 요약하세요.' },
         { role: 'user', content: prompt },
       ],
-      max_tokens: 300, // 토큰 수를 줄여 간결한 응답 유도
+      max_tokens: 300,
     });
 
     const aiAnalysis = response.choices[0].message.content.trim();

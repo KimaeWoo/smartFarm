@@ -1640,6 +1640,7 @@ footer {
 .ai-analysis-content {
   font-size: 0.95rem;
   line-height: 1.6;
+  white-space: pre-line;
   color: var(--text-color);
 }
 
