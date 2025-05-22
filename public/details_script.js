@@ -1427,17 +1427,36 @@ document.addEventListener("DOMContentLoaded", async () => {
       */
       
       // 시뮬레이션 (실제 구현 시 제거)
-      simulateReportGeneration(sensorData, deviceLogs, cropInfo);
+      await simulateReportGeneration(sensorData, deviceLogs, cropInfo);
       
-      // 서버에 리포트 저장 요청
+      // 서버에 리포트 저장 요청 - 여기서 생성된 리포트 내용을 그대로 전달
+      const reportData = {
+        farmId,
+        date: formattedDate,
+        aiAnalysis: openAIReportContent,
+        sensorSummary: {
+          avg_temperature: sensorData.temperature.avg,
+          avg_humidity: sensorData.humidity.avg,
+          avg_soil_moisture: sensorData.soil_moisture.avg,
+          avg_co2: sensorData.co2.avg
+        },
+        sensorChanges: {
+          max_temperature: sensorData.temperature.max,
+          min_temperature: sensorData.temperature.min,
+          max_humidity: sensorData.humidity.max,
+          min_humidity: sensorData.humidity.min,
+          max_soil_moisture: sensorData.soil_moisture.max,
+          min_soil_moisture: sensorData.soil_moisture.min,
+          max_co2: sensorData.co2.max,
+          min_co2: sensorData.co2.min
+        },
+        deviceLogs: deviceLogs
+      };
+      
       const serverResponse = await fetch(`${API_BASE_URL}/generate-report`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          farmId,
-          date: formattedDate,
-          aiAnalysis: openAIReportContent
-        }),
+        body: JSON.stringify(reportData),
       });
       
       if (!serverResponse.ok) {
@@ -1474,58 +1493,58 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // OpenAI 스트리밍 처리 함수
-  async function processOpenAIStream(response) {
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder("utf-8");
+  // async function processOpenAIStream(response) {
+  //   const reader = response.body.getReader();
+  //   const decoder = new TextDecoder("utf-8");
     
-    let done = false;
-    let accumulatedText = "";
-    let progress = 20;
-    const reportContentEl = document.getElementById("report-content");
+  //   let done = false;
+  //   let accumulatedText = "";
+  //   let progress = 20;
+  //   const reportContentEl = document.getElementById("report-content");
     
-    while (!done) {
-      const { value, done: doneReading } = await reader.read();
-      done = doneReading;
+  //   while (!done) {
+  //     const { value, done: doneReading } = await reader.read();
+  //     done = doneReading;
       
-      if (done) break;
+  //     if (done) break;
       
-      const chunk = decoder.decode(value, { stream: true });
-      const lines = chunk.split('\n');
+  //     const chunk = decoder.decode(value, { stream: true });
+  //     const lines = chunk.split('\n');
       
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          const data = line.slice(6);
-          if (data === '[DONE]') {
-            break;
-          }
+  //     for (const line of lines) {
+  //       if (line.startsWith('data: ')) {
+  //         const data = line.slice(6);
+  //         if (data === '[DONE]') {
+  //           break;
+  //         }
           
-          try {
-            const parsed = JSON.parse(data);
-            if (parsed.choices && parsed.choices[0].delta && parsed.choices[0].delta.content) {
-              const content = parsed.choices[0].delta.content;
-              accumulatedText += content;
+  //         try {
+  //           const parsed = JSON.parse(data);
+  //           if (parsed.choices && parsed.choices[0].delta && parsed.choices[0].delta.content) {
+  //             const content = parsed.choices[0].delta.content;
+  //             accumulatedText += content;
               
-              // 실시간 텍스트 업데이트
-              if (reportContentEl) {
-                reportContentEl.textContent = accumulatedText;
-                reportContentEl.scrollTop = reportContentEl.scrollHeight;
-              }
+  //             // 실시간 텍스트 업데이트
+  //             if (reportContentEl) {
+  //               reportContentEl.textContent = accumulatedText;
+  //               reportContentEl.scrollTop = reportContentEl.scrollHeight;
+  //             }
               
-              // 진행률 업데이트 (20%에서 시작해서 100%까지)
-              progress = Math.min(20 + Math.floor((accumulatedText.length / 3000) * 80), 100);
-              updateReportProgress(progress);
-            }
-          } catch (e) {
-            console.error('JSON 파싱 오류:', e);
-          }
-        }
-      }
-    }
+  //             // 진행률 업데이트 (20%에서 시작해서 100%까지)
+  //             progress = Math.min(20 + Math.floor((accumulatedText.length / 3000) * 80), 100);
+  //             updateReportProgress(progress);
+  //           }
+  //         } catch (e) {
+  //           console.error('JSON 파싱 오류:', e);
+  //         }
+  //       }
+  //     }
+  //   }
     
-    // 완료 처리
-    openAIReportContent = accumulatedText;
-    return accumulatedText;
-  }
+  //   // 완료 처리
+  //   openAIReportContent = accumulatedText;
+  //   return accumulatedText;
+  // }
 
   // 리포트 생성을 위한 센서 데이터 수집
   async function fetchSensorDataForReport(date) {
@@ -1811,122 +1830,128 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // 리포트 생성 시뮬레이션
   function simulateReportGeneration(sensorData, deviceLogs, cropInfo) {
-    const sampleReport = `# 스마트팜 일일 리포트
+    return new Promise((resolve) => {
+      const sampleReport = `# 스마트팜 일일 리포트
 
-## 1. 일일 환경 조건 요약
+  ## 1. 일일 환경 조건 요약
 
-오늘의 스마트팜 환경은 전반적으로 ${cropInfo.type} 재배에 적합한 조건을 유지했습니다. 평균 온도는 ${sensorData.temperature.avg}°C로 적정 범위 내에 있었으며, 습도는 평균 ${sensorData.humidity.avg}%를 기록했습니다. 토양 수분은 ${sensorData.soil_moisture.avg}%로 유지되었고, CO₂ 농도는 ${sensorData.co2.avg}ppm으로 측정되었습니다.
+  오늘의 스마트팜 환경은 전반적으로 ${cropInfo.type} 재배에 적합한 조건을 유지했습니다. 평균 온도는 ${sensorData.temperature.avg}°C로 적정 범위 내에 있었으며, 습도는 평균 ${sensorData.humidity.avg}%를 기록했습니다. 토양 수분은 ${sensorData.soil_moisture.avg}%로 유지되었고, CO₂ 농도는 ${sensorData.co2.avg}ppm으로 측정되었습니다.
 
-## 2. 센서 데이터 분석 및 추이
+  ## 2. 센서 데이터 분석 및 추이
 
-### 온도 분석
-- 평균: ${sensorData.temperature.avg}°C
-- 최저: ${sensorData.temperature.min.value}°C (${sensorData.temperature.min.time})
-- 최고: ${sensorData.temperature.max.value}°C (${sensorData.temperature.max.time})
+  ### 온도 분석
+  - 평균: ${sensorData.temperature.avg}°C
+  - 최저: ${sensorData.temperature.min.value}°C (${sensorData.temperature.min.time})
+  - 최고: ${sensorData.temperature.max.value}°C (${sensorData.temperature.max.time})
 
-오전에는 온도가 낮게 유지되다가 오후 2시경 최고치인 ${sensorData.temperature.max.value}°C까지 상승했습니다. 이는 일반적인 일일 온도 변화 패턴과 일치하며, 최고 온도가 ${cropInfo.type}의 최적 생장 온도를 약간 초과했으나 심각한 수준은 아니었습니다.
+  오전에는 온도가 낮게 유지되다가 오후 2시경 최고치인 ${sensorData.temperature.max.value}°C까지 상승했습니다. 이는 일반적인 일일 온도 변화 패턴과 일치하며, 최고 온도가 ${cropInfo.type}의 최적 생장 온도를 약간 초과했으나 심각한 수준은 아니었습니다.
 
-### 습도 분석
-- 평균: ${sensorData.humidity.avg}%
-- 최저: ${sensorData.humidity.min.value}% (${sensorData.humidity.min.time})
-- 최고: ${sensorData.humidity.max.value}% (${sensorData.humidity.max.time})
+  ### 습도 분석
+  - 평균: ${sensorData.humidity.avg}%
+  - 최저: ${sensorData.humidity.min.value}% (${sensorData.humidity.min.time})
+  - 최고: ${sensorData.humidity.max.value}% (${sensorData.humidity.max.time})
 
-습도는 아침에 가장 높았고 오후에 점차 감소하는 패턴을 보였습니다. 이러한 패턴은 자연적인 일일 습도 변화와 일치하며, 전반적으로 작물 생장에 적합한 범위를 유지했습니다.
+  습도는 아침에 가장 높았고 오후에 점차 감소하는 패턴을 보였습니다. 이러한 패턴은 자연적인 일일 습도 변화와 일치하며, 전반적으로 작물 생장에 적합한 범위를 유지했습니다.
 
-### 토양 수분 분석
-- 평균: ${sensorData.soil_moisture.avg}%
-- 최저: ${sensorData.soil_moisture.min.value}% (${sensorData.soil_moisture.min.time})
-- 최고: ${sensorData.soil_moisture.max.value}% (${sensorData.soil_moisture.max.time})
+  ### 토양 수분 분석
+  - 평균: ${sensorData.soil_moisture.avg}%
+  - 최저: ${sensorData.soil_moisture.min.value}% (${sensorData.soil_moisture.min.time})
+  - 최고: ${sensorData.soil_moisture.max.value}% (${sensorData.soil_moisture.max.time})
 
-토양 수분은 오전 급수 후 최고치를 기록했으며, 저녁에 최저치를 기록했습니다. 하루 중 변동폭이 적절한 수준의 변화를 보였습니다.
+  토양 수분은 오전 급수 후 최고치를 기록했으며, 저녁에 최저치를 기록했습니다. 하루 중 변동폭이 적절한 수준의 변화를 보였습니다.
 
-### CO₂ 농도 분석
-- 평균: ${sensorData.co2.avg}ppm
-- 최저: ${sensorData.co2.min.value}ppm (${sensorData.co2.min.time})
-- 최고: ${sensorData.co2.max.value}ppm (${sensorData.co2.max.time})
+  ### CO₂ 농도 분석
+  - 평균: ${sensorData.co2.avg}ppm
+  - 최저: ${sensorData.co2.min.value}ppm (${sensorData.co2.min.time})
+  - 최고: ${sensorData.co2.max.value}ppm (${sensorData.co2.max.time})
 
-CO₂ 농도는 식물의 광합성 활동이 활발한 낮 시간대에 증가하는 패턴을 보였으며, 전반적으로 적정 범위 내에서 유지되었습니다.
+  CO₂ 농도는 식물의 광합성 활동이 활발한 낮 시간대에 증가하는 패턴을 보였으며, 전반적으로 적정 범위 내에서 유지되었습니다.
 
-## 3. 장치 작동 분석
+  ## 3. 장치 작동 분석
 
-### LED 조명
-- 작동 시간: ${deviceLogs.led.duration}
-- 분석: 식물 생장에 필요한 적정 광주기를 제공했습니다.
+  ### LED 조명
+  - 작동 시간: ${deviceLogs.led.duration}
+  - 분석: 식물 생장에 필요한 적정 광주기를 제공했습니다.
 
-### 환기팬
-- 작동 횟수: ${deviceLogs.fan.count}회
-- 총 작동 시간: ${deviceLogs.fan.total_time}분
-- 분석: 주로 온도가 상승한 오후 시간대에 작동하여 온도 조절에 기여했습니다.
+  ### 환기팬
+  - 작동 횟수: ${deviceLogs.fan.count}회
+  - 총 작동 시간: ${deviceLogs.fan.total_time}분
+  - 분석: 주로 온도가 상승한 오후 시간대에 작동하여 온도 조절에 기여했습니다.
 
-### 급수 시스템
-- 급수 횟수: ${deviceLogs.water.count}회
-- 총 급수량: ${deviceLogs.water.total_amount}L
-- 분석: 토양 수분이 감소할 때 적절히 작동하여 수분 수준을 유지했습니다.
+  ### 급수 시스템
+  - 급수 횟수: ${deviceLogs.water.count}회
+  - 총 급수량: ${deviceLogs.water.total_amount}L
+  - 분석: 토양 수분이 감소할 때 적절히 작동하여 수분 수준을 유지했습니다.
 
-### 히터
-- 작동 횟수: ${deviceLogs.heater.count}회
-- 총 작동 시간: ${deviceLogs.heater.total_time}분
-- 분석: 주로 이른 아침 시간대에 작동하여 최저 온도를 적정 수준으로 유지했습니다.
+  ### 히터
+  - 작동 횟수: ${deviceLogs.heater.count}회
+  - 총 작동 시간: ${deviceLogs.heater.total_time}분
+  - 분석: 주로 이른 아침 시간대에 작동하여 최저 온도를 적정 수준으로 유지했습니다.
 
-### 쿨러
-- 작동 횟수: ${deviceLogs.cooler.count}회
-- 총 작동 시간: ${deviceLogs.cooler.total_time}분
-- 분석: 온도가 최고치에 도달한 오후 시간대에 작동하여 과열을 방지했습니다.
+  ### 쿨러
+  - 작동 횟수: ${deviceLogs.cooler.count}회
+  - 총 작동 시간: ${deviceLogs.cooler.total_time}분
+  - 분석: 온도가 최고치에 도달한 오후 시간대에 작동하여 과열을 방지했습니다.
 
-## 4. 작물 성장 상태 평가
+  ## 4. 작물 성장 상태 평가
 
-현재 ${cropInfo.type}은(는) ${cropInfo.growth_stage} 단계에 있으며, 성장률은 ${cropInfo.growth_rate}%입니다. 시작일(${cropInfo.start_date})부터 현재까지의 성장 속도는 예상 수확일(${cropInfo.harvest_date})에 맞춰 적절히 진행되고 있습니다.
+  현재 ${cropInfo.type}은(는) ${cropInfo.growth_stage} 단계에 있으며, 성장률은 ${cropInfo.growth_rate}%입니다. 시작일(${cropInfo.start_date})부터 현재까지의 성장 속도는 예상 수확일(${cropInfo.harvest_date})에 맞춰 적절히 진행되고 있습니다.
 
-잎의 색상과 크기는 정상적이며, 줄기의 강도도 양호합니다. 현재 성장 단계에서 기대되는 발달 수준에 부합하고 있으며, 특별한 이상 징후는 관찰되지 않았습니다.
+  잎의 색상과 크기는 정상적이며, 줄기의 강도도 양호합니다. 현재 성장 단계에서 기대되는 발달 수준에 부합하고 있으며, 특별한 이상 징후는 관찰되지 않았습니다.
 
-## 5. 문제점 및 개선 사항
+  ## 5. 문제점 및 개선 사항
 
-### 식별된 문제점
-1. 오후 2시경 온도가 최적 범위를 약간 초과했습니다.
-2. 저녁 시간대 토양 수분이 다소 낮아졌습니다.
+  ### 식별된 문제점
+  1. 오후 2시경 온도가 최적 범위를 약간 초과했습니다.
+  2. 저녁 시간대 토양 수분이 다소 낮아졌습니다.
 
-### 개선 사항
-1. 온도 관리: 오후 시간대에 쿨러 작동 시간을 약간 늘리거나, 차광막을 활용하여 온도 상승을 제한하는 것이 좋겠습니다.
-2. 수분 관리: 저녁 급수 일정을 조정하여 밤 시간대 토양 수분 감소를 방지하는 것이 좋겠습니다.
+  ### 개선 사항
+  1. 온도 관리: 오후 시간대에 쿨러 작동 시간을 약간 늘리거나, 차광막을 활용하여 온도 상승을 제한하는 것이 좋겠습니다.
+  2. 수분 관리: 저녁 급수 일정을 조정하여 밤 시간대 토양 수분 감소를 방지하는 것이 좋겠습니다.
 
-## 6. 내일을 위한 권장 사항
+  ## 6. 내일을 위한 권장 사항
 
-1. 급수 일정 조정: 저녁 시간대(17:00-18:00)에 추가 급수를 실시하여 밤 시간 동안 토양 수분 수준을 유지하세요.
-2. 환기 시스템 최적화: 오후 1시부터 3시까지 환기팬 작동 빈도를 높여 온도 상승을 제한하세요.
-3. 영양분 관리: 현재 성장 단계에 맞는 영양분 공급을 유지하세요.
-4. 모니터링 강화: 내일은 특히 오후 시간대 온도와 저녁 시간대 토양 수분을 주의 깊게 모니터링하세요.
+  1. 급수 일정 조정: 저녁 시간대(17:00-18:00)에 추가 급수를 실시하여 밤 시간 동안 토양 수분 수준을 유지하세요.
+  2. 환기 시스템 최적화: 오후 1시부터 3시까지 환기팬 작동 빈도를 높여 온도 상승을 제한하세요.
+  3. 영양분 관리: 현재 성장 단계에 맞는 영양분 공급을 유지하세요.
+  4. 모니터링 강화: 내일은 특히 오후 시간대 온도와 저녁 시간대 토양 수분을 주의 깊게 모니터링하세요.
 
-이상의 권장 사항을 따르면 작물의 건강한 성장을 촉진하고 잠재적인 문제를 예방할 수 있을 것입니다.`;
+  이상의 권장 사항을 따르면 작물의 건강한 성장을 촉진하고 잠재적인 문제를 예방할 수 있을 것입니다.`;
 
-    // 텍스트를 한 글자씩 출력하는 시뮬레이션
-    let index = 0;
-    const reportContentEl = document.getElementById("report-content");
-    const typingInterval = setInterval(() => {
-      if (index < sampleReport.length) {
-        openAIReportContent += sampleReport.charAt(index);
-        reportContentEl.textContent = openAIReportContent;
-        
-        // 스크롤을 항상 아래로 유지
-        reportContentEl.scrollTop = reportContentEl.scrollHeight;
-        
-        // 진행률 업데이트 (20%에서 시작해서 100%까지)
-        const progress = Math.min(20 + Math.floor((index / sampleReport.length) * 80), 100);
-        updateReportProgress(progress);
-        
-        index++;
-      } else {
-        // 타이핑 완료
-        clearInterval(typingInterval);
-        updateReportStatus("완료");
-        isGeneratingOpenAIReport = false;
-        
-        // 다운로드 버튼 활성화
-        const downloadBtn = document.getElementById("downloadLiveReportBtn");
-        if (downloadBtn) {
-          downloadBtn.disabled = false;
+      // 텍스트를 한 글자씩 출력하는 시뮬레이션
+      let index = 0;
+      const reportContentEl = document.getElementById("report-content");
+      openAIReportContent = ""; // 초기화
+      
+      const typingInterval = setInterval(() => {
+        if (index < sampleReport.length) {
+          openAIReportContent += sampleReport.charAt(index);
+          if (reportContentEl) {
+            reportContentEl.textContent = openAIReportContent;
+            // 스크롤을 항상 아래로 유지
+            reportContentEl.scrollTop = reportContentEl.scrollHeight;
+          }
+          
+          // 진행률 업데이트 (20%에서 시작해서 100%까지)
+          const progress = Math.min(20 + Math.floor((index / sampleReport.length) * 80), 100);
+          updateReportProgress(progress);
+          
+          index++;
+        } else {
+          // 타이핑 완료
+          clearInterval(typingInterval);
+          updateReportStatus("완료");
+          
+          // 다운로드 버튼 활성화
+          const downloadBtn = document.getElementById("downloadLiveReportBtn");
+          if (downloadBtn) {
+            downloadBtn.disabled = false;
+          }
+          
+          resolve(openAIReportContent);
         }
-      }
-    }, 20); // 타이핑 속도 조절 (밀리초)
+      }, 20); // 타이핑 속도 조절 (밀리초)
+    });
   }
 
   // 리포트 목록 조회 함수
@@ -1996,7 +2021,7 @@ CO₂ 농도는 식물의 광합성 활동이 활발한 낮 시간대에 증가�
   }
 
   // 리포트 모달 표시 함수
-  function showReportModal(report) {
+    function showReportModal(report) {
     const modal = document.getElementById("reportModal")
     if (!modal) return
 
@@ -2085,10 +2110,22 @@ CO₂ 농도는 식물의 광합성 활동이 활발한 낮 시간대에 증가�
       coolerLogEl.textContent = `작동 횟수 ${report.deviceLogs.cooler.count}회, 총 작동 시간 ${report.deviceLogs.cooler.total_time}분`
     }
 
-    // AI 분석 정보 설정
+    // AI 분석 정보 설정 - 여기서 형식을 유지하기 위해 pre 태그 사용
     const aiAnalysisEl = document.getElementById("aiAnalysis")
     if (aiAnalysisEl) {
-      aiAnalysisEl.textContent = report.aiAnalysis || "AI 분석 데이터가 없습니다."
+      // 기존 내용 제거
+      aiAnalysisEl.innerHTML = '';
+      
+      // pre 태그 생성하여 형식 유지
+      const preElement = document.createElement('pre');
+      preElement.style.whiteSpace = 'pre-wrap';
+      preElement.style.fontFamily = 'inherit';
+      preElement.style.fontSize = 'inherit';
+      preElement.style.margin = '0';
+      preElement.textContent = report.aiAnalysis || "AI 분석 데이터가 없습니다.";
+      
+      // 추가
+      aiAnalysisEl.appendChild(preElement);
     }
 
     // 모달 표시
@@ -2109,46 +2146,47 @@ CO₂ 농도는 식물의 광합성 활동이 활발한 낮 시간대에 증가�
 
   // 리포트 다운로드 함수
   function downloadReport(report) {
+    // 형식을 유지하기 위해 원본 AI 분석 내용 사용
     const reportText = `
-스마트팜 일일 리포트
-날짜: ${report.date}
+  스마트팜 일일 리포트
+  날짜: ${report.date}
 
-1. 센서 측정 요약
-평균 온도: ${report.sensorSummary.avg_temperature} °C
-평균 습도: ${report.sensorSummary.avg_humidity} %
-평균 토양 수분: ${report.sensorSummary.avg_soil_moisture} %
-평균 CO₂ 농도: ${report.sensorSummary.avg_co2} ppm
+  1. 센서 측정 요약
+  평균 온도: ${report.sensorSummary.avg_temperature} °C
+  평균 습도: ${report.sensorSummary.avg_humidity} %
+  평균 토양 수분: ${report.sensorSummary.avg_soil_moisture} %
+  평균 CO₂ 농도: ${report.sensorSummary.avg_co2} ppm
 
-2. 센서 수치 변화
-최고 온도: ${report.sensorChanges.max_temperature.value} °C (시간: ${report.sensorChanges.max_temperature.time})
-최저 온도: ${report.sensorChanges.min_temperature.value} °C (시간: ${report.sensorChanges.min_temperature.time})
-최고 습도: ${report.sensorChanges.max_humidity.value} % (시간: ${report.sensorChanges.max_humidity.time})
-최저 습도: ${report.sensorChanges.min_humidity.value} % (시간: ${report.sensorChanges.min_humidity.time})
-최고 토양 수분: ${report.sensorChanges.max_soil_moisture.value} % (시간: ${report.sensorChanges.max_soil_moisture.time})
-최저 토양 수분: ${report.sensorChanges.min_soil_moisture.value} % (시간: ${report.sensorChanges.min_soil_moisture.time})
-최고 CO₂ 농도: ${report.sensorChanges.max_co2.value} ppm (시간: ${report.sensorChanges.max_co2.time})
-최저 CO₂ 농도: ${report.sensorChanges.min_co2.value} ppm (시간: ${report.sensorChanges.min_co2.time})
+  2. 센서 수치 변화
+  최고 온도: ${report.sensorChanges.max_temperature.value} °C (시간: ${report.sensorChanges.max_temperature.time})
+  최저 온도: ${report.sensorChanges.min_temperature.value} °C (시간: ${report.sensorChanges.min_temperature.time})
+  최고 습도: ${report.sensorChanges.max_humidity.value} % (시간: ${report.sensorChanges.max_humidity.time})
+  최저 습도: ${report.sensorChanges.min_humidity.value} % (시간: ${report.sensorChanges.min_humidity.time})
+  최고 토양 수분: ${report.sensorChanges.max_soil_moisture.value} % (시간: ${report.sensorChanges.max_soil_moisture.time})
+  최저 토양 수분: ${report.sensorChanges.min_soil_moisture.value} % (시간: ${report.sensorChanges.min_soil_moisture.time})
+  최고 CO₂ 농도: ${report.sensorChanges.max_co2.value} ppm (시간: ${report.sensorChanges.max_co2.time})
+  최저 CO₂ 농도: ${report.sensorChanges.min_co2.value} ppm (시간: ${report.sensorChanges.min_co2.time})
 
-3. 제어 장치 작동 기록
-LED: ${report.deviceLogs.led.start ? `켜짐(시작: ${report.deviceLogs.led.start}, 종료: ${report.deviceLogs.led.end})` : "꺼짐"}
-환기팬: 작동 횟수 ${report.deviceLogs.fan.count}회, 총 작동 시간 ${report.deviceLogs.fan.total_time}분
-급수장치: 급수 횟수 ${report.deviceLogs.water.count}회, 총 급수량 ${report.deviceLogs.water.total_amount} L
-히터: 작동 횟수 ${report.deviceLogs.heater.count}회, 총 작동 시간 ${report.deviceLogs.heater.total_time}분
-쿨러: 작동 횟수 ${report.deviceLogs.cooler.count}회, 총 작동 시간 ${report.deviceLogs.cooler.total_time}분
+  3. 제어 장치 작동 기록
+  LED: ${report.deviceLogs.led.start ? `켜짐(시작: ${report.deviceLogs.led.start}, 종료: ${report.deviceLogs.led.end})` : "꺼짐"}
+  환기팬: 작동 횟수 ${report.deviceLogs.fan.count}회, 총 작동 시간 ${report.deviceLogs.fan.total_time}분
+  급수장치: 급수 횟수 ${report.deviceLogs.water.count}회, 총 급수량 ${report.deviceLogs.water.total_amount} L
+  히터: 작동 횟수 ${report.deviceLogs.heater.count}회, 총 작동 시간 ${report.deviceLogs.heater.total_time}분
+  쿨러: 작동 횟수 ${report.deviceLogs.cooler.count}회, 총 작동 시간 ${report.deviceLogs.cooler.total_time}분
 
-4. AI 분석 및 요약
-${report.aiAnalysis || "AI 분석 데이터가 없습니다."}
-    `
+  4. AI 분석 및 요약
+  ${report.aiAnalysis || "AI 분석 데이터가 없습니다."}
+      `
 
-    const blob = new Blob([reportText], { type: "text/plain" })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `스마트팜_리포트_${report.date}.txt`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
+      const blob = new Blob([reportText], { type: "text/plain" })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `스마트팜_리포트_${report.date}.txt`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
   }
 
   // 모달 닫기 이벤트
