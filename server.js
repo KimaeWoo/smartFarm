@@ -1052,6 +1052,7 @@ async function initializeDatabase() {
 initializeDatabase();
 
 // 리포트 생성 엔드포인트
+// 리포트 생성 엔드포인트 (수정된 부분만 강조)
 app.post('/generate-report', async (req, res) => {
   let conn;
   try {
@@ -1103,7 +1104,7 @@ app.post('/generate-report', async (req, res) => {
       return res.status(400).json({ error: '해당 날짜의 센서 데이터가 부족합니다' });
     }
 
-    // 나머지 코드 (sensorSummary, sensorChanges, deviceLogs, OpenAI, DB 저장 등)
+    // 센서 요약 계산
     const sensorSummary = {
       avg_temperature: roundToTwo(average(historyData.temperatureData)),
       avg_humidity: roundToTwo(average(historyData.humidityData)),
@@ -1111,6 +1112,7 @@ app.post('/generate-report', async (req, res) => {
       avg_co2: roundToTwo(average(historyData.co2Data)),
     };
 
+    // 센서 변화 계산
     const sensorChanges = {
       max_temperature: {
         value: Math.max(...historyData.temperatureData),
@@ -1150,11 +1152,12 @@ app.post('/generate-report', async (req, res) => {
     console.log('제어 장치 조회');
     const deviceLogs = await fetchDeviceLogs(farmId, date);
 
-    // AI 분석 생성
+    // AI 분석 생성 (수정된 프롬프트)
     console.log('AI 분석 생성');
     const prompt = `
-      스마트팜 일일 리포트를 분석하고 요약해주세요. 다음 데이터를 기반으로:
+      스마트팜 일일 리포트를 분석하고 아래 형식으로 간결하게 요약해주세요. 각 항목은 한 문장으로, bullet-point 형식으로 작성하세요. 불필요한 설명은 생략하고 핵심만 전달하세요.
 
+      데이터:
       1. 센서 측정 요약:
       ${JSON.stringify(sensorSummary, null, 2)}
 
@@ -1165,25 +1168,25 @@ app.post('/generate-report', async (req, res) => {
       ${JSON.stringify(deviceLogs, null, 2)}
 
       출력 형식:
-      - 오늘 온도는 [안정적/변동이 심함]했습니다.
-      - 습도는 [적정 수준/낮은 경향/높은 경향]을 보였습니다.
-      - 토양 수분은 [충분/부족/과다] 상태를 유지했습니다.
-      - CO₂ 농도는 [안정적/변동 있음]였습니다.
-      - 주요 문제점: (문제점 설명)
-      - 개선 제안: (개선 제안)
+      - 온도: [안정적/변동 심함/높음/낮음], 평균 [수치]℃
+      - 습도: [적정/높음/낮음], 평균 [수치]%
+      - 토양 수분: [충분/부족/과다], 평균 [수치]%
+      - CO₂ 농도: [안정적/변동 심함/높음/낮음], 평균 [수치]ppm
+      - 주요 문제: [문제점 간단히 서술, 없으면 "없음"]
+      - 개선 제안: [제안 간단히 서술, 없으면 "현재 상태 유지"]
     `;
 
     const response = await openai.chat.completions.create({
       model: 'gpt-4',
       messages: [
-        { role: 'system', content: '당신은 스마트팜 데이터 분석 전문가입니다.' },
+        { role: 'system', content: '당신은 스마트팜 데이터 분석 전문가입니다. 간결하고 명확하게 요약하세요.' },
         { role: 'user', content: prompt },
       ],
-      max_tokens: 600,
+      max_tokens: 300, // 토큰 수를 줄여 간결한 응답 유도
     });
 
     const aiAnalysis = response.choices[0].message.content.trim();
-    
+
     // 리포트 저장
     console.log('리포트 데이터베이스 저장');
     const insertQuery = `
@@ -1199,6 +1202,7 @@ app.post('/generate-report', async (req, res) => {
       aiAnalysis,
     ]);
 
+    // 리포트 텍스트 생성
     const reportText = `
 📋 스마트팜 일일 리포트
 1. 날짜
@@ -1234,7 +1238,7 @@ ${aiAnalysis}
     res.json({
       reportText,
       reportId: Number(result.insertId),
-      aiAnalysis   // OpenAI로 받은 순수 분석 문자열
+      aiAnalysis
     });
   } catch (error) {
     console.error('리포트 생성 오류:', error);
