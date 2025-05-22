@@ -1801,3 +1801,117 @@ footer {
 #alarm-list-table td {
   vertical-align: middle; /* 아이콘과 텍스트를 세로 중앙 정렬 */
 }
+
+/* 실시간 리포트 생성 스타일 */
+.skeleton-container {
+  margin-bottom: 1rem;
+}
+
+.skeleton-line {
+  height: 1rem;
+  background-color: var(--secondary-color);
+  border-radius: 0.25rem;
+  margin-bottom: 0.75rem;
+  animation: pulse 1.5s infinite;
+}
+
+.skeleton-line:nth-child(1) {
+  width: 75%;
+}
+
+.skeleton-line:nth-child(2) {
+  width: 100%;
+}
+
+.skeleton-line:nth-child(3) {
+  width: 85%;
+}
+
+.skeleton-line:nth-child(4) {
+  width: 100%;
+}
+
+.skeleton-line:nth-child(5) {
+  width: 80%;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+
+.report-text {
+  font-family: monospace;
+  white-space: pre-wrap;
+  line-height: 1.6;
+  height: 400px;
+  overflow-y: auto;
+  padding: 1rem;
+  background-color: var(--secondary-color);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+}
+
+.report-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.status-badge {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.report-date {
+  font-size: 0.875rem;
+  color: var(--muted-color);
+}
+
+.progress-bar-container {
+  width: 8rem;
+  height: 0.5rem;
+  background-color: var(--secondary-color);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: var(--success-color);
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+/* 커서 애니메이션 */
+@keyframes blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+.cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background-color: var(--text-color);
+  margin-left: 2px;
+  animation: blink 1s infinite;
+}

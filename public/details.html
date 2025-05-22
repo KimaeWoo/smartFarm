@@ -445,6 +445,48 @@
         </div>
       </div>
     </div>
+
+    <!-- 실시간 리포트 생성 모달 추가 -->
+    <div class="modal" id="liveReportModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2><i class="fas fa-robot"></i> AI 리포트 실시간 생성</h2>
+          <span class="modal-close" id="closeLiveReportModal">&times;</span>
+        </div>
+        <div class="modal-body">
+          <div class="report-status">
+            <div class="status-badge" id="report-status-badge">
+              <span id="report-status-text">데이터 분석 중</span>
+            </div>
+            <span class="report-date" id="report-current-date"></span>
+            <div class="progress-container">
+              <span id="report-progress-percentage">0%</span>
+              <div class="progress-bar-container">
+                <div id="report-progress-bar" class="progress-bar"></div>
+              </div>
+            </div>
+          </div>
+          
+          <div id="report-loading-skeleton" class="skeleton-container">
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line"></div>
+          </div>
+          
+          <div id="report-content-container" class="hidden">
+            <div id="report-content" class="report-text"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="downloadLiveReportBtn" class="download-btn" disabled>
+            <i class="fas fa-download"></i> 리포트 다운로드
+          </button>
+          <button id="closeLiveReportBtn" class="close-btn">닫기</button>
+        </div>
+      </div>
+    </div>
   </main>
 
   <footer>
