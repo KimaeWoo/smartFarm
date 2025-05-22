@@ -115,91 +115,91 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-// FCM token 등록 API
-app.post('/register-fcm-token', authenticateToken, async (req, res) => {
-  const user_id = req.user.user_id;
-  const { fcm_token } = req.body;
+// // FCM token 등록 API
+// app.post('/register-fcm-token', authenticateToken, async (req, res) => {
+//   const user_id = req.user.user_id;
+//   const { fcm_token } = req.body;
 
-  if (!fcm_token) {
-    return res.status(400).json({ message: 'fcm_token이 필요합니다' });
-  }
+//   if (!fcm_token) {
+//     return res.status(400).json({ message: 'fcm_token이 필요합니다' });
+//   }
 
-  let conn;
-  try {
-    conn = await db.getConnection();
+//   let conn;
+//   try {
+//     conn = await db.getConnection();
 
-    const upsertQuery = `
-      INSERT INTO user_tokens (user_id, fcm_token)
-      VALUES (?, ?)
-      ON DUPLICATE KEY UPDATE fcm_token = VALUES(fcm_token)
-    `;
+//     const upsertQuery = `
+//       INSERT INTO user_tokens (user_id, fcm_token)
+//       VALUES (?, ?)
+//       ON DUPLICATE KEY UPDATE fcm_token = VALUES(fcm_token)
+//     `;
 
-    await conn.query(upsertQuery, [user_id, fcm_token]);
-    console.log(`[POST /register-fcm-token] FCM 토큰 등록 성공 - ${user_id}`);
-    return res.json({ message: '토큰 등록 성공' });
-  } catch (err) {
-    console.error('[POST /register-fcm-token] DB 오류:', err);
-    return res.status(500).json({ message: 'DB 오류' });
-  } finally {
-    if (conn) conn.release();
-  }
-});
+//     await conn.query(upsertQuery, [user_id, fcm_token]);
+//     console.log(`[POST /register-fcm-token] FCM 토큰 등록 성공 - ${user_id}`);
+//     return res.json({ message: '토큰 등록 성공' });
+//   } catch (err) {
+//     console.error('[POST /register-fcm-token] DB 오류:', err);
+//     return res.status(500).json({ message: 'DB 오류' });
+//   } finally {
+//     if (conn) conn.release();
+//   }
+// });
 
-const admin = require('firebase-admin');
-const serviceAccount = require('./firebase-key.json');
+// const admin = require('firebase-admin');
+// const serviceAccount = require('./firebase-key.json');
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
+// admin.initializeApp({
+//   credential: admin.credential.cert(serviceAccount),
+// });
 
-async function sendPushNotificationToUser(farm_id, message) {
-  let conn;
-  try {
-    conn = await db.getConnection();
+// async function sendPushNotificationToUser(farm_id, message) {
+//   let conn;
+//   try {
+//     conn = await db.getConnection();
 
-    const [farm] = await conn.query(
-      `SELECT user_id FROM farms WHERE farm_id = ?`,
-      [farm_id]
-    );
+//     const [farm] = await conn.query(
+//       `SELECT user_id FROM farms WHERE farm_id = ?`,
+//       [farm_id]
+//     );
 
-    if (!farm || farm.length === 0) {
-      console.warn('farm_id에 해당하는 유저 없음');
-      return;
-    }
+//     if (!farm || farm.length === 0) {
+//       console.warn('farm_id에 해당하는 유저 없음');
+//       return;
+//     }
 
-    const userId = farm[0].user_id;
+//     const userId = farm[0].user_id;
 
-    const [tokenResult] = await conn.query(
-      `SELECT fcm_token FROM user_tokens WHERE user_id = ? LIMIT 1`,
-      [userId]
-    );
+//     const [tokenResult] = await conn.query(
+//       `SELECT fcm_token FROM user_tokens WHERE user_id = ? LIMIT 1`,
+//       [userId]
+//     );
 
-    if (!tokenResult || tokenResult.length === 0 || !tokenResult[0].fcm_token) {
-      console.warn(`FCM 토큰 없음 - user_id: ${userId}`);
-      return;
-    }
+//     if (!tokenResult || tokenResult.length === 0 || !tokenResult[0].fcm_token) {
+//       console.warn(`FCM 토큰 없음 - user_id: ${userId}`);
+//       return;
+//     }
 
-    const fcmToken = tokenResult[0].fcm_token;
+//     const fcmToken = tokenResult[0].fcm_token;
 
-    const payload = {
-      token: fcmToken,
-      notification: {
-        title: '🚨 스마트팜 경고',
-        body: message,
-      },
-      data: {
-        farm_id: String(farm_id),
-      },
-    };
+//     const payload = {
+//       token: fcmToken,
+//       notification: {
+//         title: '🚨 스마트팜 경고',
+//         body: message,
+//       },
+//       data: {
+//         farm_id: String(farm_id),
+//       },
+//     };
 
-    const response = await admin.messaging().send(payload);
-    console.log('[FCM Push] 전송 성공:', response);
-  } catch (err) {
-    console.error('[FCM Push] 전송 실패:', err);
-  } finally {
-    if (conn) conn.release();
-  }
-}
+//     const response = await admin.messaging().send(payload);
+//     console.log('[FCM Push] 전송 성공:', response);
+//   } catch (err) {
+//     console.error('[FCM Push] 전송 실패:', err);
+//   } finally {
+//     if (conn) conn.release();
+//   }
+// }
 
 // 로그인
 app.post('/login', async (req, res) => {
