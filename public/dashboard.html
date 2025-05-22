@@ -4,23 +4,30 @@
   <meta charset="utf-8" />
   <meta content="width=device-width, initial-scale=1.0" name="viewport" />
   <title>스마트팜 관리 대시보드</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
   <link href="dashboard_style.css" rel="stylesheet" />
 </head>
 <body>
+  <div class="particles-container" id="particles-js"></div>
+  <div class="grid-overlay"></div>
+  
   <div class="container">
     <div class="header">
-      <div class="header-left">
-        <h1>스마트팜 관리 대시보드</h1>
+      <div class="header-title">
+        <div class="logo">
+          <i class="fas fa-seedling"></i>
+          <h1>스마트팜 관리 대시보드</h1>
+        </div>
         <p>모든 농장의 상태를 한눈에 확인하세요</p>
       </div>
-      <div class="header-buttons">
-        <button class="add-farm-btn" id="add-farm-btn">
+      <div class="header-actions">
+        <button class="btn btn-add" id="add-farm-btn">
           <svg fill="none" height="16" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="16">
             <path d="M12 5v14M5 12h14"></path>
           </svg>
           농장 추가
         </button>
-        <button class="delete-farms-btn" id="delete-farms-btn">
+        <button class="btn btn-delete" id="delete-farms-btn">
           <svg fill="none" height="16" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="16">
             <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path>
             <line x1="10" x2="10" y1="11" y2="17"></line>
@@ -32,12 +39,12 @@
     </div>
     <div id="message-container"></div>
     <!-- 삭제 모드 정보 및 액션 -->
-    <div id="delete-mode-container" style="display: none;">
+    <div id="delete-mode-container" class="delete-mode-container">
       <div class="delete-mode-info">
-        <div class="delete-mode-info-text">삭제할 농장을 선택하세요. <span id="selected-count">0</span>개 선택됨</div>
+        <div class="delete-mode-text">삭제할 농장을 선택하세요. <span id="selected-count">0</span>개 선택됨</div>
         <div class="delete-mode-actions">
-          <button class="cancel-delete-mode-btn" id="cancel-delete-mode-btn">취소</button>
-          <button class="confirm-delete-btn" disabled="" id="confirm-delete-selected-btn">
+          <button class="btn btn-cancel" id="cancel-delete-mode-btn">취소</button>
+          <button class="btn btn-delete-selected" disabled id="confirm-delete-selected-btn">
             <svg fill="none" height="16" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24" width="16">
               <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path>
             </svg>
@@ -46,64 +53,181 @@
         </div>
       </div>
     </div>
-    <div class="search-bar">
+    <div class="search-container">
+      <div class="search-icon">
+        <i class="fas fa-search"></i>
+      </div>
       <input class="search-input" id="search-input" placeholder="농장 검색..." type="text" />
     </div>
-    <div class="filter-buttons">
-      <button class="filter-button active" id="filter-all">전체</button>
-      <button class="filter-button filter-button-critical" id="filter-critical">위험</button>
-      <button class="filter-button filter-button-warning" id="filter-warning">주의</button>
-      <button class="filter-button filter-button-healthy" id="filter-healthy">정상</button>
+    <div class="filter-container">
+      <button class="filter-btn active" id="filter-all">전체</button>
+      <button class="filter-btn filter-critical" id="filter-critical">위험</button>
+      <button class="filter-btn filter-warning" id="filter-warning">주의</button>
+      <button class="filter-btn filter-healthy" id="filter-healthy">정상</button>
     </div>
     <div class="farm-grid" id="farm-grid">
-      <div class="loading">데이터를 불러오는 중입니다...</div>
+      <div class="loading-message">
+        <div class="spinner"></div>
+        <span>데이터를 불러오는 중입니다...</span>
+      </div>
     </div>
   </div>
   <!-- 농장 추가 모달 -->
   <div class="modal" id="add-farm-modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 class="modal-title">새 농장 추가</h3>
-        <button class="close-modal">×</button>
+        <h3>새 농장 추가</h3>
+        <button class="modal-close">×</button>
       </div>
       <form id="add-farm-form">
         <div class="form-group">
-          <label class="form-label" for="farm-name">농장 이름</label>
-          <input class="form-input" id="farm-name" placeholder="농장 이름을 입력하세요" required="" type="text" />
+          <label for="farm-name">농장 이름</label>
+          <input id="farm-name" placeholder="농장 이름을 입력하세요" required="" type="text" />
         </div>
         <div class="form-group">
-          <label class="form-label" for="farm-location">위치</label>
-          <input class="form-input" id="farm-location" placeholder="농장 위치를 입력하세요" required="" type="text" />
+          <label for="farm-location">위치</label>
+          <input id="farm-location" placeholder="농장 위치를 입력하세요" required="" type="text" />
         </div>
         <div class="form-group">
-          <label class="form-label" for="farm-type">작물 종류</label>
-          <select class="form-select" id="farm-type" required="">
+          <label for="farm-type">작물 종류</label>
+          <select id="farm-type" required="">
             <option value="">작물을 선택하세요</option>
             <option value="방울토마토">방울토마토</option>
             <option value="상추">상추</option>
           </select>
         </div>
-        <div class="form-actions">
-          <button class="cancel-btn" type="button">취소</button>
-          <button class="submit-btn" type="submit">추가</button>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" type="button">취소</button>
+          <button class="btn btn-primary" type="submit">추가</button>
         </div>
       </form>
     </div>
   </div>
   <!-- 삭제 확인 모달 -->
-  <div class="confirm-modal" id="confirm-delete-modal">
-    <div class="confirm-modal-content">
-      <div class="confirm-modal-title">농장 삭제</div>
-      <div class="confirm-modal-message">선택한 <span id="delete-count">0</span>개의 농장을 정말로 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+  <div class="modal" id="confirm-delete-modal">
+    <div class="modal-content">
+      <div class="modal-header delete">농장 삭제</div>
+      <div class="modal-body">
+        선택한 <span id="delete-count">0</span>개의 농장을 정말로 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
       </div>
-      <div class="confirm-modal-actions">
-        <button class="cancel-btn" id="cancel-delete-btn">취소</button>
-        <button class="submit-btn" id="confirm-delete-btn" style="background-color: #ef4444;">삭제</button>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="cancel-delete-btn">취소</button>
+        <button class="btn btn-delete" id="confirm-delete-btn">삭제</button>
       </div>
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
   <script src="dashboard_script.js"></script>
+  <script>
+    // 파티클 배경 초기화
+    document.addEventListener('DOMContentLoaded', function() {
+      particlesJS('particles-js', {
+        "particles": {
+          "number": {
+            "value": 80,
+            "density": {
+              "enable": true,
+              "value_area": 800
+            }
+          },
+          "color": {
+            "value": "#22c55e"
+          },
+          "shape": {
+            "type": "circle",
+            "stroke": {
+              "width": 0,
+              "color": "#000000"
+            },
+            "polygon": {
+              "nb_sides": 5
+            }
+          },
+          "opacity": {
+            "value": 0.5,
+            "random": false,
+            "anim": {
+              "enable": false,
+              "speed": 1,
+              "opacity_min": 0.1,
+              "sync": false
+            }
+          },
+          "size": {
+            "value": 3,
+            "random": true,
+            "anim": {
+              "enable": false,
+              "speed": 40,
+              "size_min": 0.1,
+              "sync": false
+            }
+          },
+          "line_linked": {
+            "enable": true,
+            "distance": 150,
+            "color": "#22c55e",
+            "opacity": 0.4,
+            "width": 1
+          },
+          "move": {
+            "enable": true,
+            "speed": 2,
+            "direction": "none",
+            "random": false,
+            "straight": false,
+            "out_mode": "out",
+            "bounce": false,
+            "attract": {
+              "enable": false,
+              "rotateX": 600,
+              "rotateY": 1200
+            }
+          }
+        },
+        "interactivity": {
+          "detect_on": "canvas",
+          "events": {
+            "onhover": {
+              "enable": true,
+              "mode": "grab"
+            },
+            "onclick": {
+              "enable": true,
+              "mode": "push"
+            },
+            "resize": true
+          },
+          "modes": {
+            "grab": {
+              "distance": 140,
+              "line_linked": {
+                "opacity": 1
+              }
+            },
+            "bubble": {
+              "distance": 400,
+              "size": 40,
+              "duration": 2,
+              "opacity": 8,
+              "speed": 3
+            },
+            "repulse": {
+              "distance": 200,
+              "duration": 0.4
+            },
+            "push": {
+              "particles_nb": 4
+            },
+            "remove": {
+              "particles_nb": 2
+            }
+          }
+        },
+        "retina_detect": true
+      });
+    });
+  </script>
 </body>
-
 </html>
