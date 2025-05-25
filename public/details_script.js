@@ -1477,24 +1477,45 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   async function fetchLatestPlantImage() {
     const imageElement = document.getElementById('latestPlantImage');
-    if (!imageElement || !farmId) return;
+    console.log('[Client] 이미지 엘리먼트:', imageElement);
+    if (!imageElement) {
+      console.warn('[Client] 이미지 엘리먼트가 없습니다.');
+      return;
+    }
+
+    if (!farmId) {
+      console.warn('[Client] farmId가 없습니다.');
+      imageElement.src = "images/no-image.jpg";
+      return;
+    }
 
     try {
+      console.log('[Client] API 호출:', `${API_BASE_URL}/api/latest-image?farmId=${farmId}`);
       const response = await fetch(`${API_BASE_URL}/api/latest-image?farmId=${farmId}`);
+      console.log('[Client] API 응답 상태:', response.status);
+
+      if (!response.ok) {
+        console.warn('[Client] API 응답 실패:', await response.text());
+        imageElement.src = "images/no-image.jpg";
+        return;
+      }
+
       const data = await response.json();
+      console.log('[Client] API 응답 데이터:', data);
 
       if (data.url) {
         imageElement.src = data.url;
       } else {
+        console.warn('[Client] URL이 없습니다. 기본 이미지로 변경');
         imageElement.src = "images/no-image.jpg";
       }
 
-      // 이미지 로딩 실패 시 기본 이미지로 fallback
       imageElement.onerror = () => {
+        console.error('[Client] 이미지 로드 실패, 기본 이미지로 대체');
         imageElement.src = "images/no-image.jpg";
       };
     } catch (err) {
-      console.error("최근 작물 이미지 불러오기 오류:", err);
+      console.error('[Client] 최근 작물 이미지 불러오기 오류:', err);
       imageElement.src = "images/no-image.jpg";
     }
   }
