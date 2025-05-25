@@ -478,30 +478,10 @@ app.get('/sensors/status', async (req, res) => {
       console.log('[GET /sensors/status] 조회된 데이터 없음');
       return res.status(404).json({ message:'해당 조건에 맞는 데이터가 없습니다.' });
     }
-    console.log('[GET /sensors/status] 센서 조회 성공');
+    // console.log('[GET /sensors/status] 센서 조회 성공');
     return res.json(results[0]); 
   } catch (err) {
     console.error('[GET /sensors/status] DB 오류:', err);
-    return res.status(500).json({ message: 'DB 오류' });
-  } finally {
-    if (conn) conn.release();
-  }
-});
-
-// 제어장치 상태 가져오기
-app.get('/devices/status', async(req, res) => {
-  const { farm_id } = req.query;
-  const query = `SELECT * FROM devices WHERE farm_id = ?`
-  let conn;
-
-  try {
-    conn = await db.getConnection();
-    const results = await conn.query(query, [farm_id]);
-
-    console.log('[GET /devices/status] 제어장치 조회 성공:');
-    return res.json(results[0]);
-  } catch (err) {
-    console.error('[GET /devices/status] DB 오류:', err);
     return res.status(500).json({ message: 'DB 오류' });
   } finally {
     if (conn) conn.release();
@@ -843,7 +823,7 @@ app.get('/get-farm-status/:farmId', async (req, res) => {
       // farm_active가 1일 경우, startButton 숨기고 cropInfo 표시
       // startButton을 'none'으로 숨기고 cropInfo를 'visible'로 표시
       // 이 부분은 클라이언트 측에서 처리해야 하는 부분입니다.
-      console.log(`[GET /get-farm-status] ${farmId} 농장 D-DAY 조회 성공(활성화)`);
+      // console.log(`[GET /get-farm-status] ${farmId} 농장 D-DAY 조회 성공(활성화)`);
       res.json({
         success: true,
         message: '성장률 업데이트 완료',
@@ -854,7 +834,7 @@ app.get('/get-farm-status/:farmId', async (req, res) => {
         farmActive: farm_active
       });
     } else {
-      console.log(`[GET /get-farm-status] ${farmId} 농장 D-DAY 조회 성공(비활성화)`);
+      // console.log(`[GET /get-farm-status] ${farmId} 농장 D-DAY 조회 성공(비활성화)`);
       res.json({
         farm_name: farm_name,
         growthRate: newGrowthRate,
@@ -881,7 +861,7 @@ app.get('/devices/status', async(req, res) => {
     conn = await db.getConnection();
     const results = await conn.query(query, [farm_id]);
 
-    console.log('[GET /devices/status] 제어장치 조회 성공:');
+    // console.log('[GET /devices/status] 제어장치 조회 성공:');
     return res.json(results[0]);
   } catch (err) {
     console.error('[GET /devices/status] DB 오류:', err);
@@ -916,7 +896,7 @@ app.get('/getFarmConditions/:farm_id', async(req, res) => {
       };
     });
 
-    console.log('[GET /getFarmConditions] 조회 성공');
+    // console.log('[GET /getFarmConditions] 조회 성공');
     return res.json(conditions);
   } catch (err) {
     console.error('[GET /getFarmConditions] DB 오류:', err);
