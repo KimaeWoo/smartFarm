@@ -123,7 +123,7 @@ app.get('/api/latest-image', async (req, res) => {
     // 가장 최근에 업로드된 파일 찾기 (업로드 시간 기준으로 정렬)
     const latestFile = files.sort((a, b) => {
       return new Date(b.metadata.updated) - new Date(a.metadata.updated);
-    }).pop();
+    })[0];
 
     // 해당 파일의 다운로드 가능한 서명된 URL 생성 (1시간 유효)
     const [url] = await latestFile.getSignedUrl({
