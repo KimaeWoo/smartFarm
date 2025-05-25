@@ -116,6 +116,7 @@ app.get('/api/latest-image', async (req, res) => {
     const [files] = await bucket.getFiles({ prefix: `farms/${farmId}/` });
 
     if (files.length === 0) {
+      console.log('이미지가 없습니다.');
       return res.status(404).json({ error: '이 농장에 저장된 이미지가 없습니다.' });
     }
 
