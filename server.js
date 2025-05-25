@@ -8,6 +8,10 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt'); // 비밀번호 해싱용
 require('dotenv').config(); // 환경 변수 로드
 
+// firebase-storage
+const multer = require('multer');
+const admin = require('firebase-admin');
+
 // JWT 비밀 키
 const JWT_SECRET = process.env.JWT_SECRET
 
@@ -17,6 +21,21 @@ const OpenAI = require("openai");
 // 서버 만들기 + 실행할 포트 번호 설정
 const app = express(); // 서버를 만든다 (이 변수에 서버 기능을 저장)
 const PORT = 8000;     // 서버가 사용할 포트 번호
+
+// Firebase Admin 초기화
+admin.initializeApp({
+  credential: admin.credential.cert({
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+  }),
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+});
+
+const bucket = admin.storage().bucket();
+
+// multer 설정 (메모리 업로드)
+const upload = multer({ storage: multer.memoryStorage() });
 
 // 'public' 폴더를 정적 파일 제공 폴더로 설정
 app.use(express.static('public'));
@@ -47,6 +66,77 @@ db.getConnection()
 // OpenAI 설정
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
+});
+
+/**
+ * POST /api/upload-image
+ * - farmId (쿼리 파라미터로 전달)
+ * - 이미지 파일 (multipart/form-data, 필드 이름: "file")
+ */
+app.post('/api/upload-image', upload.single('file'), async (req, res) => {
+  const file = req.file;
+  const farmId = req.query.farmId;
+
+  // 파일 또는 농장 ID가 없으면 오류 반환
+  if (!file || !farmId) {
+    return res.status(400).json({ error: '파일 또는 farmId가 없습니다.' });
+  }
+
+  try {
+    const timestamp = Date.now(); // 현재 시간 (파일명에 사용)
+    const fileName = `farms/${farmId}/${timestamp}_${file.originalname}`; // 저장할 경로 및 이름
+    const fileUpload = bucket.file(fileName);
+
+    // 파일 저장
+    await fileUpload.save(file.buffer, {
+      metadata: {
+        contentType: file.mimetype, // 파일 타입 지정
+      },
+    });
+
+    return res.json({ message: '업로드 성공', fileName });
+  } catch (err) {
+    console.error('업로드 중 오류:', err);
+    return res.status(500).json({ error: '업로드 실패' });
+  }
+});
+
+/**
+ * GET /api/latest-image?farmId=abc123
+ * - 특정 농장의 가장 최근 이미지 URL을 반환
+ */
+app.get('/api/latest-image', async (req, res) => {
+  const farmId = req.query.farmId;
+
+  // 농장 ID가 없으면 오류 반환
+  if (!farmId) {
+    return res.status(400).json({ error: 'farmId 쿼리 파라미터가 필요합니다.' });
+  }
+
+  try {
+    // 해당 농장의 이미지 파일 목록 가져오기
+    const [files] = await bucket.getFiles({ prefix: `farms/${farmId}/` });
+
+    if (files.length === 0) {
+      return res.status(404).json({ error: '이 농장에 저장된 이미지가 없습니다.' });
+    }
+
+    // 가장 최근에 업로드된 파일 찾기 (업로드 시간 기준으로 정렬)
+    const latestFile = files.sort((a, b) => {
+      return new Date(b.metadata.updated) - new Date(a.metadata.updated);
+    }).pop();
+
+    // 해당 파일의 다운로드 가능한 서명된 URL 생성 (1시간 유효)
+    const [url] = await latestFile.getSignedUrl({
+      action: 'read',
+      expires: Date.now() + 60 * 60 * 1000,
+    });
+
+    res.json({ url });
+  } catch (error) {
+    console.error('최근 이미지 조회 오류:', error);
+    res.status(500).json({ error: '최근 이미지 조회 실패' });
+  }
 });
 
 // 아이디 중복 확인 API (Promise 기반으로 수정)
@@ -475,7 +565,7 @@ app.get('/sensors/status', async (req, res) => {
     conn = await db.getConnection();
     const results = await conn.query(query, [farm_id]);
     if (results.length === 0) {
-      console.log('[GET /sensors/status] 조회된 데이터 없음');
+      // console.log('[GET /sensors/status] 조회된 데이터 없음');
       return res.status(404).json({ message:'해당 조건에 맞는 데이터가 없습니다.' });
     }
     // console.log('[GET /sensors/status] 센서 조회 성공');
@@ -595,11 +685,11 @@ app.get('/realtime-data', async (req, res) => {
     const results = await conn.query(query, [farm_id]);
 
     if (results.length === 0) {
-      console.log('[GET /real-time-data] 조회된 데이터가 없습니다.');
+      // console.log('[GET /real-time-data] 조회된 데이터가 없습니다.');
       return res.status(404).json({ message:'데이터가 없습니다.' });
     }
 
-    console.log(`[GET /real-time-data] 실시간 데이터: ${results.length}개 반환`);
+    // console.log(`[GET /real-time-data] 실시간 데이터: ${results.length}개 반환`);
     return res.json(results);
   } catch (err) {
     console.error('[GET /realtime-data] DB 오류:', err);

@@ -1802,3 +1802,15 @@ footer {
 #alarm-list-table td {
   vertical-align: middle; /* 아이콘과 텍스트를 세로 중앙 정렬 */
 }
+
+.latest-image-container {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.latest-plant-image {
+  width: 200px;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}

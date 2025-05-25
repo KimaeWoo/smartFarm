@@ -1475,6 +1475,30 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
+  async function fetchLatestPlantImage() {
+    const imageElement = document.getElementById('latestPlantImage');
+    if (!imageElement || !farmId) return;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/latest-image?farmId=${farmId}`);
+      const data = await response.json();
+
+      if (data.url) {
+        imageElement.src = data.url;
+      } else {
+        imageElement.src = "images/no-image.png";
+      }
+
+      // 이미지 로딩 실패 시 기본 이미지로 fallback
+      imageElement.onerror = () => {
+        imageElement.src = "images/no-image.png";
+      };
+    } catch (err) {
+      console.error("최근 작물 이미지 불러오기 오류:", err);
+      imageElement.src = "images/no-image.png";
+    }
+  }
+
   // 리포트 모달 표시 함수
   function showReportModal(report) {
   const modal = document.getElementById("reportModal");
@@ -1665,12 +1689,13 @@ ${report.aiAnalysis || "AI 분석 데이터가 없습니다."}
   }
 
   // 초기 데이터 로드
-  fetchData()
-  updateDateDisplay()
-  fetchSensorData()
-  fetchDevicesStatus()
-  fetchAlarm()
-  fetchFarmStatus()
-  fetchFarmOptimalValues()
-  fetchReports() // 페이지 로드 시 리포트 목록 조회
+  fetchData() // 초기 값값
+  updateDateDisplay() // 날짜
+  fetchSensorData()// 센서
+  fetchDevicesStatus() // 제어 장치
+  fetchAlarm() // 알람
+  fetchFarmStatus() // 성장도
+  fetchFarmOptimalValues() // 농장 최적 수치
+  fetchReports() // 리포트 목록 조회
+  fetchLatestPlantImage(); // 식물 사진
 })
