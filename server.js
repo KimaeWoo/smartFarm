@@ -4,7 +4,7 @@ const mariadb = require('mariadb'); // MariaDB 연결 모듈
 const cors = require('cors'); // CORS 불러오기
 const moment = require('moment-timezone');
 const axios = require('axios');
-const jwt = require('jsonwebtoken');
+//const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt'); // 비밀번호 해싱용
 require('dotenv').config(); // 환경 변수 로드
 
