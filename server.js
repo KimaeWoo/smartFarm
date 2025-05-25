@@ -18,17 +18,15 @@ const JWT_SECRET = process.env.JWT_SECRET
 // OpenAI 모듈 추가
 const OpenAI = require("openai");
 
+const serviceAccount = require('./firebase-key.json');
+
 // 서버 만들기 + 실행할 포트 번호 설정
 const app = express(); // 서버를 만든다 (이 변수에 서버 기능을 저장)
 const PORT = 8000;     // 서버가 사용할 포트 번호
 
 // Firebase Admin 초기화
 admin.initializeApp({
-  credential: admin.credential.cert({
-    projectId: process.env.FIREBASE_PROJECT_ID,
-    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-    privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-  }),
+  credential: admin.credential.cert(serviceAccount),
   storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
 });
 
