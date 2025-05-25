@@ -75,24 +75,26 @@ app.post('/api/upload-image', upload.single('file'), async (req, res) => {
   const file = req.file;
   const farmId = req.query.farmId;
 
-  // 파일 또는 농장 ID가 없으면 오류 반환
   if (!file || !farmId) {
     return res.status(400).json({ error: '파일 또는 farmId가 없습니다.' });
   }
 
   try {
-    const timestamp = Date.now(); // 현재 시간 (파일명에 사용)
-    const fileName = `farms/${farmId}/${timestamp}_${file.originalname}`; // 저장할 경로 및 이름
+    const timestamp = Date.now();
+    const fileName = `farms/${farmId}/${timestamp}_${file.originalname}`;
     const fileUpload = bucket.file(fileName);
 
-    // 파일 저장
+    // 🔧 파일 저장 (공개 접근 가능하도록 설정)
     await fileUpload.save(file.buffer, {
       metadata: {
-        contentType: file.mimetype, // 파일 타입 지정
+        contentType: file.mimetype,
       },
+      predefinedAcl: 'publicRead',
     });
 
-    return res.json({ message: '업로드 성공', fileName });
+    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
+
+    return res.json({ message: '업로드 성공', fileName, publicUrl });
   } catch (err) {
     console.error('업로드 중 오류:', err);
     return res.status(500).json({ error: '업로드 실패' });
@@ -105,38 +107,39 @@ app.post('/api/upload-image', upload.single('file'), async (req, res) => {
  */
 app.get('/api/latest-image', async (req, res) => {
   const farmId = req.query.farmId;
-  console.log('[API] farmId:', farmId);
 
+  // 농장 ID가 없으면 오류 반환
   if (!farmId) {
-    console.log('[API] farmId 누락');
     return res.status(400).json({ error: 'farmId 쿼리 파라미터가 필요합니다.' });
   }
 
   try {
+    console.log(`[API] farmId: ${farmId}`);
+
+    // 해당 농장의 이미지 파일 목록 가져오기
     const [files] = await bucket.getFiles({ prefix: `farms/${farmId}/` });
+
     console.log(`[API] 찾은 파일 개수: ${files.length}`);
 
     if (files.length === 0) {
-      console.log('[API] 이미지가 없습니다.');
       return res.status(404).json({ error: '이 농장에 저장된 이미지가 없습니다.' });
     }
 
-    // 최신 파일 선택
-    files.sort((a, b) => {
+    // 가장 최근에 업로드된 파일 찾기 (업로드 시간 기준으로 정렬)
+    const latestFile = files.sort((a, b) => {
       return new Date(b.metadata.updated) - new Date(a.metadata.updated);
-    });
-    const latestFile = files[0];
-    console.log('[API] 최신 파일:', latestFile.name, latestFile.metadata.updated);
+    })[0];
 
-    const [url] = await latestFile.getSignedUrl({
-      action: 'read',
-      expires: Date.now() + 60 * 60 * 1000,
-    });
-    console.log('[API] 서명된 URL 생성 완료');
-    console.log(url);
-    res.json({ url });
+    console.log(`[API] 최신 파일: ${latestFile.name} ${latestFile.metadata.updated}`);
+
+    // 공개 URL 생성 (사전 ACL을 publicRead로 설정한 경우만 유효)
+    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${latestFile.name}`;
+
+    console.log(`[API] 공개 URL 생성 완료: ${publicUrl}`);
+
+    res.json({ url: publicUrl });
   } catch (error) {
-    console.error('[API] 최근 이미지 조회 오류:', error);
+    console.error('최근 이미지 조회 오류:', error);
     res.status(500).json({ error: '최근 이미지 조회 실패' });
   }
 });
