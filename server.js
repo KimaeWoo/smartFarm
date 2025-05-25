@@ -105,35 +105,38 @@ app.post('/api/upload-image', upload.single('file'), async (req, res) => {
  */
 app.get('/api/latest-image', async (req, res) => {
   const farmId = req.query.farmId;
+  console.log('[API] farmId:', farmId);
 
-  // 농장 ID가 없으면 오류 반환
   if (!farmId) {
+    console.log('[API] farmId 누락');
     return res.status(400).json({ error: 'farmId 쿼리 파라미터가 필요합니다.' });
   }
 
   try {
-    // 해당 농장의 이미지 파일 목록 가져오기
     const [files] = await bucket.getFiles({ prefix: `farms/${farmId}/` });
+    console.log(`[API] 찾은 파일 개수: ${files.length}`);
 
     if (files.length === 0) {
-      console.log('이미지가 없습니다.');
+      console.log('[API] 이미지가 없습니다.');
       return res.status(404).json({ error: '이 농장에 저장된 이미지가 없습니다.' });
     }
 
-    // 가장 최근에 업로드된 파일 찾기 (업로드 시간 기준으로 정렬)
-    const latestFile = files.sort((a, b) => {
+    // 최신 파일 선택
+    files.sort((a, b) => {
       return new Date(b.metadata.updated) - new Date(a.metadata.updated);
-    })[0];
+    });
+    const latestFile = files[0];
+    console.log('[API] 최신 파일:', latestFile.name, latestFile.metadata.updated);
 
-    // 해당 파일의 다운로드 가능한 서명된 URL 생성 (1시간 유효)
     const [url] = await latestFile.getSignedUrl({
       action: 'read',
       expires: Date.now() + 60 * 60 * 1000,
     });
+    console.log('[API] 서명된 URL 생성 완료');
 
     res.json({ url });
   } catch (error) {
-    console.error('최근 이미지 조회 오류:', error);
+    console.error('[API] 최근 이미지 조회 오류:', error);
     res.status(500).json({ error: '최근 이미지 조회 실패' });
   }
 });
