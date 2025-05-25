@@ -88,7 +88,8 @@
           <h2>식물 성장도</h2>
           <div class="growth-status">
             <div class="growth-image-container">
-              <img src="images/씨앗.png" alt="식물 성장 단계" id="plantImage" class="plant-image">
+              <img id="latestPlantImage" src="images/no-image.jpg" alt="최근 작물 이미지" class="latest-plant-image">
+              <!-- <img src="images/씨앗.png" alt="식물 성장 단계" id="plantImage" class="plant-image"> -->
             </div>
             <div class="growth-details">
               <div class="growth-progress">
@@ -135,47 +136,42 @@
               </div>
             </div>
           </div>
+        </div>
+      </div>
 
-          <!-- 최근 작물 이미지 표시 -->
-          <div class="latest-image-container">
-            <h3>최근 작물 이미지</h3>
-            <img id="latestPlantImage" src="" alt="최근 작물 이미지" class="latest-plant-image">
+      <div class="notification-banner">
+        <h2>알림</h2>
+        <div class="alarm">
+          <div class="alarm-content">
+            <div class="alarm-icon danger">
+              <i class="fas fa-exclamation-circle"></i>
+            </div>
+            <div class="alarm-text">
+              <p class="danger-head">알림 없음</p>
+              <p class="danger-time"></p>
+            </div>
           </div>
-
-          <!-- 알림 일렬 표시 -->
-          <div class="inline-alarms">
-            <div class="alarm-content">
-              <div class="alarm-icon danger">
-                <i class="fas fa-exclamation-circle"></i>
-              </div>
-              <div class="alarm-text">
-                <p class="danger-head">알림 없음</p>
-                <p class="danger-time"></p>
-              </div>
+          <div class="alarm-content">
+            <div class="alarm-icon warning">
+              <i class="fas fa-exclamation-triangle"></i>
             </div>
-            <div class="alarm-content">
-              <div class="alarm-icon warning">
-                <i class="fas fa-exclamation-triangle"></i>
-              </div>
-              <div class="alarm-text">
-                <p class="warning-head">알림 없음</p>
-                <p class="warning-time"></p>
-              </div>
+            <div class="alarm-text">
+              <p class="warning-head">알림 없음</p>
+              <p class="warning-time"></p>
             </div>
-            <div class="alarm-content">
-              <div class="alarm-icon success">
-                <i class="fas fa-check-circle"></i>
-              </div>
-              <div class="alarm-text">
-                <p class="complete-head">알림 없음</p>
-                <p class="complete-time"></p>
-              </div>
+          </div>
+          <div class="alarm-content">
+            <div class="alarm-icon success">
+              <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="alarm-text">
+              <p class="complete-head">알림 없음</p>
+              <p class="complete-time"></p>
             </div>
           </div>
         </div>
       </div>
     </div>
-
 
     <div class="tabs">
       <div class="tab active" data-tab="current">현재 상태</div>
@@ -663,6 +659,6 @@
   <script src="details_script.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js"></script>
+  <!-- <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js"></script> -->
 </body>
 </html>
