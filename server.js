@@ -133,7 +133,7 @@ app.get('/api/latest-image', async (req, res) => {
       expires: Date.now() + 60 * 60 * 1000,
     });
     console.log('[API] 서명된 URL 생성 완료');
-
+    console.log(url);
     res.json({ url });
   } catch (error) {
     console.error('[API] 최근 이미지 조회 오류:', error);
