@@ -204,12 +204,12 @@ function generateAlerts(sensors, farm_id) {
 
     if (value < optimal_min - margin || value > optimal_max + margin) {
       alerts.push({
-        type: `${name} 경고`,
+        type: 'critical',
         message: `${name}가 위험 수치를 벗어났습니다 (${value}${unit})`
       });
     } else if (value < optimal_min || value > optimal_max) {
       alerts.push({
-        type: `${name} 주의`,
+        type: 'warning',
         message: `${name}가 최적 범위를 벗어났습니다 (${value}${unit})`
       });
     }
@@ -220,7 +220,12 @@ function generateAlerts(sensors, farm_id) {
   checkAndPush('soil_moisture', '%', '토양수분');
   checkAndPush('co2', 'ppm', 'CO2');
 
-  return alerts;
+  // 위험(critical) 경고를 주의(warning) 경고보다 상단에 오도록 정렬
+  return alerts.sort((a, b) => {
+    if (a.type === 'critical' && b.type !== 'critical') return -1;
+    if (a.type !== 'critical' && b.type === 'critical') return 1;
+    return 0;
+  });
 }
 
 // 메시지 표시
@@ -369,14 +374,14 @@ function renderFarmCards(filteredFarms = allFarms) {
           <line x1="12" y1="9" x2="12" y2="13"></line>
           <line x1="12" y1="17" x2="12.01" y2="17"></line>
         </svg>
-        ${alerts.length}개의 경고
+        센서 이상
       </div>`;
-      
+
       alerts.forEach(alert => {
-        const alertClass = alert.type.includes('경고') ? 'alert-critical' : 'alert-warning';
+        const alertClass = alert.type === 'critical' ? 'alert-critical' : 'alert-warning';
         alertsHtml += `<div class="alert-message ${alertClass}">${alert.message}</div>`;
       });
-      
+
       alertsHtml += '</div>';
     }
     
