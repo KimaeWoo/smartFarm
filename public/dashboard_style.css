@@ -304,17 +304,20 @@ body {
   font-size: 12px;
 }
 
-.farm-alerts.alert-critical {
-  color: red;
+.alert-message.alert-critical {
+  background: rgb(255, 60, 60); /* "위험" 경고의 배경색: 연한 빨간색 */
+  padding: 5px;
+  border-radius: 3px;
 }
 
-.farm-alerts.alert-warning {
-  color: orange;
+.alert-message.alert-warning {
+  background: rgb(254, 191, 74); /* "주의" 경고의 배경색: 연한 주황색 */
+  padding: 5px;
+  border-radius: 3px;
 }
 
 .alert-message {
-  background: none !important; /* 메시지 블록의 배경색 강제로 제거 */
-  padding: 5px;
+  color: inherit; /* 텍스트 색상은 기본값으로 설정 */
 }
 
 .last-updated {
