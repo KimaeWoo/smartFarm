@@ -1,23 +1,11 @@
 const API_BASE_URL = "https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app"
 
 const growthStages = [
-  { image: "images/씨앗.png", text: "씨앗" },
-  { image: "images/새싹.png", text: "새싹" },
-  { image: "images/성장.png", text: "성장" },
-  { image: "images/열매.png", text: "열매" },
+  {text: "씨앗" },
+  {text: "새싹" },
+  {text: "성장" },
+  {text: "열매" },
 ]
-
-let currentStage = 0
-
-function growPlant() {
-  if (currentStage < growthStages.length - 1) {
-    currentStage++
-  }
-  const plantImage = document.getElementById("plantImage")
-  const growthText = document.getElementById("growthText")
-  plantImage.src = growthStages[currentStage].image
-  growthText.textContent = `현재 성장 단계: ${growthStages[currentStage].text}`
-}
 
 function toggleMode() {
   const htmlElement = document.documentElement
@@ -1710,8 +1698,7 @@ ${report.aiAnalysis || "AI 분석 데이터가 없습니다."}
   }
 
   // 초기 데이터 로드
-  fetchData() // 초기 값값
-  growPlant()
+  fetchData() // 초기 값
   updateDateDisplay() // 날짜
   fetchSensorData()// 센서
   fetchDevicesStatus() // 제어 장치
