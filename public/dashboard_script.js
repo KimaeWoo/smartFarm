@@ -34,9 +34,21 @@ function getSensorStatus(type, value, farm_id) {
 
   const { optimal_min, optimal_max } = conditions[type];
 
-  if (value < optimal_min - 2 || value > optimal_max + 2) return 'critical';
-  if (value < optimal_min || value > optimal_max) return 'warning';
-  return 'healthy';
+  const range = optimal_max - optimal_min;
+  const margin = range * 0.05;
+
+  if (value >= optimal_min && value <= optimal_max) {
+    return 'healthy';
+  }
+
+  if (
+    (value >= optimal_min - margin && value < optimal_min) ||
+    (value > optimal_max && value <= optimal_max + margin)
+  ) {
+    return 'warning';
+  }
+
+  return 'critical';
 }
 
 // 센서 아이콘 가져오기
@@ -187,8 +199,10 @@ function generateAlerts(sensors, farm_id) {
     if (value === null || value === undefined || !condition) return;
 
     const { optimal_min, optimal_max } = condition;
+    const range = optimal_max - optimal_min;
+    const margin = range * 0.05;
 
-    if (value < optimal_min - 2 || value > optimal_max + 2) {
+    if (value < optimal_min - margin || value > optimal_max + margin) {
       alerts.push({
         type: `${name} 경고`,
         message: `${name}가 위험 수치를 벗어났습니다 (${value}${unit})`
@@ -208,7 +222,6 @@ function generateAlerts(sensors, farm_id) {
 
   return alerts;
 }
-
 
 // 메시지 표시
 function showMessage(message, type = 'error') {
@@ -298,7 +311,7 @@ function renderFarmCards(filteredFarms = allFarms) {
       
       sensorFields.forEach(({ key, value }) => {
         if (value !== null && value !== undefined) {
-          const sensorStatus = getSensorStatus(key, value, farm.farm_id);
+          const status = getSensorStatus(key, value, farm.farm_id);
           sensorsHtml += `
             <div class="sensor">
               <div class="sensor-icon">
@@ -360,7 +373,8 @@ function renderFarmCards(filteredFarms = allFarms) {
       </div>`;
       
       alerts.forEach(alert => {
-        alertsHtml += `<div class="alert-message">${alert.message}</div>`;
+        const alertClass = alert.type.includes('경고') ? 'alert-critical' : 'alert-warning';
+        alertsHtml += `<div class="alert-message ${alertClass}">${alert.message}</div>`;
       });
       
       alertsHtml += '</div>';

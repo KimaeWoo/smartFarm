@@ -226,12 +226,30 @@ body {
   font-weight: bold;
 }
 
+.sensor-value.healthy {
+  color: green;
+}
+
 .sensor-value.warning {
-  color: #b45309;
+  color: #cc7a00;
 }
 
 .sensor-value.critical {
-  color: #b91c1c;
+  color: #cc0000;
+}
+
+/* 경고 (critical) */
+.alert-critical {
+  background-color: #ffe0e0;
+  color: #cc0000;
+  border-left: 4px solid #cc0000;
+}
+
+/* 주의 (warning) */
+.alert-warning {
+  background-color: #fff4d4;
+  color: #cc7a00;
+  border-left: 4px solid #cc7a00;
 }
 
 .farm-controls {
@@ -302,7 +320,6 @@ body {
 
 .alert-message {
   font-size: 11px;
-  color: #b91c1c;
 }
 
 .last-updated {
