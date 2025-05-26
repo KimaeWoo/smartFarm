@@ -238,6 +238,20 @@ body {
   color: #cc0000;
 }
 
+/* 경고 (critical) */
+.alert-critical {
+  background-color: #ffe0e0;
+  color: #cc0000;
+  border-left: 4px solid #cc0000;
+}
+
+/* 주의 (warning) */
+.alert-warning {
+  background-color: #fff4d4;
+  color: #cc7a00;
+  border-left: 4px solid #cc7a00;
+}
+
 .farm-controls {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -287,33 +301,25 @@ body {
   margin-bottom: 8px;
 }
 
-.farm-alerts {
-  background-color: none;
-  border-radius: 6px;
-  padding: 5px;
-  margin-bottom: 8px;
-}
-
-.alert-title {
+.farm-alerts-title {
   font-weight: bold;
-  color: #b91c1c;
-  margin-bottom: 4px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
+  margin-bottom: 5px;
+  color: #333; /* 제목 텍스트 색상 (기본값) */
 }
 
-.alert-message.alert-critical {
-  background: rgb(255, 60, 60); /* "위험" 경고의 배경색: 연한 빨간색 */
+.farm-alerts {
+  margin-bottom: 10px; /* 각 경고 박스 간 간격 */
   padding: 5px;
   border-radius: 3px;
+  border: 1px solid #ddd; /* 경고 박스를 구분하기 위한 얇은 테두리 (선택 사항) */
 }
 
-.alert-message.alert-warning {
-  background: rgb(254, 191, 74); /* "주의" 경고의 배경색: 연한 주황색 */
-  padding: 5px;
-  border-radius: 3px;
+.farm-alerts.alert-critical {
+  background: #fe7a7a; /* "위험" 경고의 배경색: 연한 빨간색 */
+}
+
+.farm-alerts.alert-warning {
+  background: #fabb81; /* "주의" 경고의 배경색: 연한 주황색 */
 }
 
 .alert-message {
