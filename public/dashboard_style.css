@@ -304,10 +304,14 @@ body {
 .alert-message {
   font-size: 13px;
   color: #b91c1c; /* 위험 경고 텍스트: 빨간색 */
+  white-space: normal; /* 줄 바꿈 허용 */
+  line-height: 1.4;
 }
 
 .farm-alerts.alert-warning .alert-message {
   color: #b45309; /* 주의 경고 텍스트: 주황색 */
+  white-space: normal; /* 줄 바꿈 허용 */
+  line-height: 1.4;
 }
 
 .alerts-title {
