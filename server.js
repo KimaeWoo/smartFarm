@@ -84,7 +84,7 @@ app.post('/api/upload-image', upload.single('file'), async (req, res) => {
     const fileName = `farms/${farmId}/${timestamp}_${file.originalname}`;
     const fileUpload = bucket.file(fileName);
 
-    // 🔧 파일 저장 (공개 접근 가능하도록 설정)
+    // 파일 저장 (공개 접근 가능하도록 설정)
     await fileUpload.save(file.buffer, {
       metadata: {
         contentType: file.mimetype,
@@ -210,92 +210,6 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-// // FCM token 등록 API
-// app.post('/register-fcm-token', authenticateToken, async (req, res) => {
-//   const user_id = req.user.user_id;
-//   const { fcm_token } = req.body;
-
-//   if (!fcm_token) {
-//     return res.status(400).json({ message: 'fcm_token이 필요합니다' });
-//   }
-
-//   let conn;
-//   try {
-//     conn = await db.getConnection();
-
-//     const upsertQuery = `
-//       INSERT INTO user_tokens (user_id, fcm_token)
-//       VALUES (?, ?)
-//       ON DUPLICATE KEY UPDATE fcm_token = VALUES(fcm_token)
-//     `;
-
-//     await conn.query(upsertQuery, [user_id, fcm_token]);
-//     console.log(`[POST /register-fcm-token] FCM 토큰 등록 성공 - ${user_id}`);
-//     return res.json({ message: '토큰 등록 성공' });
-//   } catch (err) {
-//     console.error('[POST /register-fcm-token] DB 오류:', err);
-//     return res.status(500).json({ message: 'DB 오류' });
-//   } finally {
-//     if (conn) conn.release();
-//   }
-// });
-
-// const admin = require('firebase-admin');
-// const serviceAccount = require('./firebase-key.json');
-
-// admin.initializeApp({
-//   credential: admin.credential.cert(serviceAccount),
-// });
-
-// async function sendPushNotificationToUser(farm_id, message) {
-//   let conn;
-//   try {
-//     conn = await db.getConnection();
-
-//     const [farm] = await conn.query(
-//       `SELECT user_id FROM farms WHERE farm_id = ?`,
-//       [farm_id]
-//     );
-
-//     if (!farm || farm.length === 0) {
-//       console.warn('farm_id에 해당하는 유저 없음');
-//       return;
-//     }
-
-//     const userId = farm[0].user_id;
-
-//     const [tokenResult] = await conn.query(
-//       `SELECT fcm_token FROM user_tokens WHERE user_id = ? LIMIT 1`,
-//       [userId]
-//     );
-
-//     if (!tokenResult || tokenResult.length === 0 || !tokenResult[0].fcm_token) {
-//       console.warn(`FCM 토큰 없음 - user_id: ${userId}`);
-//       return;
-//     }
-
-//     const fcmToken = tokenResult[0].fcm_token;
-
-//     const payload = {
-//       token: fcmToken,
-//       notification: {
-//         title: '🚨 스마트팜 경고',
-//         body: message,
-//       },
-//       data: {
-//         farm_id: String(farm_id),
-//       },
-//     };
-
-//     const response = await admin.messaging().send(payload);
-//     console.log('[FCM Push] 전송 성공:', response);
-//   } catch (err) {
-//     console.error('[FCM Push] 전송 실패:', err);
-//   } finally {
-//     if (conn) conn.release();
-//   }
-// }
-
 // 로그인
 app.post('/login', async (req, res) => {
   const { user_id, password } = req.body;
@@ -385,6 +299,7 @@ app.get('/getFarms', async(req, res) => {
 });
 
 // 농장 추가하기
+// 농장 추가하기
 app.post('/addFarm', authenticateToken, async (req, res) => {
   const user_id = req.user.user_id; // JWT에서 추출
   const { farm_name, farm_location, farm_type } = req.body;
@@ -431,26 +346,6 @@ app.post('/addFarm', authenticateToken, async (req, res) => {
       ]);
     }
     console.log('[POST /addFarm] farm_conditions 복사 성공');
-
-    // 4. 하드웨어 서버로 farm_id, farm_type, 최적 수치 전송
-    const optimalConditions = {};
-    for (const row of cropConditions) {
-      optimalConditions[row.condition_type] = {
-        optimal_min: row.optimal_min,
-        optimal_max: row.optimal_max
-      };
-    }
-
-    try {
-      await axios.post('https://api.hotpotato.me/init-farm-data', {
-        farm_id,
-        farm_type,
-        conditions: optimalConditions
-      });
-      console.log(`[POST /addFarm] 하드웨어 서버로 전송 성공`);
-    } catch (axiosError) {
-      console.error(`[POST /addFarm] 하드웨어 서버 전송 실패:`, axiosError.message);
-    }
 
     await conn.commit();
     return res.json({ message: '농장 추가 성공', farm_id });
@@ -804,49 +699,82 @@ app.get('/getAlarm', async (req, res) => {
 // 농장 시작 버튼 클릭 시 farms 테이블 업데이트
 app.post('/start-farm', async (req, res) => {
   const { farmId } = req.body;
-  
-  // 현재 날짜 구하기
+
   const currentDate = new Date().toISOString().split('T')[0];
 
-  // farm_active를 TRUE로, start_date를 현재 날짜로 업데이트
   const updateFarmQuery = `
     UPDATE farms
     SET farm_active = TRUE, start_date = ?
     WHERE farm_id = ?
   `;
-  let conn;
+  const getCropQuery = `
+    SELECT c.harvest_days
+    FROM crops c
+    JOIN farms f ON f.farm_type = c.name
+    WHERE f.farm_id = ?
+  `;
+  const selectCropConditionsQuery = `
+    SELECT condition_type, optimal_min, optimal_max
+    FROM farm_conditions
+    WHERE farm_id = ?
+  `;
+  const getFarmTypeQuery = `
+    SELECT farm_type
+    FROM farms
+    WHERE farm_id = ?
+  `;
 
+  let conn;
   try {
     conn = await db.getConnection();
 
-    // farms 테이블 업데이트
+    // 1. farms 테이블 업데이트
     const updateResult = await conn.query(updateFarmQuery, [currentDate, farmId]);
 
     if (updateResult.affectedRows === 0) {
       return res.status(500).send('농장 업데이트 실패');
     }
 
-    // farm_type에 맞는 harvest_days 가져오기
-    const getCropQuery = `
-      SELECT c.harvest_days
-      FROM crops c
-      JOIN farms f ON f.farm_type = c.name
-      WHERE f.farm_id = ?
-    `;
-    
-    // 작물 정보 가져오기
+    // 2. harvest_days 조회
     const cropResult = await conn.query(getCropQuery, [farmId]);
-
     if (cropResult.length === 0) {
       return res.status(500).send('작물 정보 조회 실패');
     }
-
     const harvestDays = cropResult[0].harvest_days;
 
-    console.log(`[POST /start-farm] ${farmId} 농장 시작 성공 `);
+    // 3. farm_type 조회
+    const farmTypeResult = await conn.query(getFarmTypeQuery, [farmId]);
+    if (farmTypeResult.length === 0) {
+      return res.status(500).send('농장 유형 조회 실패');
+    }
+    const farmType = farmTypeResult[0].farm_type;
+
+    // 4. farm_conditions에서 최적 조건 조회
+    const cropConditions = await conn.query(selectCropConditionsQuery, [farmId]);
+    const optimalConditions = {};
+    for (const row of cropConditions) {
+      optimalConditions[row.condition_type] = {
+        optimal_min: row.optimal_min,
+        optimal_max: row.optimal_max,
+      };
+    }
+
+    // 5. 하드웨어 서버로 전송
+    try {
+      await axios.post('https://api.hotpotato.me/init-farm-data', {
+        farm_id: farmId,
+        farm_type: farmType,
+        conditions: optimalConditions,
+      });
+      console.log(`[POST /start-farm] 하드웨어 서버 전송 성공`);
+    } catch (axiosError) {
+      console.error(`[POST /start-farm] 하드웨어 서버 전송 실패:`, axiosError.message);
+    }
+
+    console.log(`[POST /start-farm] ${farmId} 농장 시작 성공`);
     res.json({ message: 'success', harvestDays, startDate: currentDate });
   } catch (err) {
-    console.log('[POST /start-farm] DB 오류:', err.stack);
+    console.error('[POST /start-farm] DB 오류:', err.stack);
     return res.status(500).json({ message: 'DB 오류' });
   } finally {
     if (conn) conn.release();
