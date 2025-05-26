@@ -205,12 +205,12 @@ function generateAlerts(sensors, farm_id) {
     if (value < optimal_min - margin || value > optimal_max + margin) {
       alerts.push({
         type: 'critical',
-        message: `${name}가 위험 수치를 벗어났습니다: 현재 ${value}${unit} (최적 범위: ${optimal_min}${unit} ~ ${optimal_max}${unit})`
+        message: `${name}가 위험 수치를 벗어났습니다: 현재 ${value}${unit}<br>최적 범위: ${optimal_min}${unit} ~ ${optimal_max}${unit}`
       });
     } else if (value < optimal_min || value > optimal_max) {
       alerts.push({
         type: 'warning',
-        message: `${name}가 최적 범위를 벗어났습니다: 현재 ${value}${unit} (최적 범위: ${optimal_min}${unit} ~ ${optimal_max}${unit})`
+        message: `${name}가 최적 범위를 벗어났습니다: 현재 ${value}${unit}<br>최적 범위: ${optimal_min}${unit} ~ ${optimal_max}${unit}`
       });
     }
   };
