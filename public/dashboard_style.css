@@ -238,20 +238,6 @@ body {
   color: #cc0000;
 }
 
-/* 경고 (critical) */
-.alert-critical {
-  background-color: #ffe0e0;
-  color: #cc0000;
-  border-left: 4px solid #cc0000;
-}
-
-/* 주의 (warning) */
-.alert-warning {
-  background-color: #fff4d4;
-  color: #cc7a00;
-  border-left: 4px solid #cc7a00;
-}
-
 .farm-controls {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -302,9 +288,9 @@ body {
 }
 
 .farm-alerts {
-  background-color: #fee2e2;
+  background-color: none;
   border-radius: 6px;
-  padding: 8px;
+  padding: 5px;
   margin-bottom: 8px;
 }
 
@@ -318,8 +304,17 @@ body {
   font-size: 12px;
 }
 
+.farm-alerts.alert-critical {
+  color: red;
+}
+
+.farm-alerts.alert-warning {
+  color: orange;
+}
+
 .alert-message {
-  font-size: 13px;
+  background: none !important; /* 메시지 블록의 배경색 강제로 제거 */
+  padding: 5px;
 }
 
 .last-updated {
