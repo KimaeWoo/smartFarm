@@ -354,11 +354,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function updateGrowthStageByRate(growthRate) {
-    const plantImage = document.getElementById("plantImage")
     const growthTextEl = document.getElementById("growthText")
     const stageElements = document.querySelectorAll(".stage")
 
-    if (!plantImage || !growthTextEl) return
+    if (!growthTextEl) return
 
     let stageText = ""
     let stageIndex = 0
@@ -377,7 +376,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       stageIndex = 3
     }
 
-    plantImage.src = growthStages[stageIndex].image
     growthTextEl.textContent = `현재 성장 단계: ${stageText}`
 
     stageElements.forEach((el, idx) => {
