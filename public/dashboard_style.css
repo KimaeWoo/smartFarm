@@ -305,7 +305,7 @@ body {
   background-color: #fee2e2;
   border-radius: 6px;
   padding: 8px;
-  margin-top: 8px;
+  margin-bottom: 8px;
 }
 
 .alert-title {
@@ -319,7 +319,7 @@ body {
 }
 
 .alert-message {
-  font-size: 11px;
+  font-size: 13px;
 }
 
 .last-updated {
