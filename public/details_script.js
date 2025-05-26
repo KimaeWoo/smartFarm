@@ -1711,6 +1711,7 @@ ${report.aiAnalysis || "AI 분석 데이터가 없습니다."}
 
   // 초기 데이터 로드
   fetchData() // 초기 값값
+  growPlant()
   updateDateDisplay() // 날짜
   fetchSensorData()// 센서
   fetchDevicesStatus() // 제어 장치
