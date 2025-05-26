@@ -368,7 +368,7 @@ function renderFarmCards(filteredFarms = allFarms) {
     let alertsHtml = '';
     if (alerts && alerts.length > 0) {
       alertsHtml += `
-        <div class="farm-alerts-title">
+        <div class="alerts-title">
           경고
         </div>
       `;
