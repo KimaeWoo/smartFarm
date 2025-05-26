@@ -231,11 +231,11 @@ body {
 }
 
 .sensor-value.warning {
-  color: orange;
+  color: rgb(250, 191, 83);
 }
 
 .sensor-value.critical {
-  color: red;
+  color: rgb(250, 90, 90);
 }
 
 .farm-controls {
@@ -289,7 +289,7 @@ body {
 
 .farm-alerts {
   border-radius: 6px;
-  padding: 8px;
+  padding: 5px;
   margin-top: 8px;
 }
 
@@ -302,7 +302,7 @@ body {
 }
 
 .alert-message {
-  font-size: 11px;
+  font-size: 13px;
   color: #b91c1c; /* 위험 경고 텍스트: 빨간색 */
 }
 
