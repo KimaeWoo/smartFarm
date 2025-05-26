@@ -386,7 +386,7 @@ app.post('/delFarm', authenticateToken, async (req, res) => {
   }
 });
 
-// 센서 데이터 저장 및 이상값 감지
+// 센서 데이터 저장
 app.post('/sensors', async (req, res) => {
   const { farm_id, temperature, humidity, soil_moisture, co2, created_at } = req.body;
 
@@ -399,11 +399,14 @@ app.post('/sensors', async (req, res) => {
     VALUES (?, ?, ?, ?, ?, ?)
   `;
 
+  /*
+  // 이상값 조건 조회 쿼리
   const conditionQuery = `
     SELECT condition_type, optimal_min, optimal_max 
     FROM farm_conditions 
     WHERE farm_id = ?
   `;
+  */
 
   let conn;
 
@@ -413,7 +416,8 @@ app.post('/sensors', async (req, res) => {
     // 1. DB에 센서값 저장
     await conn.query(insertQuery, [farm_id, temperature, humidity, soil_moisture, co2, timestamp]);
 
-    // 2. 이상값 감지 로직
+    /*
+    // 2. 이상값 감지 로직 (현재 비활성화됨)
     const conditions = await conn.query(conditionQuery, [farm_id]);
 
     if (!Array.isArray(conditions) || conditions.length === 0) {
@@ -445,6 +449,7 @@ app.post('/sensors', async (req, res) => {
         }
       }
     }
+    */
 
     return res.json({ message: '센서 데이터 저장 성공' });
   } catch (err) {
@@ -1202,7 +1207,6 @@ app.post('/generate-report', async (req, res) => {
     }
     if (sensorChanges.max_co2.value > optimalConditions.co2?.optimal_max * 1.5) {
       criticalIssues.push(`CO₂ 급등 (${sensorChanges.max_co2.value}ppm)`);
-      await sendPushNotificationToUser(farmId, `🚨 CO₂ 농도 ${sensorChanges.max_co2.value}ppm 급등! 즉시 환기 점검 필요`);
     }
 
     // AI 분석 생성
