@@ -364,7 +364,7 @@ function renderFarmCards(filteredFarms = allFarms) {
     }
     controlsHtml += '</div>';
     
-    // 경고 HTML 생성
+    // 경고 HTML 생성s
     let alertsHtml = '';
     if (alerts && alerts.length > 0) {
       alertsHtml += `

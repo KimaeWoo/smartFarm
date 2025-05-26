@@ -288,25 +288,36 @@ body {
 }
 
 .farm-alerts {
-  background-color: #fee2e2;
   border-radius: 6px;
   padding: 8px;
   margin-top: 8px;
 }
 
-.alert-title {
+.farm-alerts.alert-critical {
+  background-color: #fee2e2; /* 위험 경고: 연한 빨간색 */
+}
+
+.farm-alerts.alert-warning {
+  background-color: #fef3c7; /* 주의 경고: 연한 주황색 */
+}
+
+.alert-message {
+  font-size: 11px;
+  color: #b91c1c; /* 위험 경고 텍스트: 빨간색 */
+}
+
+.farm-alerts.alert-warning .alert-message {
+  color: #b45309; /* 주의 경고 텍스트: 주황색 */
+}
+
+.alerts-title {
   font-weight: bold;
-  color: #b91c1c;
+  color: #b91c1c; /* 위험 경고와 일치하는 빨간색 */
   margin-bottom: 4px;
   display: flex;
   align-items: center;
   gap: 4px;
   font-size: 12px;
-}
-
-.alert-message {
-  font-size: 11px;
-  color: #b91c1c;
 }
 
 .last-updated {
