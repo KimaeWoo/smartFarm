@@ -1242,6 +1242,16 @@ app.post('/generate-report', async (req, res) => {
       criticalIssues.push(`CO₂ 급등 (${sensorChanges.max_co2.value}ppm)`);
     }
 
+    // 최근 이미지 URL 조회
+    let imageUrl = null;
+    try {
+      const imageRes = await axios.get(`${API_BASE_URL}/latest-image?farmId=${farmId}`);
+      imageUrl = imageRes.data.url;
+      console.log(`[이미지] 최근 이미지 URL 조회 성공: ${imageUrl}`);
+    } catch (imgErr) {
+      console.warn(`[이미지] 최근 이미지 URL 조회 실패: ${imgErr.message}`);
+    }
+
     // AI 분석 생성
     console.log('AI 분석 생성');
     const prompt = `
@@ -1321,6 +1331,7 @@ app.post('/generate-report', async (req, res) => {
       JSON.stringify(sensorChanges),
       JSON.stringify(deviceLogs),
       aiAnalysis,
+      imageUrl,
     ]);
 
     // 리포트 텍스트 생성
@@ -1432,7 +1443,7 @@ async function fetchHistoryDataFromDB(farmId, date) {
       co2Data: historyData.map(row => Number(row.avg_co2) || 0),
     };
 
-    console.log('가공된 센서 데이터:', result);
+    // console.log('가공된 센서 데이터:', result);
     return result;
   } catch (error) {
     console.error(`센서 데이터 조회 실패 - 농장 ID: ${farmId}, 날짜: ${date}`, error);
@@ -1490,7 +1501,7 @@ async function fetchExtremeSensorDataFromDB(farmId, date) {
       },
     };
 
-    console.log('가공된 센서 극값 데이터:', result);
+    // console.log('가공된 센서 극값 데이터:', result);
     return result;
 
   } catch (error) {

@@ -1517,117 +1517,123 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // 리포트 모달 표시 함수
   function showReportModal(report) {
-  const modal = document.getElementById("reportModal");
-  if (!modal) return;
+    const modal = document.getElementById("reportModal");
+    if (!modal) return;
 
-  // 날짜 정보 설정
-  const reportDateEl = document.getElementById("reportDate");
-  if (reportDateEl) reportDateEl.textContent = report.date;
+    // 날짜 정보 설정
+    const reportDateEl = document.getElementById("reportDate");
+    if (reportDateEl) reportDateEl.textContent = report.date;
 
-  // 센서 요약 정보 설정
-  const avgTempEl = document.getElementById("avgTemp");
-  const avgHumidityEl = document.getElementById("avgHumidity");
-  const avgSoilEl = document.getElementById("avgSoil");
-  const avgCo2El = document.getElementById("avgCo2");
+    // 센서 요약 정보 설정
+    const avgTempEl = document.getElementById("avgTemp");
+    const avgHumidityEl = document.getElementById("avgHumidity");
+    const avgSoilEl = document.getElementById("avgSoil");
+    const avgCo2El = document.getElementById("avgCo2");
 
-  if (avgTempEl) avgTempEl.textContent = `${report.sensorSummary.avg_temperature} °C`;
-  if (avgHumidityEl) avgHumidityEl.textContent = `${report.sensorSummary.avg_humidity} %`;
-  if (avgSoilEl) avgSoilEl.textContent = `${report.sensorSummary.avg_soil_moisture} %`;
-  if (avgCo2El) avgCo2El.textContent = `${report.sensorSummary.avg_co2} ppm`;
+    if (avgTempEl) avgTempEl.textContent = `${report.sensorSummary.avg_temperature} °C`;
+    if (avgHumidityEl) avgHumidityEl.textContent = `${report.sensorSummary.avg_humidity} %`;
+    if (avgSoilEl) avgSoilEl.textContent = `${report.sensorSummary.avg_soil_moisture} %`;
+    if (avgCo2El) avgCo2El.textContent = `${report.sensorSummary.avg_co2} ppm`;
 
-  // 센서 변화 정보 설정
-  const maxTempEl = document.getElementById("maxTemp");
-  const maxTempTimeEl = document.getElementById("maxTempTime");
-  const minTempEl = document.getElementById("minTemp");
-  const minTempTimeEl = document.getElementById("minTempTime");
+    // 센서 변화 정보 설정
+    const maxTempEl = document.getElementById("maxTemp");
+    const maxTempTimeEl = document.getElementById("maxTempTime");
+    const minTempEl = document.getElementById("minTemp");
+    const minTempTimeEl = document.getElementById("minTempTime");
 
-  if (maxTempEl) maxTempEl.textContent = `${report.sensorChanges.max_temperature.value} °C`;
-  if (maxTempTimeEl) maxTempTimeEl.textContent = report.sensorChanges.max_temperature.time;
-  if (minTempEl) minTempEl.textContent = `${report.sensorChanges.min_temperature.value} °C`;
-  if (minTempTimeEl) minTempTimeEl.textContent = report.sensorChanges.min_temperature.time;
+    if (maxTempEl) maxTempEl.textContent = `${report.sensorChanges.max_temperature.value} °C`;
+    if (maxTempTimeEl) maxTempTimeEl.textContent = report.sensorChanges.max_temperature.time;
+    if (minTempEl) minTempEl.textContent = `${report.sensorChanges.min_temperature.value} °C`;
+    if (minTempTimeEl) minTempTimeEl.textContent = report.sensorChanges.min_temperature.time;
 
-  const maxHumidityEl = document.getElementById("maxHumidity");
-  const maxHumidityTimeEl = document.getElementById("maxHumidityTime");
-  const minHumidityEl = document.getElementById("minHumidity");
-  const minHumidityTimeEl = document.getElementById("minHumidityTime");
+    const maxHumidityEl = document.getElementById("maxHumidity");
+    const maxHumidityTimeEl = document.getElementById("maxHumidityTime");
+    const minHumidityEl = document.getElementById("minHumidity");
+    const minHumidityTimeEl = document.getElementById("minHumidityTime");
 
-  if (maxHumidityEl) maxHumidityEl.textContent = `${report.sensorChanges.max_humidity.value} %`;
-  if (maxHumidityTimeEl) maxHumidityTimeEl.textContent = report.sensorChanges.max_humidity.time;
-  if (minHumidityEl) minHumidityEl.textContent = `${report.sensorChanges.min_humidity.value} %`;
-  if (minHumidityTimeEl) minHumidityTimeEl.textContent = report.sensorChanges.min_humidity.time;
+    if (maxHumidityEl) maxHumidityEl.textContent = `${report.sensorChanges.max_humidity.value} %`;
+    if (maxHumidityTimeEl) maxHumidityTimeEl.textContent = report.sensorChanges.max_humidity.time;
+    if (minHumidityEl) minHumidityEl.textContent = `${report.sensorChanges.min_humidity.value} %`;
+    if (minHumidityTimeEl) minHumidityTimeEl.textContent = report.sensorChanges.min_humidity.time;
 
-  const maxSoilEl = document.getElementById("maxSoil");
-  const maxSoilTimeEl = document.getElementById("maxSoilTime");
-  const minSoilEl = document.getElementById("minSoil");
-  const minSoilTimeEl = document.getElementById("minSoilTime");
+    const maxSoilEl = document.getElementById("maxSoil");
+    const maxSoilTimeEl = document.getElementById("maxSoilTime");
+    const minSoilEl = document.getElementById("minSoil");
+    const minSoilTimeEl = document.getElementById("minSoilTime");
 
-  if (maxSoilEl) maxSoilEl.textContent = `${report.sensorChanges.max_soil_moisture.value} %`;
-  if (maxSoilTimeEl) maxSoilTimeEl.textContent = report.sensorChanges.max_soil_moisture.time;
-  if (minSoilEl) minSoilEl.textContent = `${report.sensorChanges.min_soil_moisture.value} %`;
-  if (minSoilTimeEl) minSoilTimeEl.textContent = report.sensorChanges.min_soil_moisture.time;
+    if (maxSoilEl) maxSoilEl.textContent = `${report.sensorChanges.max_soil_moisture.value} %`;
+    if (maxSoilTimeEl) maxSoilTimeEl.textContent = report.sensorChanges.max_soil_moisture.time;
+    if (minSoilEl) minSoilEl.textContent = `${report.sensorChanges.min_soil_moisture.value} %`;
+    if (minSoilTimeEl) minSoilTimeEl.textContent = report.sensorChanges.min_soil_moisture.time;
 
-  const maxCo2El = document.getElementById("maxCo2");
-  const maxCo2TimeEl = document.getElementById("maxCo2Time");
-  const minCo2El = document.getElementById("minCo2");
-  const minCo2TimeEl = document.getElementById("minCo2Time");
+    const maxCo2El = document.getElementById("maxCo2");
+    const maxCo2TimeEl = document.getElementById("maxCo2Time");
+    const minCo2El = document.getElementById("minCo2");
+    const minCo2TimeEl = document.getElementById("minCo2Time");
 
-  if (maxCo2El) maxCo2El.textContent = `${report.sensorChanges.max_co2.value} ppm`;
-  if (maxCo2TimeEl) maxCo2TimeEl.textContent = report.sensorChanges.max_co2.time;
-  if (minCo2El) minCo2El.textContent = `${report.sensorChanges.min_co2.value} ppm`;
-  if (minCo2TimeEl) minCo2TimeEl.textContent = report.sensorChanges.min_co2.time;
+    if (maxCo2El) maxCo2El.textContent = `${report.sensorChanges.max_co2.value} ppm`;
+    if (maxCo2TimeEl) maxCo2TimeEl.textContent = report.sensorChanges.max_co2.time;
+    if (minCo2El) minCo2El.textContent = `${report.sensorChanges.min_co2.value} ppm`;
+    if (minCo2TimeEl) minCo2TimeEl.textContent = report.sensorChanges.min_co2.time;
 
-  // 장치 로그 정보 설정
-  const ledLogEl = document.getElementById("ledLog");
-  const fanLogEl = document.getElementById("fanLog");
-  const waterLogEl = document.getElementById("waterLog");
-  const heaterLogEl = document.getElementById("heaterLog");
-  const coolerLogEl = document.getElementById("coolerLog");
+    // 장치 로그 정보 설정
+    const ledLogEl = document.getElementById("ledLog");
+    const fanLogEl = document.getElementById("fanLog");
+    const waterLogEl = document.getElementById("waterLog");
+    const heaterLogEl = document.getElementById("heaterLog");
+    const coolerLogEl = document.getElementById("coolerLog");
 
-  if (ledLogEl) {
-    ledLogEl.textContent = report.deviceLogs.led.start
-      ? `켜짐 (시작: ${report.deviceLogs.led.start}, 종료: ${report.deviceLogs.led.end})`
-      : "꺼짐";
+    if (ledLogEl) {
+      ledLogEl.textContent = report.deviceLogs.led.start
+        ? `켜짐 (시작: ${report.deviceLogs.led.start}, 종료: ${report.deviceLogs.led.end})`
+        : "꺼짐";
+    }
+
+    if (fanLogEl) {
+      fanLogEl.textContent = `작동 횟수 ${report.deviceLogs.fan.count}회, 총 작동 시간 ${report.deviceLogs.fan.total_time}분`;
+    }
+
+    if (waterLogEl) {
+      waterLogEl.textContent = `급수 횟수 ${report.deviceLogs.water.count}회, 총 급수량 ${report.deviceLogs.water.total_amount} L`;
+    }
+
+    if (heaterLogEl) {
+      heaterLogEl.textContent = `작동 횟수 ${report.deviceLogs.heater.count}회, 총 작동 시간 ${report.deviceLogs.heater.total_time}분`;
+    }
+
+    if (coolerLogEl) {
+      coolerLogEl.textContent = `작동 횟수 ${report.deviceLogs.cooler.count}회, 총 작동 시간 ${report.deviceLogs.cooler.total_time}분`;
+    }
+
+    // 이미지 URL 설정
+    const reportImageEl = document.getElementById("reportImage");
+    if (reportImageEl) {
+      reportImageEl.src = report.imageUrl || "images/no-image.jpg";
+    }
+
+    // AI 분석 정보 설정 (줄바꿈 처리)
+    const aiAnalysisEl = document.getElementById("aiAnalysis");
+    if (aiAnalysisEl) {
+      aiAnalysisEl.innerHTML = report.aiAnalysis
+        ? report.aiAnalysis.replace(/\n/g, '<br>')
+        : "AI 분석 데이터가 없습니다.";
+    }
+
+    // 모달 표시
+    modal.style.display = "block";
+
+    // 다운로드 버튼 이벤트 설정
+    const downloadReportBtn = document.getElementById("downloadReportBtn");
+    if (downloadReportBtn) {
+      // 이전 이벤트 리스너 제거
+      const newDownloadBtn = downloadReportBtn.cloneNode(true);
+      downloadReportBtn.parentNode.replaceChild(newDownloadBtn, downloadReportBtn);
+
+      newDownloadBtn.addEventListener("click", () => {
+        downloadReport(report);
+      });
+    }
   }
-
-  if (fanLogEl) {
-    fanLogEl.textContent = `작동 횟수 ${report.deviceLogs.fan.count}회, 총 작동 시간 ${report.deviceLogs.fan.total_time}분`;
-  }
-
-  if (waterLogEl) {
-    waterLogEl.textContent = `급수 횟수 ${report.deviceLogs.water.count}회, 총 급수량 ${report.deviceLogs.water.total_amount} L`;
-  }
-
-  if (heaterLogEl) {
-    heaterLogEl.textContent = `작동 횟수 ${report.deviceLogs.heater.count}회, 총 작동 시간 ${report.deviceLogs.heater.total_time}분`;
-  }
-
-  if (coolerLogEl) {
-    coolerLogEl.textContent = `작동 횟수 ${report.deviceLogs.cooler.count}회, 총 작동 시간 ${report.deviceLogs.cooler.total_time}분`;
-  }
-
-  // AI 분석 정보 설정 (줄바꿈 처리)
-  const aiAnalysisEl = document.getElementById("aiAnalysis");
-  if (aiAnalysisEl) {
-    aiAnalysisEl.innerHTML = report.aiAnalysis
-      ? report.aiAnalysis.replace(/\n/g, '<br>')
-      : "AI 분석 데이터가 없습니다.";
-  }
-
-  // 모달 표시
-  modal.style.display = "block";
-
-  // 다운로드 버튼 이벤트 설정
-  const downloadReportBtn = document.getElementById("downloadReportBtn");
-  if (downloadReportBtn) {
-    // 이전 이벤트 리스너 제거
-    const newDownloadBtn = downloadReportBtn.cloneNode(true);
-    downloadReportBtn.parentNode.replaceChild(newDownloadBtn, downloadReportBtn);
-
-    newDownloadBtn.addEventListener("click", () => {
-      downloadReport(report);
-    });
-  }
-}
 
   // 리포트 다운로드 함수
   function downloadReport(report) {

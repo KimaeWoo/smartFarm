@@ -1089,7 +1089,7 @@ input:checked+.slider:before {
 .report-left {
   display: flex;
   align-items: center; /* 수직 가운데 정렬 */
-  gap: 10px;            /* 요소 사이 간격 */
+  gap: 5px;  
 }
 
 .generate-report-btn {
