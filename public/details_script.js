@@ -1607,6 +1607,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // 이미지 URL 설정
     const reportImageEl = document.getElementById("reportImage");
+    console.log(report.imageUrl);
     if (reportImageEl) {
       reportImageEl.src = report.imageUrl || "images/no-image.jpg";
     }
