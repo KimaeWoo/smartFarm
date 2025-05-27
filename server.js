@@ -1203,15 +1203,19 @@ app.post('/generate-report', async (req, res) => {
 
     // 센서 변화 계산
     const extremes = await fetchExtremeSensorDataFromDB(farmId, date);
+    const formatDateTime = (datetime) => {
+      return datetime ? moment(datetime).tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss") : null;
+    };
+
     const sensorChanges = {
-      max_temperature: { value: extremes.temperature.max, time: extremes.temperature.maxTime },
-      min_temperature: { value: extremes.temperature.min, time: extremes.temperature.minTime },
-      max_humidity: { value: extremes.humidity.max, time: extremes.humidity.maxTime },
-      min_humidity: { value: extremes.humidity.min, time: extremes.humidity.minTime },
-      max_soil_moisture: { value: extremes.soilMoisture.max, time: extremes.soilMoisture.maxTime },
-      min_soil_moisture: { value: extremes.soilMoisture.min, time: extremes.soilMoisture.minTime },
-      max_co2: { value: extremes.co2.max, time: extremes.co2.maxTime },
-      min_co2: { value: extremes.co2.min, time: extremes.co2.minTime },
+      max_temperature: { value: extremes.temperature.max, time: formatDateTime(extremes.temperature.maxTime) },
+      min_temperature: { value: extremes.temperature.min, time: formatDateTime(extremes.temperature.minTime) },
+      max_humidity: { value: extremes.humidity.max, time: formatDateTime(extremes.humidity.maxTime) },
+      min_humidity: { value: extremes.humidity.min, time: formatDateTime(extremes.humidity.minTime) },
+      max_soil_moisture: { value: extremes.soilMoisture.max, time: formatDateTime(extremes.soilMoisture.maxTime) },
+      min_soil_moisture: { value: extremes.soilMoisture.min, time: formatDateTime(extremes.soilMoisture.minTime) },
+      max_co2: { value: extremes.co2.max, time: formatDateTime(extremes.co2.maxTime) },
+      min_co2: { value: extremes.co2.min, time: formatDateTime(extremes.co2.minTime) },
     };
 
     // 제어 장치 로그 조회
