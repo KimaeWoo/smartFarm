@@ -647,11 +647,11 @@ app.get('/history-data', async (req, res) => {
     const results = await conn.query(query, [farm_id, start, end]);
   
     if (results.length === 0) {
-      console.log('[GET /history-data] 조회된 데이터가 없습니다.');
+      // console.log('[GET /history-data] 조회된 데이터가 없습니다.');
       return res.status(404).json({ message:'해당 날짜에 기록된 데이터가 없습니다.' });
     }
 
-    console.log(`[GET /history-data] 기록 데이터: ${results.length}개 반환`);
+    // console.log(`[GET /history-data] 기록 데이터: ${results.length}개 반환`);
     res.json(results);
   } catch (err) {
     console.error('[GET /history-data] DB 오류: ', err.stack);
@@ -1115,7 +1115,7 @@ initializeDatabase();
 app.post('/generate-report', async (req, res) => {
   let conn;
   try {
-    console.log('리포트 생성 요청 수신:', req.body);
+    console.log('[POST /generate-report] 리포트 생성 요청 수신:', req.body);
     const { farmId, date, cropType } = req.body;
 
     // 입력 데이터 검증
@@ -1130,12 +1130,12 @@ app.post('/generate-report', async (req, res) => {
     }
 
     // DB 연결
-    console.log('데이터베이스 연결 시도');
+    // console.log('데이터베이스 연결 시도');
     conn = await db.getConnection();
     console.log('데이터베이스 연결:', conn ? '성공' : '실패');
 
     // 중복 리포트 확인
-    console.log('중복 리포트 확인');
+    // console.log('중복 리포트 확인');
     const queryResult = await conn.query(
       'SELECT id FROM reports WHERE farm_id = ? AND date = ?',
       [farmId, date]
@@ -1181,7 +1181,7 @@ app.post('/generate-report', async (req, res) => {
     req.body.optimalConditions = optimalConditions;
 
     // 센서 데이터 조회
-    console.log('센서 데이터 조회');
+    // console.log('센서 데이터 조회');
     let historyData;
     try {
       historyData = await fetchHistoryDataFromDB(farmId, date);
@@ -1219,7 +1219,7 @@ app.post('/generate-report', async (req, res) => {
     };
 
     // 제어 장치 로그 조회
-    console.log('제어 장치 조회');
+    // console.log('제어 장치 조회');
     const deviceLogs = await fetchDeviceLogs(farmId, date);
 
     // 이상 징후 알림 조회
@@ -1321,8 +1321,8 @@ app.post('/generate-report', async (req, res) => {
     // 리포트 저장
     console.log('리포트 데이터베이스 저장');
     const insertQuery = `
-      INSERT INTO reports (farm_id, date, sensor_summary, sensor_changes, device_logs, ai_analysis)
-      VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO reports (farm_id, date, sensor_summary, sensor_changes, device_logs, ai_analysis, image_url)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
     `;
     const result = await conn.query(insertQuery, [
       farmId,
@@ -1554,7 +1554,7 @@ async function fetchDeviceLogs(farmId, date) {
       }
     });
 
-    console.log(`[fetchDeviceLogs] farmId: ${farmId}, date: ${date}`, deviceLogs);
+    console.log(`[fetchDeviceLogs] farmId: ${farmId}, date: ${date}`);
     return deviceLogs;
   } catch (error) {
     console.error(`[fetchDeviceLogs] 오류: farmId=${farmId}, date=${date}`, error);
