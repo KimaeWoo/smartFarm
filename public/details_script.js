@@ -1474,7 +1474,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   async function fetchLatestPlantImage() {
     const imageElement = document.getElementById('latestPlantImage');
-    console.log('[Client] 이미지 엘리먼트:', imageElement);
+    // console.log('[Client] 이미지 엘리먼트:', imageElement);
     if (!imageElement) {
       console.warn('[Client] 이미지 엘리먼트가 없습니다.');
       return;
@@ -1607,11 +1607,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // 이미지 URL 설정
     const reportImageEl = document.getElementById("reportImage");
-    console.log(report.imageUrl);
     if (reportImageEl) {
       reportImageEl.src = report.imageUrl || "images/no-image.jpg";
     }
-
+    console.log(reportImageEl);
+    
     // AI 분석 정보 설정 (줄바꿈 처리)
     const aiAnalysisEl = document.getElementById("aiAnalysis");
     if (aiAnalysisEl) {
