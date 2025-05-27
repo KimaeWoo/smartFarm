@@ -1487,10 +1487,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     try {
-      console.log('[Client] API 호출:', `${API_BASE_URL}/api/latest-image?farmId=${farmId}`);
-      const response = await fetch(`${API_BASE_URL}/api/latest-image?farmId=${farmId}`);
-      console.log('[Client] API 응답 상태:', response.status);
-
+      const response = await fetch(`${API_BASE_URL}/latest-image?farmId=${farmId}`);
+      
       if (!response.ok) {
         console.warn('[Client] API 응답 실패:', await response.text());
         imageElement.src = "images/no-image.jpg";
@@ -1498,7 +1496,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
 
       const data = await response.json();
-      console.log('[Client] API 응답 데이터:', data);
+      // console.log('[Client] API 응답 데이터:', data);
 
       if (data.url) {
         imageElement.src = data.url;

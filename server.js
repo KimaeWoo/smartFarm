@@ -71,7 +71,7 @@ const openai = new OpenAI({
  * - farmId (쿼리 파라미터로 전달)
  * - 이미지 파일 (multipart/form-data, 필드 이름: "file")
  */
-app.post('/api/upload-image', upload.single('file'), async (req, res) => {
+app.post('/upload-image', upload.single('file'), async (req, res) => {
   const file = req.file;
   const farmId = req.query.farmId;
 
@@ -93,7 +93,7 @@ app.post('/api/upload-image', upload.single('file'), async (req, res) => {
     });
 
     const publicUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
-
+    console.log('[POST /upload-image] 이미지 업로드 성공');
     return res.json({ message: '업로드 성공', fileName, publicUrl });
   } catch (err) {
     console.error('업로드 중 오류:', err);
@@ -105,7 +105,7 @@ app.post('/api/upload-image', upload.single('file'), async (req, res) => {
  * GET /api/latest-image?farmId=abc123
  * - 특정 농장의 가장 최근 이미지 URL을 반환
  */
-app.get('/api/latest-image', async (req, res) => {
+app.get('/latest-image', async (req, res) => {
   const farmId = req.query.farmId;
 
   // 농장 ID가 없으면 오류 반환
@@ -114,12 +114,12 @@ app.get('/api/latest-image', async (req, res) => {
   }
 
   try {
-    console.log(`[API] farmId: ${farmId}`);
+    // console.log(`[API] farmId: ${farmId}`);
 
     // 해당 농장의 이미지 파일 목록 가져오기
     const [files] = await bucket.getFiles({ prefix: `farms/${farmId}/` });
 
-    console.log(`[API] 찾은 파일 개수: ${files.length}`);
+    // console.log(`[API] 찾은 파일 개수: ${files.length}`);
 
     if (files.length === 0) {
       return res.status(404).json({ error: '이 농장에 저장된 이미지가 없습니다.' });
@@ -130,12 +130,12 @@ app.get('/api/latest-image', async (req, res) => {
       return new Date(b.metadata.updated) - new Date(a.metadata.updated);
     })[0];
 
-    console.log(`[API] 최신 파일: ${latestFile.name} ${latestFile.metadata.updated}`);
+    // console.log(`[API] 최신 파일: ${latestFile.name} ${latestFile.metadata.updated}`);
 
     // 공개 URL 생성 (사전 ACL을 publicRead로 설정한 경우만 유효)
     const publicUrl = `https://storage.googleapis.com/${bucket.name}/${latestFile.name}`;
 
-    console.log(`[API] 공개 URL 생성 완료: ${publicUrl}`);
+    console.log(`[GET /latest-image] 공개 URL 생성 완료: ${publicUrl}`);
 
     res.json({ url: publicUrl });
   } catch (error) {
@@ -288,7 +288,7 @@ app.get('/getFarms', async(req, res) => {
     conn = await db.getConnection();
     const results = await conn.query(query, [user_id]);
 
-    console.log('[GET /getFarms] 농장 목록 불러오기 성공:', results);  // 농장 목록 출력
+    // console.log('[GET /getFarms] 농장 목록 불러오기 성공:', results);  // 농장 목록 출력
     return res.json({ farms: results, message: '농장 목록 불러오기 성공' });
   } catch (err) {
     console.error('[GET /getFarms] DB 오류:', err);
@@ -1025,6 +1025,56 @@ app.post("/chatbot", async (req, res) => {
   } catch (err) {
     console.error("OpenAI 호출 오류:", err);
     res.status(500).json({ error: "OpenAI 호출 중 오류 발생" });
+  }
+});
+
+app.get('/sensors-extremes', async (req, res) => {
+  const { farm_id, date } = req.query;
+
+  if (!farm_id || !date) {
+    return res.status(400).json({ error: 'farm_id와 date는 필수입니다.' });
+  }
+
+  const sensors = ['temperature', 'humidity', 'soil_moisture', 'co2'];
+  const extremes = {};
+
+  let conn;
+  try {
+    conn = await db.getConnection();
+
+    for (const sensor of sensors) {
+      // 최대값 조회
+      const maxQuery = `
+        SELECT ${sensor} AS value, created_at 
+        FROM sensors 
+        WHERE farm_id = ? AND DATE(created_at) = ? 
+        ORDER BY ${sensor} DESC 
+        LIMIT 1
+      `;
+      const [maxRow] = await conn.query(maxQuery, [farm_id, date]);
+
+      // 최소값 조회
+      const minQuery = `
+        SELECT ${sensor} AS value, created_at 
+        FROM sensors 
+        WHERE farm_id = ? AND DATE(created_at) = ? 
+        ORDER BY ${sensor} ASC 
+        LIMIT 1
+      `;
+      const [minRow] = await conn.query(minQuery, [farm_id, date]);
+
+      extremes[sensor] = {
+        max: maxRow ? { value: maxRow.value, time: maxRow.created_at } : null,
+        min: minRow ? { value: minRow.value, time: minRow.created_at } : null,
+      };
+    }
+    console.log(`[GET /sensors-extremes] ${date} 최대,최소 ${extremes}`);
+    return res.json(extremes);
+  } catch (err) {
+    console.error('[GET /sensors/extremes] DB 오류:', err);
+    return res.status(500).json({ error: 'DB 오류' });
+  } finally {
+    if (conn) conn.release();
   }
 });
 
