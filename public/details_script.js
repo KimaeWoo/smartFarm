@@ -1309,11 +1309,22 @@ document.addEventListener("DOMContentLoaded", async () => {
     })
   }
 
+  const reportDatePicker = document.getElementById("reportDatePicker");
+  if (reportDatePicker) {
+    const today = new Date();
+    reportDatePicker.max = formatDateYMD(today);
+  }
+
   // 리포트 생성 함수
   async function generateReport() {
     try {
-      const today = new Date();
-      const formattedDate = formatDateYMD(today);
+      const selectedDate = reportDatePicker.value;
+      if (!selectedDate) {
+        alert("생성할 날짜를 선택해주세요.");
+        return;
+      }
+      // const today = new Date();
+      // const formattedDate = formatDateYMD(today);
       
       // 리포트 생성 컨테이너 생성 또는 가져오기
       let reportGenContainer = document.getElementById("reportGenerationContainer");
@@ -1340,7 +1351,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           farmId,
-          date: formattedDate,
+          date: selectedDate,
         }),
       });
       
