@@ -1070,7 +1070,7 @@ app.post('/sensors-extremes', async (req, res) => {
         min: minRow ? { value: minRow.value, time: minRow.created_at } : null,
       };
     }
-    console.log(`[POST /sensors-extremes] ${date} 최대,최소 ${JSON.stringify(extremes)}`);
+    // console.log(`[POST /sensors-extremes] ${date} 최대,최소 ${JSON.stringify(extremes)}`);
     return res.json(extremes);
   } catch (err) {
     console.error('[POST /sensors-extremes] DB 오류:', err);
@@ -1202,39 +1202,16 @@ app.post('/generate-report', async (req, res) => {
     };
 
     // 센서 변화 계산
+    const extremes = await fetchExtremeSensorDataFromDB(farmId, date);
     const sensorChanges = {
-      max_temperature: {
-        value: Math.max(...historyData.temperatureData),
-        time: historyData.timeLabels[historyData.temperatureData.indexOf(Math.max(...historyData.temperatureData))],
-      },
-      min_temperature: {
-        value: Math.min(...historyData.temperatureData),
-        time: historyData.timeLabels[historyData.temperatureData.indexOf(Math.min(...historyData.temperatureData))],
-      },
-      max_humidity: {
-        value: Math.max(...historyData.humidityData),
-        time: historyData.timeLabels[historyData.humidityData.indexOf(Math.max(...historyData.humidityData))],
-      },
-      min_humidity: {
-        value: Math.min(...historyData.humidityData),
-        time: historyData.timeLabels[historyData.humidityData.indexOf(Math.min(...historyData.humidityData))],
-      },
-      max_soil_moisture: {
-        value: Math.max(...historyData.soilData),
-        time: historyData.timeLabels[historyData.soilData.indexOf(Math.max(...historyData.soilData))],
-      },
-      min_soil_moisture: {
-        value: Math.min(...historyData.soilData),
-        time: historyData.timeLabels[historyData.soilData.indexOf(Math.min(...historyData.soilData))],
-      },
-      max_co2: {
-        value: Math.max(...historyData.co2Data),
-        time: historyData.timeLabels[historyData.co2Data.indexOf(Math.max(...historyData.co2Data))],
-      },
-      min_co2: {
-        value: Math.min(...historyData.co2Data),
-        time: historyData.timeLabels[historyData.co2Data.indexOf(Math.min(...historyData.co2Data))],
-      },
+      max_temperature: { value: extremes.temperature.max, time: extremes.temperature.maxTime },
+      min_temperature: { value: extremes.temperature.min, time: extremes.temperature.minTime },
+      max_humidity: { value: extremes.humidity.max, time: extremes.humidity.maxTime },
+      min_humidity: { value: extremes.humidity.min, time: extremes.humidity.minTime },
+      max_soil_moisture: { value: extremes.soilMoisture.max, time: extremes.soilMoisture.maxTime },
+      min_soil_moisture: { value: extremes.soilMoisture.min, time: extremes.soilMoisture.minTime },
+      max_co2: { value: extremes.co2.max, time: extremes.co2.maxTime },
+      min_co2: { value: extremes.co2.min, time: extremes.co2.minTime },
     };
 
     // 제어 장치 로그 조회
@@ -1456,6 +1433,65 @@ async function fetchHistoryDataFromDB(farmId, date) {
   } catch (error) {
     console.error(`센서 데이터 조회 실패 - 농장 ID: ${farmId}, 날짜: ${date}`, error);
     throw new Error(`센서 데이터 불러오기 실패: ${error.message}`);
+  }
+}
+
+// 리포트 센서 변화 조회
+async function fetchExtremeSensorDataFromDB(farmId, date) {
+  try {
+    console.log(`센서 극값 데이터 조회 중 - 농장 ID: ${farmId}, 날짜: ${date}`);
+
+    const response = await fetch(`${API_BASE_URL}/sensors-extremes`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ farm_id: farmId, date }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || '센서 극값 데이터를 불러오는데 실패했습니다');
+    }
+
+    const extremes = await response.json();
+
+    if (!extremes) {
+      throw new Error('해당 농장과 날짜에 대한 센서 극값 데이터가 없습니다');
+    }
+
+    // 단일 객체 형태에 맞게 데이터 가공
+    const result = {
+      temperature: {
+        max: extremes.temperature?.max?.value ?? 0,
+        maxTime: extremes.temperature?.max?.time ?? null,
+        min: extremes.temperature?.min?.value ?? 0,
+        minTime: extremes.temperature?.min?.time ?? null,
+      },
+      humidity: {
+        max: extremes.humidity?.max?.value ?? 0,
+        maxTime: extremes.humidity?.max?.time ?? null,
+        min: extremes.humidity?.min?.value ?? 0,
+        minTime: extremes.humidity?.min?.time ?? null,
+      },
+      soilMoisture: {
+        max: extremes.soil_moisture?.max?.value ?? 0,
+        maxTime: extremes.soil_moisture?.max?.time ?? null,
+        min: extremes.soil_moisture?.min?.value ?? 0,
+        minTime: extremes.soil_moisture?.min?.time ?? null,
+      },
+      co2: {
+        max: extremes.co2?.max?.value ?? 0,
+        maxTime: extremes.co2?.max?.time ?? null,
+        min: extremes.co2?.min?.value ?? 0,
+        minTime: extremes.co2?.min?.time ?? null,
+      },
+    };
+
+    console.log('가공된 센서 극값 데이터:', result);
+    return result;
+
+  } catch (error) {
+    console.error(`센서 극값 데이터 조회 실패 - 농장 ID: ${farmId}, 날짜: ${date}`, error);
+    throw new Error(`센서 극값 데이터 불러오기 실패: ${error.message}`);
   }
 }
 
