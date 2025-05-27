@@ -1581,7 +1581,7 @@ app.get('/get-reports/:farmId', async (req, res) => {
     const { farmId } = req.params;
     conn = await db.getConnection();
     const selectQuery = `
-      SELECT id, farm_id, date, sensor_summary, sensor_changes, device_logs, ai_analysis, created_at
+      SELECT id, farm_id, date, sensor_summary, sensor_changes, device_logs, ai_analysis, created_at, image_url
       FROM reports
       WHERE farm_id = ?
       ORDER BY created_at DESC
@@ -1603,7 +1603,8 @@ app.get('/get-reports/:farmId', async (req, res) => {
         sensorChanges,
         deviceLogs,
         aiAnalysis: report.ai_analysis,
-        createdAt: report.created_at
+        createdAt: report.created_at,
+        imageUrl: report.image_url
       };
     });
 
