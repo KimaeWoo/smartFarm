@@ -999,6 +999,7 @@ app.post('/updateFarmCondition', async (req, res) => {
   }
 });
 
+// 챗봇
 app.post("/chatbot", async (req, res) => {
   const userMessage = req.body.message;
 
@@ -1028,8 +1029,9 @@ app.post("/chatbot", async (req, res) => {
   }
 });
 
-app.get('/sensors-extremes', async (req, res) => {
-  const { farm_id, date } = req.query;
+// 해당 날짜 최고,최저 센서 값 조회
+app.post('/sensors-extremes', async (req, res) => {
+  const { farm_id, date } = req.body;
 
   if (!farm_id || !date) {
     return res.status(400).json({ error: 'farm_id와 date는 필수입니다.' });
@@ -1068,10 +1070,10 @@ app.get('/sensors-extremes', async (req, res) => {
         min: minRow ? { value: minRow.value, time: minRow.created_at } : null,
       };
     }
-    console.log(`[GET /sensors-extremes] ${date} 최대,최소 ${extremes}`);
+    console.log(`[POST /sensors-extremes] ${date} 최대,최소 ${JSON.stringify(extremes)}`);
     return res.json(extremes);
   } catch (err) {
-    console.error('[GET /sensors/extremes] DB 오류:', err);
+    console.error('[POST /sensors-extremes] DB 오류:', err);
     return res.status(500).json({ error: 'DB 오류' });
   } finally {
     if (conn) conn.release();
