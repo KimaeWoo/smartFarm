@@ -225,43 +225,29 @@ document.addEventListener("DOMContentLoaded", async () => {
   const soilOptimal = document.getElementById("soil-optimal")
   const co2Optimal = document.getElementById("co2-optimal")
   
-  // 캡처 버튼 클릭 핸들러 추가
   const captureButton = document.getElementById('capture-button');
 
   captureButton.addEventListener('click', async () => {
-    const iframe = document.getElementById('cctv-iframe');
     const resultDiv = document.getElementById('capture-result');
 
     try {
-      // iframe 내부 콘텐츠 캡처
-      const canvas = await html2canvas(iframe, {
-        useCORS: true, // CORS 문제 해결
-        allowTaint: true,
+      const response = await fetch(`https://api.hotpotato.me/get-image?farmId=${farmId}`, {
+        method: 'GET',
       });
 
-      // 캔버스를 Blob으로 변환
-      canvas.toBlob(async (blob) => {
-        const formData = new FormData();
-        formData.append('file', blob, 'capture.png');
-        
-        // API 호출
-        const response = await fetch(`${API_BASE_URL}/upload-image?farmId=${farmId}`, {
-          method: 'POST',
-          body: formData,
-        });
+      const result = await response.json();
 
-        const result = await response.json();
-        if (response.ok) {
-          resultDiv.innerHTML = `업로드 성공: <a href="${result.publicUrl}" target="_blank">이미지 보기</a>`;
-        } else {
-          resultDiv.innerHTML = `업로드 실패: ${result.error}`;
-        }
-      }, 'image/png');
+      if (response.ok) {
+        resultDiv.innerHTML = `업로드 성공: <a href="${result.publicUrl}" target="_blank">이미지 보기</a>`;
+      } else {
+        resultDiv.innerHTML = `업로드 실패: ${result.error}`;
+      }
     } catch (err) {
-      console.error('캡처 또는 업로드 중 오류:', err);
-      resultDiv.innerHTML = '캡처 또는 업로드 중 오류가 발생했습니다.';
+      console.error('외부 서버 요청 중 오류:', err);
+      resultDiv.innerHTML = '요청 중 오류가 발생했습니다.';
     }
   });
+
   
   function fetchData() {
     if (farmNameText) {
