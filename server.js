@@ -7,6 +7,7 @@ const axios = require('axios');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt'); // 비밀번호 해싱용
 require('dotenv').config(); // 환경 변수 로드
+const puppeteer = require('puppeteer');
 
 // firebase-storage
 const multer = require('multer');
