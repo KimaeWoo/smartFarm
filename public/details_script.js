@@ -235,7 +235,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         method: 'GET',
       });
 
-      const result = await response.json();
+      //const result = await response.json();
 
       // if (response.ok) {
       //   resultDiv.innerHTML = `업로드 성공: <a href="${result.publicUrl}" target="_blank">이미지 보기</a>`;
@@ -247,7 +247,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       resultDiv.innerHTML = '요청 중 오류가 발생했습니다.';
     }
   });
-
   
   function fetchData() {
     if (farmNameText) {
