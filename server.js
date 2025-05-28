@@ -66,6 +66,40 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+app.get('/capture-and-upload', async (req, res) => {
+  const farmId = req.query.farmId;
+  if (!farmId) return res.status(400).json({ error: 'farmId가 필요합니다' });
+
+  const url = 'https://api.hotpotato.me/monitor';
+  const timestamp = Date.now();
+
+  try {
+    const browser = await puppeteer.launch({
+      headless: 'new',
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
+    const page = await browser.newPage();
+    await page.goto(url, { waitUntil: 'networkidle2' });
+
+    const buffer = await page.screenshot({ fullPage: true });
+    await browser.close();
+
+    const fileName = `farms/${farmId}/${timestamp}_capture.png`;
+    const fileUpload = bucket.file(fileName);
+
+    await fileUpload.save(buffer, {
+      metadata: { contentType: 'image/png' },
+      predefinedAcl: 'publicRead',
+    });
+
+    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
+    return res.json({ message: '업로드 성공', fileName, publicUrl });
+  } catch (err) {
+    console.error('캡처 또는 업로드 중 오류:', err);
+    return res.status(500).json({ error: '실패' });
+  }
+});
+
 /**
  * POST /api/upload-image
  * - farmId (쿼리 파라미터로 전달)

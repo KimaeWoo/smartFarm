@@ -225,6 +225,32 @@ document.addEventListener("DOMContentLoaded", async () => {
   const soilOptimal = document.getElementById("soil-optimal")
   const co2Optimal = document.getElementById("co2-optimal")
   
+  // 캡처 버튼 클릭 핸들러 추가
+  const captureButton = document.getElementById('capture-button');
+  const resultDiv = document.getElementById('capture-result');
+
+  captureButton.addEventListener('click', async () => {
+    resultDiv.innerHTML = '⏳ 캡처 중...';
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/capture-and-upload?farmId=${farmId}`);
+      const data = await res.json();
+
+      if (res.ok) {
+        resultDiv.innerHTML = `
+          업로드 성공! <br>
+          <a href="${data.publicUrl}" target="_blank">이미지 보기</a><br>
+          <img src="${data.publicUrl}" alt="캡처 이미지" width="300" style="margin-top:10px; border: 1px solid #ccc;">
+        `;
+      } else {
+        resultDiv.innerHTML = `실패: ${data.error}`;
+      }
+    } catch (err) {
+      console.error('요청 실패:', err);
+      resultDiv.innerHTML = '서버 요청 중 오류 발생';
+    }
+  });
+  W
   function fetchData() {
     if (farmNameText) {
       farmNameText.textContent = farmName
@@ -1610,8 +1636,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (reportImageEl) {
       reportImageEl.src = report.imageUrl || "images/no-image.jpg";
     }
-    console.log(reportImageEl);
-    
+
     // AI 분석 정보 설정 (줄바꿈 처리)
     const aiAnalysisEl = document.getElementById("aiAnalysis");
     if (aiAnalysisEl) {
