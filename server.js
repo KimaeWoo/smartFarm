@@ -93,6 +93,7 @@ app.get('/capture-and-upload', async (req, res) => {
     });
 
     const publicUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
+    console.log('[GET /capture-and-upload] 이미지 업로드 성공');
     return res.json({ message: '업로드 성공', fileName, publicUrl });
   } catch (err) {
     console.error('캡처 또는 업로드 중 오류:', err);
@@ -169,7 +170,7 @@ app.get('/latest-image', async (req, res) => {
     // 공개 URL 생성 (사전 ACL을 publicRead로 설정한 경우만 유효)
     const publicUrl = `https://storage.googleapis.com/${bucket.name}/${latestFile.name}`;
 
-    console.log(`[GET /latest-image] 공개 URL 생성 완료: ${publicUrl}`);
+    // console.log(`[GET /latest-image] 공개 URL 생성 완료: ${publicUrl}`);
 
     res.json({ url: publicUrl });
   } catch (error) {

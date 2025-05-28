@@ -250,7 +250,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       resultDiv.innerHTML = '서버 요청 중 오류 발생';
     }
   });
-  W
+  
   function fetchData() {
     if (farmNameText) {
       farmNameText.textContent = farmName
