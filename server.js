@@ -76,9 +76,11 @@ app.get('/capture-and-upload', async (req, res) => {
 
   try {
     const browser = await puppeteer.launch({
-      headless: 'new',
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+      headless: true,
+      executablePath: puppeteer.executablePath(), // Puppeteer가 설치한 크롬 실행 경로 자동 지정
+      args: ['--no-sandbox', '--disable-setuid-sandbox'], // 클라우드 환경에서 권장 옵션
     });
+    
     const page = await browser.newPage();
     await page.goto(url, { waitUntil: 'networkidle2' });
 
