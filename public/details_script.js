@@ -227,27 +227,39 @@ document.addEventListener("DOMContentLoaded", async () => {
   
   // 캡처 버튼 클릭 핸들러 추가
   const captureButton = document.getElementById('capture-button');
-  const resultDiv = document.getElementById('capture-result');
 
   captureButton.addEventListener('click', async () => {
-    resultDiv.innerHTML = '⏳ 캡처 중...';
+    const iframe = document.getElementById('cctv-iframe');
+    const resultDiv = document.getElementById('capture-result');
 
     try {
-      const res = await fetch(`${API_BASE_URL}/capture-and-upload?farmId=${farmId}`);
-      const data = await res.json();
+      // iframe 내부 콘텐츠 캡처
+      const canvas = await html2canvas(iframe, {
+        useCORS: true, // CORS 문제 해결
+        allowTaint: true,
+      });
 
-      if (res.ok) {
-        resultDiv.innerHTML = `
-          업로드 성공! <br>
-          <a href="${data.publicUrl}" target="_blank">이미지 보기</a><br>
-          <img src="${data.publicUrl}" alt="캡처 이미지" width="300" style="margin-top:10px; border: 1px solid #ccc;">
-        `;
-      } else {
-        resultDiv.innerHTML = `실패: ${data.error}`;
-      }
+      // 캔버스를 Blob으로 변환
+      canvas.toBlob(async (blob) => {
+        const formData = new FormData();
+        formData.append('file', blob, 'capture.png');
+        
+        // API 호출
+        const response = await fetch(`${API_BASE_URL}/upload-image?farmId=${farmId}`, {
+          method: 'POST',
+          body: formData,
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+          resultDiv.innerHTML = `업로드 성공: <a href="${result.publicUrl}" target="_blank">이미지 보기</a>`;
+        } else {
+          resultDiv.innerHTML = `업로드 실패: ${result.error}`;
+        }
+      }, 'image/png');
     } catch (err) {
-      console.error('요청 실패:', err);
-      resultDiv.innerHTML = '서버 요청 중 오류 발생';
+      console.error('캡처 또는 업로드 중 오류:', err);
+      resultDiv.innerHTML = '캡처 또는 업로드 중 오류가 발생했습니다.';
     }
   });
   

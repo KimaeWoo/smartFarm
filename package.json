@@ -4,8 +4,7 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js",
-    "postinstall": "npx puppeteer install"
+    "start": "node server.js"
   },
   "keywords": [],
   "author": "",
@@ -23,7 +22,6 @@
     "mariadb": "^3.4.0",
     "moment-timezone": "^0.5.47",
     "multer": "^2.0.0",
-    "openai": "^4.97.0",
-    "puppeteer": "^24.9.0"
+    "openai": "^4.97.0"
   }
 }

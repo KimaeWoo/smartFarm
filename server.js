@@ -7,7 +7,6 @@ const axios = require('axios');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt'); // 비밀번호 해싱용
 require('dotenv').config(); // 환경 변수 로드
-const puppeteer = require('puppeteer');
 
 // firebase-storage
 const multer = require('multer');
@@ -65,44 +64,6 @@ db.getConnection()
 // OpenAI 설정
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
-});
-
-app.get('/capture-and-upload', async (req, res) => {
-  const farmId = req.query.farmId;
-  if (!farmId) return res.status(400).json({ error: 'farmId가 필요합니다' });
-
-  const url = 'https://api.hotpotato.me/monitor';
-  const timestamp = Date.now();
-
-  try {
-    console.log('크롬 실행 경로:', puppeteer.executablePath());
-    const browser = await puppeteer.launch({
-      headless: true,
-      executablePath: puppeteer.executablePath(), // Puppeteer가 설치한 크롬 실행 경로 자동 지정
-      args: ['--no-sandbox', '--disable-setuid-sandbox'], // 클라우드 환경에서 권장 옵션
-    });
-    
-    const page = await browser.newPage();
-    await page.goto(url, { waitUntil: 'networkidle2' });
-
-    const buffer = await page.screenshot({ fullPage: true });
-    await browser.close();
-
-    const fileName = `farms/${farmId}/${timestamp}_capture.png`;
-    const fileUpload = bucket.file(fileName);
-
-    await fileUpload.save(buffer, {
-      metadata: { contentType: 'image/png' },
-      predefinedAcl: 'publicRead',
-    });
-
-    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
-    console.log('[GET /capture-and-upload] 이미지 업로드 성공');
-    return res.json({ message: '업로드 성공', fileName, publicUrl });
-  } catch (err) {
-    console.error('캡처 또는 업로드 중 오류:', err);
-    return res.status(500).json({ error: '실패' });
-  }
 });
 
 /**
