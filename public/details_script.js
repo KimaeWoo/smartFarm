@@ -1534,7 +1534,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
 
       const data = await response.json();
-      // console.log('[Client] API 응답 데이터:', data);
+      console.log('[Client] API 응답 데이터:', data);
 
       if (data.url) {
         imageElement.src = data.url;
