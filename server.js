@@ -75,6 +75,7 @@ app.get('/capture-and-upload', async (req, res) => {
   const timestamp = Date.now();
 
   try {
+    console.log('크롬 실행 경로:', puppeteer.executablePath());
     const browser = await puppeteer.launch({
       headless: true,
       executablePath: puppeteer.executablePath(), // Puppeteer가 설치한 크롬 실행 경로 자동 지정
