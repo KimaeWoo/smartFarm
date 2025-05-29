@@ -316,9 +316,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         ? `${uploadedAt.year}-${String(uploadedAt.month).padStart(2, "0")}-${String(uploadedAt.day).padStart(2, "0")}`
         : "날짜 정보 없음"
 
-      // Create time string (you might want to add time info to your API)
-      const timeStr = "촬영 시간 정보 없음"
-
       const imageItem = document.createElement("div")
       imageItem.className = "image-item"
       imageItem.innerHTML = `
@@ -335,7 +332,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             <i class="fas fa-calendar-alt"></i>
             ${dateStr}
           </div>
-          <div class="image-time">${timeStr}</div>
         </div>
       `
 
