@@ -244,48 +244,185 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
+  let allImages = []
+  let currentSort = "newest"
+
   async function fetchAllImages(farmId) {
+    const galleryLoading = document.getElementById("gallery-loading")
+    const imageList = document.getElementById("image-list")
+    const galleryEmpty = document.getElementById("gallery-empty")
+
+    // Show loading
+    galleryLoading.style.display = "flex"
+    imageList.style.display = "none"
+    galleryEmpty.style.display = "none"
+
     try {
-      const res = await fetch(`${API_BASE_URL}/all-image?farmId=${farmId}`);
-      const data = await res.json();
+      const res = await fetch(`${API_BASE_URL}/all-image?farmId=${farmId}`)
+      const data = await res.json()
 
       if (!res.ok) {
-        document.getElementById('image-list').innerText = data.error || '이미지를 불러오지 못했습니다.';
-        return;
+        throw new Error(data.error || "이미지를 불러오지 못했습니다.")
       }
 
-      const container = document.getElementById('image-list');
-      container.innerHTML = ''; // 초기화
-
-      data.images.forEach(image => {
-        const { publicUrl, uploadedAt } = image;
-
-        // 날짜 텍스트 구성
-        const dateStr = uploadedAt ? `${uploadedAt.year}-${String(uploadedAt.month).padStart(2, '0')}-${String(uploadedAt.day).padStart(2, '0')}` : '날짜 정보 없음';
-
-        // 이미지 박스 생성
-        const wrapper = document.createElement('div');
-        wrapper.style.marginBottom = '15px';
-
-        const dateElem = document.createElement('div');
-        dateElem.innerText = `촬영일: ${dateStr}`;
-        dateElem.style.fontWeight = 'bold';
-
-        const img = document.createElement('img');
-        img.src = publicUrl;
-        img.style.width = '100%';
-        img.style.maxWidth = '400px';
-        img.style.border = '1px solid #ccc';
-        img.style.marginTop = '5px';
-
-        wrapper.appendChild(dateElem);
-        wrapper.appendChild(img);
-        container.appendChild(wrapper);
-      });
+      allImages = data.images || []
+      updateImageCount()
+      renderImages()
     } catch (err) {
-      console.error('이미지 목록 로드 실패:', err);
-      document.getElementById('image-list').innerText = '오류가 발생했습니다.';
+      console.error("이미지 목록 로드 실패:", err)
+      galleryLoading.style.display = "none"
+      galleryEmpty.style.display = "flex"
+      galleryEmpty.querySelector(".empty-state h3").textContent = "이미지 로드 실패"
+      galleryEmpty.querySelector(".empty-state p").textContent = err.message
+    } finally {
+      galleryLoading.style.display = "none"
     }
+  }
+
+  function updateImageCount() {
+    const imageCount = document.getElementById("image-count")
+    if (imageCount) {
+      imageCount.textContent = `${allImages.length}개의 이미지`
+    }
+  }
+
+  function renderImages() {
+    const imageList = document.getElementById("image-list")
+    const galleryEmpty = document.getElementById("gallery-empty")
+
+    if (allImages.length === 0) {
+      imageList.style.display = "none"
+      galleryEmpty.style.display = "flex"
+      return
+    }
+
+    // Sort images
+    const sortedImages = [...allImages].sort((a, b) => {
+      const dateA = new Date(a.uploadedAt ? `${a.uploadedAt.year}-${a.uploadedAt.month}-${a.uploadedAt.day}` : 0)
+      const dateB = new Date(b.uploadedAt ? `${b.uploadedAt.year}-${b.uploadedAt.month}-${b.uploadedAt.day}` : 0)
+
+      return currentSort === "newest" ? dateB - dateA : dateA - dateB
+    })
+
+    imageList.innerHTML = ""
+    imageList.style.display = "grid"
+    galleryEmpty.style.display = "none"
+
+    sortedImages.forEach((image, index) => {
+      const { publicUrl, uploadedAt } = image
+
+      // Format date
+      const dateStr = uploadedAt
+        ? `${uploadedAt.year}-${String(uploadedAt.month).padStart(2, "0")}-${String(uploadedAt.day).padStart(2, "0")}`
+        : "날짜 정보 없음"
+
+      // Create time string (you might want to add time info to your API)
+      const timeStr = "촬영 시간 정보 없음"
+
+      const imageItem = document.createElement("div")
+      imageItem.className = "image-item"
+      imageItem.innerHTML = `
+        <div class="image-wrapper">
+          <img src="${publicUrl}" alt="CCTV 이미지" loading="lazy" />
+          <div class="image-overlay">
+            <div class="image-overlay-content">
+              <i class="fas fa-search-plus"></i> 클릭하여 확대
+            </div>
+          </div>
+        </div>
+        <div class="image-info">
+          <div class="image-date">
+            <i class="fas fa-calendar-alt"></i>
+            ${dateStr}
+          </div>
+          <div class="image-time">${timeStr}</div>
+        </div>
+      `
+
+      // Add click event to open modal
+      imageItem.addEventListener("click", () => {
+        openImageModal(publicUrl, dateStr, timeStr)
+      })
+
+      imageList.appendChild(imageItem)
+    })
+  }
+
+  // Sort functionality
+  const sortSelect = document.getElementById("sort-select")
+  if (sortSelect) {
+    sortSelect.addEventListener("change", (e) => {
+      currentSort = e.target.value
+      renderImages()
+    })
+  }
+
+  // Refresh functionality
+  const refreshBtn = document.getElementById("refresh-images")
+  if (refreshBtn) {
+    refreshBtn.addEventListener("click", () => {
+      fetchAllImages(farmId)
+    })
+  }
+
+  // Image modal functionality
+  function openImageModal(imageUrl, date, time) {
+    const modal = document.getElementById("imageModal")
+    const modalImage = document.getElementById("modal-image")
+    const modalDate = document.getElementById("modal-image-date")
+    const modalTime = document.getElementById("modal-image-time")
+
+    modalImage.src = imageUrl
+    modalDate.textContent = `촬영일: ${date}`
+    modalTime.textContent = time
+
+    modal.style.display = "block"
+    document.body.style.overflow = "hidden"
+  }
+
+  function closeImageModal() {
+    const modal = document.getElementById("imageModal")
+    modal.style.display = "none"
+    document.body.style.overflow = "auto"
+  }
+
+  // Modal event listeners
+  const closeImageModalBtn = document.getElementById("closeImageModal")
+  if (closeImageModalBtn) {
+    closeImageModalBtn.addEventListener("click", closeImageModal)
+  }
+
+  const downloadImageBtn = document.getElementById("download-image")
+  if (downloadImageBtn) {
+    downloadImageBtn.addEventListener("click", () => {
+      const modalImage = document.getElementById("modal-image")
+      const link = document.createElement("a")
+      link.href = modalImage.src
+      link.download = `cctv-image-${new Date().toISOString().split("T")[0]}.jpg`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    })
+  }
+
+  const deleteImageBtn = document.getElementById("delete-image")
+  if (deleteImageBtn) {
+    deleteImageBtn.addEventListener("click", () => {
+      if (confirm("이 이미지를 삭제하시겠습니까?")) {
+        // Implement delete functionality here
+        alert("삭제 기능은 서버 API 구현이 필요합니다.")
+      }
+    })
+  }
+
+  // Close modal when clicking outside
+  const imageModal = document.getElementById("imageModal")
+  if (imageModal) {
+    imageModal.addEventListener("click", (e) => {
+      if (e.target === imageModal) {
+        closeImageModal()
+      }
+    })
   }
 
   function fetchData() {
