@@ -144,6 +144,50 @@ app.get('/latest-image', async (req, res) => {
   }
 });
 
+// 모든 이미지 불러오기
+app.get('/all-image', async (req, res) => {
+  const farmId = req.query.farmId;
+
+  if (!farmId) {
+    return res.status(400).json({ error: 'farmId 쿼리 파라미터가 필요합니다.' });
+  }
+
+  try {
+    const [files] = await bucket.getFiles({ prefix: `farms/${farmId}/` });
+
+    if (files.length === 0) {
+      return res.status(404).json({ error: '이 농장에 저장된 이미지가 없습니다.' });
+    }
+
+    const imageInfos = files.map(file => {
+      const fileName = file.name;
+      const publicUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
+
+      // 파일 이름에서 timestamp 추출
+      const baseName = fileName.split('/').pop(); // 예: 1716942800000_filename.jpg
+      const timestampStr = baseName?.split('_')[0];
+      const timestamp = parseInt(timestampStr);
+
+      let uploadedAt = null;
+      if (!isNaN(timestamp)) {
+        const date = new Date(timestamp);
+        uploadedAt = {
+          year: date.getFullYear(),
+          month: date.getMonth() + 1, // JS는 0부터 시작
+          day: date.getDate()
+        };
+      }
+
+      return { fileName, publicUrl, uploadedAt };
+    });
+
+    res.json({ images: imageInfos });
+  } catch (error) {
+    console.error('이미지 목록 조회 오류:', error);
+    res.status(500).json({ error: '이미지 목록 조회 실패' });
+  }
+});
+
 // 아이디 중복 확인 API (Promise 기반으로 수정)
 app.get('/check-userid', async (req, res) => {
   const { user_id } = req.query;

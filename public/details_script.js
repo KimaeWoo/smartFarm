@@ -39,6 +39,22 @@ if (dashboardtButton) {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
+  const userId = sessionStorage.getItem("user_id")
+  const farmId = sessionStorage.getItem("farm_id")
+  const farmType = sessionStorage.getItem("farm_type")
+  const userName = sessionStorage.getItem("user_name")
+  const farmName = sessionStorage.getItem("farm_name")
+  const farmLocation = sessionStorage.getItem("farm_location")
+
+  const username = document.getElementById("username")
+  const farmNameText = document.getElementById("farmname")
+  const startButton = document.getElementById("start-farm-btn")
+  const cropInfo = document.getElementById("crop-info")
+  const growthText = document.getElementById("growth-rate")
+  const tempOptimal = document.getElementById("temp-optimal")
+  const humidOptimal = document.getElementById("humid-optimal")
+  const soilOptimal = document.getElementById("soil-optimal")
+  const co2Optimal = document.getElementById("co2-optimal")
   let pendingDevice = null;
 
   function showDurationModal(device) {
@@ -152,7 +168,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         updateHistoryChartData()
         updateSummaryChart()
       } else if (tabId === "writeDiary") {
-        fetchReports() // 일지 탭 클릭 시 리포트 목록 새로고침
+        fetchReports()
+      } else if (tabId === "cctv") {
+        fetchAllImages(farmId);
       }
     })
   })
@@ -208,23 +226,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     })
   }
   
-  const userId = sessionStorage.getItem("user_id")
-  const farmId = sessionStorage.getItem("farm_id")
-  const farmType = sessionStorage.getItem("farm_type")
-  const userName = sessionStorage.getItem("user_name")
-  const farmName = sessionStorage.getItem("farm_name")
-  const farmLocation = sessionStorage.getItem("farm_location")
-
-  const username = document.getElementById("username")
-  const farmNameText = document.getElementById("farmname")
-  const startButton = document.getElementById("start-farm-btn")
-  const cropInfo = document.getElementById("crop-info")
-  const growthText = document.getElementById("growth-rate")
-  const tempOptimal = document.getElementById("temp-optimal")
-  const humidOptimal = document.getElementById("humid-optimal")
-  const soilOptimal = document.getElementById("soil-optimal")
-  const co2Optimal = document.getElementById("co2-optimal")
-  
   const captureButton = document.getElementById('capture-button');
 
   captureButton.addEventListener('click', async () => {
@@ -235,19 +236,58 @@ document.addEventListener("DOMContentLoaded", async () => {
         method: 'GET',
       });
 
-      //const result = await response.json();
+      const result = await response.json();
 
-      // if (response.ok) {
-      //   resultDiv.innerHTML = `업로드 성공: <a href="${result.publicUrl}" target="_blank">이미지 보기</a>`;
-      // } else {
-      //   resultDiv.innerHTML = `업로드 실패: ${result.error}`;
-      // }
     } catch (err) {
       console.error('외부 서버 요청 중 오류:', err);
       resultDiv.innerHTML = '요청 중 오류가 발생했습니다.';
     }
   });
-  
+
+  async function fetchAllImages(farmId) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/all-image?farmId=${farmId}`);
+      const data = await res.json();
+
+      if (!res.ok) {
+        document.getElementById('image-list').innerText = data.error || '이미지를 불러오지 못했습니다.';
+        return;
+      }
+
+      const container = document.getElementById('image-list');
+      container.innerHTML = ''; // 초기화
+
+      data.images.forEach(image => {
+        const { publicUrl, uploadedAt } = image;
+
+        // 날짜 텍스트 구성
+        const dateStr = uploadedAt ? `${uploadedAt.year}-${String(uploadedAt.month).padStart(2, '0')}-${String(uploadedAt.day).padStart(2, '0')}` : '날짜 정보 없음';
+
+        // 이미지 박스 생성
+        const wrapper = document.createElement('div');
+        wrapper.style.marginBottom = '15px';
+
+        const dateElem = document.createElement('div');
+        dateElem.innerText = `촬영일: ${dateStr}`;
+        dateElem.style.fontWeight = 'bold';
+
+        const img = document.createElement('img');
+        img.src = publicUrl;
+        img.style.width = '100%';
+        img.style.maxWidth = '400px';
+        img.style.border = '1px solid #ccc';
+        img.style.marginTop = '5px';
+
+        wrapper.appendChild(dateElem);
+        wrapper.appendChild(img);
+        container.appendChild(wrapper);
+      });
+    } catch (err) {
+      console.error('이미지 목록 로드 실패:', err);
+      document.getElementById('image-list').innerText = '오류가 발생했습니다.';
+    }
+  }
+
   function fetchData() {
     if (farmNameText) {
       farmNameText.textContent = farmName
