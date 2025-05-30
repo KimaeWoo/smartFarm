@@ -180,7 +180,7 @@ app.get('/all-image', async (req, res) => {
 
       return { fileName, publicUrl, uploadedAt };
     });
-
+    console.log('[GET /all-image] 이미지 목록 조회 성공');
     res.json({ images: imageInfos });
   } catch (error) {
     console.error('이미지 목록 조회 오류:', error);
