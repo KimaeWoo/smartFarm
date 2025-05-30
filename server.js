@@ -585,7 +585,7 @@ app.post('/devices/force-status', async (req, res) => {
   try {
     conn = await db.getConnection();
     await conn.query(query, [status, farm_id]);
-    console.log(`[/devices/force-status] ${device} 상태 변경 성공`);
+    console.log(`[/devices/force-status] ${farm_id}농장 ${device} 상태 ${status}로 변경`);
 
     const status_val = status ? 1 : 0;
 
