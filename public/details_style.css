@@ -1185,6 +1185,26 @@ input:checked+.slider:before {
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1.5rem;
   padding: 1rem 0;
+  max-height: 800px;
+  overflow-y: auto;
+}
+
+.image-gallery::-webkit-scrollbar {
+  width: 8px;
+}
+
+.image-gallery::-webkit-scrollbar-track {
+  background: var(--secondary-color);
+  border-radius: 4px;
+}
+
+.image-gallery::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+.image-gallery::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-color);
 }
 
 .image-item {
