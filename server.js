@@ -78,7 +78,7 @@ app.post('/upload-image', upload.single('file'), async (req, res) => {
   if (!file || !farmId) {
     return res.status(400).json({ error: '파일 또는 farmId가 없습니다.' });
   }
-
+  console.log('농장 번호:',farmId);
   try {
     const timestamp = Date.now();
     const fileName = `farms/${farmId}/${timestamp}_${file.originalname}`;
