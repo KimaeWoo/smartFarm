@@ -574,6 +574,7 @@ app.post('/devices/:deviceId/status', async (req, res) => {
 app.post('/devices/force-status', async (req, res) => {
   const { farm_id, device, status, duration } = req.body;
 
+  console.log('[제어장치 강제 변경] 농장 번호: ',farm_id);
   if (!farm_id || !device || duration == null) {
     return res.status(400).json({ message: '잘못된 요청입니다. 모든 필드(farm_id, device, status, duration)가 필요합니다.' });
   }
