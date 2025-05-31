@@ -235,9 +235,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       const response = await fetch(`https://api.hotpotato.me/get-image?farmId=${farmId}`, {
         method: 'GET',
       });
-
+      
       const result = await response.json();
-
+      alert('이미지 저장 성공');
     } catch (err) {
       console.error('외부 서버 요청 중 오류:', err);
       resultDiv.innerHTML = '요청 중 오류가 발생했습니다.';
