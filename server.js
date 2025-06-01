@@ -607,8 +607,7 @@ app.post('/devices/force-status', async (req, res) => {
   }
 });
 
-
-// 실시간 데이터 불러오기 (1시간 단위 평균)
+// 오늘 데이터 불러오기 (1시간 단위 평균)
 app.get('/realtime-data', async (req, res) => {
   const { farm_id } = req.query;
   const query = `
