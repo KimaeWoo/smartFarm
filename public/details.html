@@ -356,17 +356,27 @@
             <input type="date" id="date-picker" style="margin-left: 10px; padding: 5px; border-radius: 4px; border: 1px solid var(--border-color);">
           </div>        
         </div>
-        <div class="card-content">
+        <div class="sensor-data-history">
           <div class="sensor-tabs">
-            <div class="sensor-tab active temp" data-sensor="temperature">온도</div>
-            <div class="sensor-tab humidity" data-sensor="humidity">습도</div>
-            <div class="sensor-tab soil" data-sensor="soil">토양 수분</div>
-            <div class="sensor-tab co2" data-sensor="co2">CO2</div>
+            <div class="sensor-tab active" data-sensor="temperature">온도</div>
+            <div class="sensor-tab" data-sensor="humidity">습도</div>
+            <div class="sensor-tab" data-sensor="soil">토양 수분</div>
+            <div class="sensor-tab" data-sensor="co2">CO2</div>
           </div>
-          <div class="sensor-chart active" id="temperature-chart"><canvas id="temperature-canvas"></canvas></div>
-          <div class="sensor-chart" id="humidity-chart"><canvas id="humidity-canvas"></canvas></div>
-          <div class="sensor-chart" id="soil-chart"><canvas id="soil-canvas"></canvas></div>
-          <div class="sensor-chart" id="co2-chart"><canvas id="co2-canvas"></canvas></div>
+          <div class="sensor-charts">
+            <div id="temperature-chart" class="sensor-chart active">
+              <canvas id="temperature-canvas"></canvas>
+            </div>
+            <div id="humidity-chart" class="sensor-chart">
+              <canvas id="humidity-canvas"></canvas>
+            </div>
+            <div id="soil-chart" class="sensor-chart">
+              <canvas id="soil-canvas"></canvas>
+            </div>
+            <div id="co2-chart" class="sensor-chart">
+              <canvas id="co2-canvas"></canvas>
+            </div>
+          </div>
         </div>
         <div class="card-footer">
           <button class="btn" id="prev-date"><i class="fas fa-chevron-left"></i> 이전 날짜</button>
