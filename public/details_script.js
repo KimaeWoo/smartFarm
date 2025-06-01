@@ -842,18 +842,25 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       const processedData = data
         .reverse() // 오래된 순으로 그래프에 표시
-        .map((item) => ({
-          time: new Date(item.created_at).toLocaleTimeString("en-GB", {
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-            hour12: false,
-          }),
-          temperature: Number.parseFloat(item.temperature),
-          humidity: Number.parseFloat(item.humidity),
-          soil: Number.parseFloat(item.soil_moisture),
-          co2: Number.parseInt(item.co2),
-        }))
+        .map((item) => {
+          // created_at을 KST로 간주하고 UTC로 변환 (9시간 빼기)
+          const kstDate = new Date(item.created_at);
+          const utcDate = new Date(kstDate.getTime() - 9 * 60 * 60 * 1000); // KST - 9시간 = UTC
+          // UTC를 다시 KST로 포맷팅
+          const correctedDate = new Date(utcDate.getTime() + 9 * 60 * 60 * 1000); // UTC + 9시간 = KST
+          return {
+            time: correctedDate.toLocaleTimeString("en-GB", {
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+              hour12: false,
+            }),
+            temperature: Number.parseFloat(item.temperature) || 0,
+            humidity: Number.parseFloat(item.humidity) || 0,
+            soil: Number.parseFloat(item.soil_moisture) || 0,
+            co2: Number.parseInt(item.co2) || 0,
+          };
+        });
       
       return processedData
     } catch (error) {
