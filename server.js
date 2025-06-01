@@ -654,7 +654,7 @@ app.post('/devices/force-status', async (req, res) => {
 //   }
 // });
 
-// 최근 30개 센서 데이터 반환
+// 최근 센서 데이터 반환
 app.get('/realtime-data', async (req, res) => {
   const { farm_id } = req.query;
   const query = `

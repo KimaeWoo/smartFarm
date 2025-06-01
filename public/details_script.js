@@ -166,7 +166,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (tabId === "history") {
         updateChartData()
         updateHistoryChartData()
-        updateSummaryChart()
+        // updateSummaryChart()
       } else if (tabId === "writeDiary") {
         fetchReports()
       } else if (tabId === "cctv") {
@@ -184,7 +184,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       sensorTabs.forEach((t) => t.classList.remove("active"))
       tab.classList.add("active")
       sensorCharts.forEach((chart) => chart.classList.remove("active"))
-      document.getElementById(`${sensorId}-chart`).classList.add("active")
+      document.getElementById(`${sensorId}-sensor-chart`).classList.add("active")
     })
   })
 
@@ -829,7 +829,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   //   }
   // }
 
-  // 최근 30개 센서 데이터 반환
+  // 최근 센서 데이터 반환
   async function fetchRealtimeData() {
     try {
       const response = await fetch(`${API_BASE_URL}/realtime-data?farm_id=${farmId}`, {
@@ -867,7 +867,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  // 최근 30개 센서 데이터 반환
+  // 최근 센서 데이터 반환
   async function updateChartData() {
     const realtimeData = await fetchRealtimeData()
 
@@ -1033,10 +1033,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   //   }
   // }
 
-  function getCssVariable(variable) {
-    return getComputedStyle(document.documentElement).getPropertyValue(variable).trim()
-  }
-
   async function fetchHistoryData() {
     const historyDateEl = document.getElementById("history-date")
     if (!historyDateEl) {
@@ -1115,7 +1111,7 @@ document.addEventListener("DOMContentLoaded", async () => {
               tooltip: { mode: "index", intersect: false },
             },
             scales: {
-              y: { min: 0, max: 40, title: { display: true, text: "온도 (°C)" }, ticks: { color: "#000000" } },
+              y: { min: 10, max: 30, title: { display: true, text: "온도 (°C)" }, ticks: { color: "#000000" } },
             },
           },
         })
@@ -1248,98 +1244,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         window.co2Chart.update()
       }
     }
-  }
-
-  async function updateSummaryChart() {
-    const historyData = await fetchHistoryData()
-    const avgTemperature = roundToTwo(average(historyData.temperatureData))
-    const avgHumidity = roundToTwo(average(historyData.humidityData))
-    const avgSoil = roundToTwo(average(historyData.soilData))
-    const avgCo2 = roundToTwo(average(historyData.co2Data))
-
-    const summaryChartEl = document.getElementById("summary-chart")
-    if (!summaryChartEl) return
-
-    const ctx = summaryChartEl.getContext("2d")
-    if (!window.summaryChart) {
-      window.summaryChart = new Chart(ctx, {
-        type: "bar",
-        data: {
-          labels: ["평균값"],
-          datasets: [
-            {
-              label: "온도 (°C)",
-              data: [avgTemperature],
-              backgroundColor: "rgba(249, 115, 22, 0.7)",
-              borderColor: "rgb(249, 115, 22)",
-              borderWidth: 1,
-            },
-            {
-              label: "습도 (%)",
-              data: [avgHumidity],
-              backgroundColor: "rgba(59, 130, 246, 0.7)",
-              borderColor: "rgb(59, 130, 246)",
-              borderWidth: 1,
-            },
-            {
-              label: "토양 수분 (%)",
-              data: [avgSoil],
-              backgroundColor: "rgba(217, 119, 6, 0.7)",
-              borderColor: "rgb(217, 119, 6)",
-              borderWidth: 1,
-            },
-            {
-              label: "CO2 (ppm/10)",
-              data: [avgCo2 / 10],
-              backgroundColor: "rgba(16, 185, 129, 0.7)",
-              borderColor: "rgb(16, 185, 129)",
-              borderWidth: 1,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { position: "top", labels: { color: "#000000" } },
-            tooltip: {
-              callbacks: {
-                label: (context) => {
-                  let label = context.dataset.label || ""
-                  if (label) label += ": "
-                  if (context.dataset.label === "CO2 (ppm/10)") {
-                    label += context.raw * 10
-                  } else {
-                    label += context.raw
-                  }
-                  return label
-                },
-              },
-            },
-          },
-          scales: {
-            y: { beginAtZero: true, ticks: { color: "#000000" } },
-            x: { beginAtZero: true, ticks: { color: "#000000" } },
-          },
-        },
-      })
-    } else {
-      window.summaryChart.data.datasets[0].data = [avgTemperature]
-      window.summaryChart.data.datasets[1].data = [avgHumidity]
-      window.summaryChart.data.datasets[2].data = [avgSoil]
-      window.summaryChart.data.datasets[3].data = [avgCo2 / 10]
-      window.summaryChart.update()
-    }
-  }
-
-  function average(dataArray) {
-    if (dataArray.length === 0) return 0
-    const sum = dataArray.reduce((acc, value) => acc + value, 0)
-    return sum / dataArray.length
-  }
-
-  function roundToTwo(num) {
-    return Math.round(num * 100) / 100
   }
 
   async function updateAllCharts() {
