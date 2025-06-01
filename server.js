@@ -667,7 +667,7 @@ app.get('/realtime-data', async (req, res) => {
     FROM sensors s
     WHERE s.farm_id = ?
     ORDER BY s.created_at DESC
-    LIMIT 30;
+    LIMIT 24;
   `;
   let conn;
   try {
@@ -681,7 +681,7 @@ app.get('/realtime-data', async (req, res) => {
     // 로그 출력
     console.log(`[GET /realtime-data] farm_id=${farm_id}, 반환 데이터 ${results.length}개`);
     console.table(results); // 콘솔에 표 형태로 출력 (Node.js 환경에서 가독성 좋음)
-    
+
     return res.json(results);
   } catch (err) {
     console.error('[GET /realtime-data] DB 오류:', err);
