@@ -678,6 +678,10 @@ app.get('/realtime-data', async (req, res) => {
       return res.status(404).json({ message: '데이터가 없습니다.' });
     }
 
+    // 로그 출력
+    console.log(`[GET /realtime-data] farm_id=${farm_id}, 반환 데이터 ${results.length}개`);
+    console.table(results); // 콘솔에 표 형태로 출력 (Node.js 환경에서 가독성 좋음)
+    
     return res.json(results);
   } catch (err) {
     console.error('[GET /realtime-data] DB 오류:', err);
