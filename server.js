@@ -613,20 +613,27 @@ app.get('/realtime-data', async (req, res) => {
   const { farm_id } = req.query;
   const query = `
     SELECT 
-      DATE_FORMAT(created_at, '%Y-%m-%d %H:00:00') AS time_interval,
-      AVG(temperature) AS avg_temperature,
-      AVG(humidity) AS avg_humidity,
-      AVG(soil_moisture) AS avg_soil_moisture,
-      AVG(co2) AS avg_co2
-    FROM 
-      sensors
-    WHERE 
-      farm_id = ? 
-      AND created_at >= NOW() - INTERVAL 24 HOUR
-    GROUP BY 
-      time_interval
-    ORDER BY 
-      time_interval ASC;
+      time_slots.time_interval,
+      AVG(s.temperature) AS avg_temperature,
+      AVG(s.humidity) AS avg_humidity,
+      AVG(s.soil_moisture) AS avg_soil_moisture,
+      AVG(s.co2) AS avg_co2
+    FROM (
+      SELECT 
+        DATE_FORMAT(CONCAT(CURDATE(), ' ', LPAD(hours.hour, 2, '0'), ':00:00'), '%Y-%m-%d %H:00:00') AS time_interval
+      FROM (
+        SELECT 0 AS hour UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION
+        SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION
+        SELECT 10 UNION SELECT 11 UNION SELECT 12 UNION SELECT 13 UNION SELECT 14 UNION
+        SELECT 15 UNION SELECT 16 UNION SELECT 17 UNION SELECT 18 UNION SELECT 19 UNION
+        SELECT 20 UNION SELECT 21 UNION SELECT 22 UNION SELECT 23
+      ) AS hours
+    ) AS time_slots
+    LEFT JOIN sensors s ON 
+      DATE_FORMAT(s.created_at, '%Y-%m-%d %H:00:00') = time_slots.time_interval
+      AND s.farm_id = ?
+    GROUP BY time_slots.time_interval
+    ORDER BY time_slots.time_interval ASC;
   `;
   let conn;
   try {
