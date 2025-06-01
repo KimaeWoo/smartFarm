@@ -134,8 +134,32 @@ async function signup() {
 
     if (response.ok) {
         alert('회원가입 성공!');
+
+        // 입력 필드 초기화
+        document.getElementById("signup-email").value = "";
+        document.getElementById("signup-password").value = "";
+        document.getElementById("signup-confirm-password").value = "";
+        document.getElementById("signup-name").value = "";
+
+        // 검증 결과 텍스트 초기화
+        document.getElementById("email-result").textContent = "";
+        document.getElementById("name-result").textContent = "";
+        document.getElementById("confirm-password-result").textContent = "";
+
+        // 상태 변수도 초기화
+        isUserIdChecked = false;
+        isPasswordMatched = false;
+        isUsernameChecked = false;
+
         toggleForm(); // 가입 후 로그인 화면으로 이동
     } else {
         alert(data.message || '회원가입 실패');
     }
+}
+
+function toggleForm() {
+    // 로그인 폼으로 전환
+    formsContainer.style.transform = 'translateX(0)';
+    loginToggle.classList.add('active');
+    signupToggle.classList.remove('active');
 }

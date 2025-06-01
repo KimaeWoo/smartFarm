@@ -1618,7 +1618,7 @@ function roundToTwo(num) {
   return Math.round(num * 100) / 100;
 }
 
-// 리포트 불러오기기
+// 리포트 불러오기
 app.get('/get-reports/:farmId', async (req, res) => {
   let conn;
   try {
