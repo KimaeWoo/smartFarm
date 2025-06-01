@@ -802,6 +802,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
+  // 오늘 데이터 불러오기 (1시간 단위 평균)
   // async function fetchRealtimeData() {
   //   try {
   //     const response = await fetch(`${API_BASE_URL}/realtime-data?farm_id=${farmId}`, {
@@ -828,6 +829,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   //   }
   // }
 
+  // 최근 30개 센서 데이터 반환
   async function fetchRealtimeData() {
     try {
       const response = await fetch(`${API_BASE_URL}/realtime-data?farm_id=${farmId}`, {
