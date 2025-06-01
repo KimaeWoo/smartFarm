@@ -898,7 +898,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-              legend: { position: "top" },
+              legend: { position: "left" },
               tooltip: { mode: "index", intersect: false },
             },
             scales: {
