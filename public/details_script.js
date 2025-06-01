@@ -1077,12 +1077,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  const timeLabels = []
-  const temperatureData = []
-  const humidityData = []
-  const soilData = []
-  const co2Data = []
-
   async function updateHistoryChartData() {
     const historyData = await fetchHistoryData()
 

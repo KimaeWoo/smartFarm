@@ -679,8 +679,8 @@ app.get('/realtime-data', async (req, res) => {
     }
 
     // 로그 출력
-    console.log(`[GET /realtime-data] farm_id=${farm_id}, 반환 데이터 ${results.length}개`);
-    console.table(results); // 콘솔에 표 형태로 출력 (Node.js 환경에서 가독성 좋음)
+    // console.log(`[GET /realtime-data] farm_id=${farm_id}, 반환 데이터 ${results.length}개`);
+    // console.table(results); // 콘솔에 표 형태로 출력 (Node.js 환경에서 가독성 좋음)
     
     return res.json(results);
   } catch (err) {
@@ -738,7 +738,7 @@ app.get('/history-data', async (req, res) => {
       return res.status(404).json({ message:'해당 날짜에 기록된 데이터가 없습니다.' });
     }
 
-    // console.log(`[GET /history-data] 기록 데이터: ${results.length}개 반환`);
+    console.log(`[GET /history-data] 기록 데이터: ${results.length}개 반환`);
     res.json(results);
   } catch (err) {
     console.error('[GET /history-data] DB 오류: ', err.stack);
