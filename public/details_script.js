@@ -861,103 +861,88 @@ document.addEventListener("DOMContentLoaded", async () => {
       return []
     }
   }
-  
+
   // 최근 30개 센서 데이터 반환
   async function updateChartData() {
     const realtimeData = await fetchRealtimeData()
 
-    // 환경 데이터 (온도/습도/토양수분)
-    const envCtx = document.getElementById("env-chart").getContext("2d")
-    if (!window.envChart) {
-      window.envChart = new Chart(envCtx, {
-        type: "line",
-        data: {
-          labels: realtimeData.map((item) => item.time),
-          datasets: [
-            {
-              label: "온도 (°C)",
-              data: realtimeData.map((item) => item.temperature),
-              borderColor: "rgb(249, 115, 22)",
-              backgroundColor: "rgba(249, 115, 22, 0.1)",
-              tension: 0.4,
-              pointRadius: 3,
-              yAxisID: "y1",
+    const labels = realtimeData.map((item) => item.time)
+
+    const makeChart = (canvasId, label, data, borderColor, backgroundColor) => {
+      const ctx = document.getElementById(canvasId).getContext("2d")
+      const chartKey = `${canvasId}Instance`
+
+      if (!window[chartKey]) {
+        window[chartKey] = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels,
+            datasets: [
+              {
+                label,
+                data,
+                borderColor,
+                backgroundColor,
+                tension: 0.4,
+                pointRadius: 3,
+                pointHoverRadius: 5,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: "top" },
+              tooltip: { mode: "index", intersect: false },
             },
-            {
-              label: "습도 (%)",
-              data: realtimeData.map((item) => item.humidity),
-              borderColor: "rgb(59, 130, 246)",
-              backgroundColor: "rgba(59, 130, 246, 0.1)",
-              tension: 0.4,
-              pointRadius: 3,
-              yAxisID: "y1",
-            },
-            {
-              label: "토양 수분 (%)",
-              data: realtimeData.map((item) => item.soil),
-              borderColor: "rgb(255, 223, 0)",
-              backgroundColor: "rgba(255, 223, 0, 0.1)",
-              tension: 0.4,
-              pointRadius: 3,
-              yAxisID: "y1",
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { position: "top" } },
-          scales: {
-            y1: {
-              beginAtZero: true,
-              ticks: { color: "#000" },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: { color: "#000" },
+              },
             },
           },
-        },
-      })
-    } else {
-      window.envChart.data.labels = realtimeData.map((item) => item.time)
-      window.envChart.data.datasets[0].data = realtimeData.map((item) => item.temperature)
-      window.envChart.data.datasets[1].data = realtimeData.map((item) => item.humidity)
-      window.envChart.data.datasets[2].data = realtimeData.map((item) => item.soil)
-      window.envChart.update()
+        })
+      } else {
+        const chart = window[chartKey]
+        chart.data.labels = labels
+        chart.data.datasets[0].data = data
+        chart.update()
+      }
     }
 
-    // CO2 그래프
-    const co2Ctx = document.getElementById("co2-chart").getContext("2d")
-    if (!window.co2Chart) {
-      window.co2Chart = new Chart(co2Ctx, {
-        type: "line",
-        data: {
-          labels: realtimeData.map((item) => item.time),
-          datasets: [
-            {
-              label: "CO₂ (ppm)",
-              data: realtimeData.map((item) => item.co2),
-              borderColor: "rgb(16, 185, 129)",
-              backgroundColor: "rgba(16, 185, 129, 0.1)",
-              tension: 0.4,
-              pointRadius: 3,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { position: "top" } },
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: { color: "#000" },
-            },
-          },
-        },
-      })
-    } else {
-      window.co2Chart.data.labels = realtimeData.map((item) => item.time)
-      window.co2Chart.data.datasets[0].data = realtimeData.map((item) => item.co2)
-      window.co2Chart.update()
-    }
+    makeChart(
+      "temp-chart",
+      "온도 (°C)",
+      realtimeData.map((d) => d.temperature),
+      "rgb(249, 115, 22)",
+      "rgba(249, 115, 22, 0.1)"
+    )
+
+    makeChart(
+      "humi-chart",
+      "습도 (%)",
+      realtimeData.map((d) => d.humidity),
+      "rgb(59, 130, 246)",
+      "rgba(59, 130, 246, 0.1)"
+    )
+
+    makeChart(
+      "soil-chart",
+      "토양 수분 (%)",
+      realtimeData.map((d) => d.soil),
+      "rgb(255, 223, 0)",
+      "rgba(255, 223, 0, 0.1)"
+    )
+
+    makeChart(
+      "co2-chart",
+      "CO₂ (ppm)",
+      realtimeData.map((d) => d.co2),
+      "rgb(16, 185, 129)",
+      "rgba(16, 185, 129, 0.1)"
+    )
   }
 
   // 오늘 데이터 불러오기 (1시간 단위 평균)

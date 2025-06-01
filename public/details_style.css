@@ -1010,9 +1010,30 @@ input:checked+.slider:before {
 }
 
 .chart-container {
-  width: 100%;
-  height: 300px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+  .chart-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chart-card {
+  background-color: var(--card-bg);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  height: 250px;
   position: relative;
+}
+
+.chart-card canvas {
+  width: 100%;
+  height: 250px;
 }
 
 /* CCTV Styles */
