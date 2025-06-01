@@ -1079,7 +1079,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   async function updateHistoryChartData() {
     const historyData = await fetchHistoryData()
-    console.log("History Data:", historyData) // 데이터 확인
 
     // 온도 차트 업데이트
     const temperatureCanvasEl = document.getElementById("temperature-canvas")
@@ -1163,103 +1162,85 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     }
 
-    // 토양 수분 차트
+    // 토양 수분 차트 업데이트
     const soilCanvasEl = document.getElementById("soil-canvas")
-    if (!soilCanvasEl) {
-      console.error("Soil canvas element not found")
-    } else {
-      console.log("Soil canvas found")
-      try {
-        const ctx = soilCanvasEl.getContext("2d")
-        if (!window.soilChart) {
-          window.soilChart = new Chart(ctx, {
-            type: "line",
-            data: {
-              labels: historyData.timeLabels.length ? historyData.timeLabels : ["No Data"],
-              datasets: [
-                {
-                  label: "토양 수분 (%)",
-                  data: historyData.soilData.length ? historyData.soilData : [0],
-                  borderColor: "rgb(217, 119, 6)",
-                  backgroundColor: "rgba(217, 119, 6, 0.2)",
-                  tension: 0.4,
-                  fill: true,
-                  pointRadius: 4,
-                  pointHoverRadius: 6,
-                },
-              ],
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                legend: { display: false },
-                tooltip: { mode: "index", intersect: false },
+    if (soilCanvasEl) {
+      const ctx = soilCanvasEl.getContext("2d")
+      if (!window.soilChart) {
+        window.soilChart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: historyData.timeLabels,
+            datasets: [
+              {
+                label: "토양 수분 (%)",
+                data: historyData.soilData,
+                borderColor: "rgb(217, 119, 6)",
+                backgroundColor: "rgba(217, 119, 6, 0.2)",
+                tension: 0.4,
+                fill: true,
+                pointRadius: 4,
+                pointHoverRadius: 6,
               },
-              scales: {
-                y: { min: 0, max: 100, title: { display: true, text: "토양 수분 (%)" } },
-              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false, labels: { color: "#000000" } },
+              tooltip: { mode: "index", intersect: false },
             },
-          })
-          console.log("Soil chart created")
-        } else {
-          window.soilChart.data.labels = historyData.timeLabels.length ? historyData.timeLabels : ["No Data"]
-          window.soilChart.data.datasets[0].data = historyData.soilData.length ? historyData.soilData : [0]
-          window.soilChart.update()
-          console.log("Soil chart updated")
-        }
-      } catch (error) {
-        console.error("Error creating/updating soil chart:", error)
+            scales: {
+              y: { min: 0, max: 100, title: { display: true, text: "토양 수분 (%)" }, ticks: { color: "#000000" } },
+            },
+          },
+        })
+      } else {
+        window.soilChart.data.labels = historyData.timeLabels
+        window.soilChart.data.datasets[0].data = historyData.soilData
+        window.soilChart.update()
       }
     }
 
-    // CO2 차트
+    // CO2 차트 업데이트
     const co2CanvasEl = document.getElementById("co2-canvas")
-    if (!co2CanvasEl) {
-      console.error("CO2 canvas element not found")
-    } else {
-      console.log("CO2 canvas found")
-      try {
-        const ctx = co2CanvasEl.getContext("2d")
-        if (!window.co2Chart) {
-          window.co2Chart = new Chart(ctx, {
-            type: "line",
-            data: {
-              labels: historyData.timeLabels.length ? historyData.timeLabels : ["No Data"],
-              datasets: [
-                {
-                  label: "CO2 (ppm)",
-                  data: historyData.co2Data.length ? historyData.co2Data : [0],
-                  borderColor: "rgb(16, 185, 129)",
-                  backgroundColor: "rgba(16, 185, 129, 0.2)",
-                  tension: 0.4,
-                  fill: true,
-                  pointRadius: 4,
-                  pointHoverRadius: 6,
-                },
-              ],
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                legend: { display: false },
-                tooltip: { mode: "index", intersect: false },
+    if (co2CanvasEl) {
+      const ctx = co2CanvasEl.getContext("2d")
+      if (!window.co2Chart) {
+        window.co2Chart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: historyData.timeLabels,
+            datasets: [
+              {
+                label: "CO2 (ppm)",
+                data: historyData.co2Data,
+                borderColor: "rgb(16, 185, 129)",
+                backgroundColor: "rgba(16, 185, 129, 0.2)",
+                tension: 0.4,
+                fill: true,
+                pointRadius: 4,
+                pointHoverRadius: 6,
               },
-              scales: {
-                y: { min: 500, max: 1500, title: { display: true, text: "CO2 (ppm)" } },
-              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false, labels: { color: "#000000" } },
+              tooltip: { mode: "index", intersect: false },
             },
-          })
-          console.log("CO2 chart created")
-        } else {
-          window.co2Chart.data.labels = historyData.timeLabels.length ? historyData.timeLabels : ["No Data"]
-          window.co2Chart.data.datasets[0].data = historyData.co2Data.length ? historyData.co2Data : [0]
-          window.co2Chart.update()
-          console.log("CO2 chart updated")
-        }
-      } catch (error) {
-        console.error("Error creating/updating CO2 chart:", error)
+            scales: {
+              y: { min: 500, max: 1500, title: { display: true, text: "CO2 (ppm)" }, ticks: { color: "#000000" } },
+            },
+          },
+        })
+      } else {
+        window.co2Chart.data.labels = historyData.timeLabels
+        window.co2Chart.data.datasets[0].data = historyData.co2Data
+        window.co2Chart.update()
       }
     }
   }
