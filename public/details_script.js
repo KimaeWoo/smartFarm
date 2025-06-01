@@ -802,25 +802,56 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
+  // async function fetchRealtimeData() {
+  //   try {
+  //     const response = await fetch(`${API_BASE_URL}/realtime-data?farm_id=${farmId}`, {
+  //       method: "GET",
+  //       headers: { "Content-Type": "application/json" },
+  //     })
+  //     if (!response.ok) throw new Error("네트워크 응답 오류: " + response.statusText)
+  //     const data = await response.json()
+  //     const processedData = data.map((item) => ({
+  //       time: new Date(item.time_interval).toLocaleString("en-GB", {
+  //         hour: "2-digit",
+  //         minute: "2-digit",
+  //         hour12: false,
+  //       }),
+  //       temperature: Number.parseFloat(item.avg_temperature),
+  //       humidity: Number.parseFloat(item.avg_humidity),
+  //       soil: Number.parseFloat(item.avg_soil_moisture),
+  //       co2: Number.parseInt(item.avg_co2),
+  //     }))
+  //     return processedData
+  //   } catch (error) {
+  //     console.error("데이터 가져오기 오류:", error)
+  //     return []
+  //   }
+  // }
+
   async function fetchRealtimeData() {
     try {
       const response = await fetch(`${API_BASE_URL}/realtime-data?farm_id=${farmId}`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
       })
+
       if (!response.ok) throw new Error("네트워크 응답 오류: " + response.statusText)
       const data = await response.json()
-      const processedData = data.map((item) => ({
-        time: new Date(item.time_interval).toLocaleString("en-GB", {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: false,
-        }),
-        temperature: Number.parseFloat(item.avg_temperature),
-        humidity: Number.parseFloat(item.avg_humidity),
-        soil: Number.parseFloat(item.avg_soil_moisture),
-        co2: Number.parseInt(item.avg_co2),
-      }))
+
+      const processedData = data
+        .reverse() // 오래된 순으로 그래프에 표시
+        .map((item) => ({
+          time: new Date(item.created_at).toLocaleString("en-GB", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+          }),
+          temperature: Number.parseFloat(item.temperature),
+          humidity: Number.parseFloat(item.humidity),
+          soil: Number.parseFloat(item.soil_moisture),
+          co2: Number.parseInt(item.co2),
+        }))
+      
       return processedData
     } catch (error) {
       console.error("데이터 가져오기 오류:", error)
