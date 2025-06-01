@@ -843,9 +843,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       const processedData = data
         .reverse() // 오래된 순으로 그래프에 표시
         .map((item) => ({
-          time: new Date(item.created_at).toLocaleString("en-GB", {
+          time: new Date(item.created_at).toLocaleTimeString("en-GB", {
             hour: "2-digit",
             minute: "2-digit",
+            second: "2-digit",
             hour12: false,
           }),
           temperature: Number.parseFloat(item.temperature),

@@ -667,7 +667,7 @@ app.get('/realtime-data', async (req, res) => {
     FROM sensors s
     WHERE s.farm_id = ?
     ORDER BY s.created_at DESC
-    LIMIT 30;
+    LIMIT 24;
   `;
   let conn;
   try {
