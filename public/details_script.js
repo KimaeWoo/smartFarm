@@ -861,15 +861,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       return []
     }
   }
-
+  
+  // 최근 30개 센서 데이터 반환
   async function updateChartData() {
     const realtimeData = await fetchRealtimeData()
-    const realtimeChartEl = document.getElementById("realtime-chart")
-    if (!realtimeChartEl) return
 
-    const ctx = realtimeChartEl.getContext("2d")
-    if (!window.realtimeChart) {
-      window.realtimeChart = new Chart(ctx, {
+    // 환경 데이터 (온도/습도/토양수분)
+    const envCtx = document.getElementById("env-chart").getContext("2d")
+    if (!window.envChart) {
+      window.envChart = new Chart(envCtx, {
         type: "line",
         data: {
           labels: realtimeData.map((item) => item.time),
@@ -880,8 +880,7 @@ document.addEventListener("DOMContentLoaded", async () => {
               borderColor: "rgb(249, 115, 22)",
               backgroundColor: "rgba(249, 115, 22, 0.1)",
               tension: 0.4,
-              pointRadius: 4,
-              pointHoverRadius: 6,
+              pointRadius: 3,
               yAxisID: "y1",
             },
             {
@@ -890,8 +889,7 @@ document.addEventListener("DOMContentLoaded", async () => {
               borderColor: "rgb(59, 130, 246)",
               backgroundColor: "rgba(59, 130, 246, 0.1)",
               tension: 0.4,
-              pointRadius: 4,
-              pointHoverRadius: 6,
+              pointRadius: 3,
               yAxisID: "y1",
             },
             {
@@ -900,49 +898,150 @@ document.addEventListener("DOMContentLoaded", async () => {
               borderColor: "rgb(255, 223, 0)",
               backgroundColor: "rgba(255, 223, 0, 0.1)",
               tension: 0.4,
-              pointRadius: 4,
-              pointHoverRadius: 6,
+              pointRadius: 3,
               yAxisID: "y1",
-            },
-            {
-              label: "CO2 (ppm)",
-              data: realtimeData.map((item) => item.co2),
-              borderColor: "rgb(16, 185, 129)",
-              backgroundColor: "rgba(16, 185, 129, 0.1)",
-              tension: 0.4,
-              pointRadius: 4,
-              pointHoverRadius: 6,
-              yAxisID: "y2",
             },
           ],
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: {
-            legend: { position: "top", labels: { color: "#000000" } },
-            tooltip: { mode: "index", intersect: false },
-          },
+          plugins: { legend: { position: "top" } },
           scales: {
-            y1: { beginAtZero: false, position: "left", ticks: { max: 80, min: 0, color: "#000000" } },
-            y2: {
-              beginAtZero: false,
-              position: "right",
-              grid: { drawOnChartArea: false },
-              ticks: { max: 1000, min: 0, color: "#000000" },
+            y1: {
+              beginAtZero: true,
+              ticks: { color: "#000" },
             },
           },
         },
       })
     } else {
-      window.realtimeChart.data.labels = realtimeData.map((item) => item.time)
-      window.realtimeChart.data.datasets[0].data = realtimeData.map((item) => item.temperature)
-      window.realtimeChart.data.datasets[1].data = realtimeData.map((item) => item.humidity)
-      window.realtimeChart.data.datasets[2].data = realtimeData.map((item) => item.soil)
-      window.realtimeChart.data.datasets[3].data = realtimeData.map((item) => item.co2)
-      window.realtimeChart.update()
+      window.envChart.data.labels = realtimeData.map((item) => item.time)
+      window.envChart.data.datasets[0].data = realtimeData.map((item) => item.temperature)
+      window.envChart.data.datasets[1].data = realtimeData.map((item) => item.humidity)
+      window.envChart.data.datasets[2].data = realtimeData.map((item) => item.soil)
+      window.envChart.update()
+    }
+
+    // CO2 그래프
+    const co2Ctx = document.getElementById("co2-chart").getContext("2d")
+    if (!window.co2Chart) {
+      window.co2Chart = new Chart(co2Ctx, {
+        type: "line",
+        data: {
+          labels: realtimeData.map((item) => item.time),
+          datasets: [
+            {
+              label: "CO₂ (ppm)",
+              data: realtimeData.map((item) => item.co2),
+              borderColor: "rgb(16, 185, 129)",
+              backgroundColor: "rgba(16, 185, 129, 0.1)",
+              tension: 0.4,
+              pointRadius: 3,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: "top" } },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { color: "#000" },
+            },
+          },
+        },
+      })
+    } else {
+      window.co2Chart.data.labels = realtimeData.map((item) => item.time)
+      window.co2Chart.data.datasets[0].data = realtimeData.map((item) => item.co2)
+      window.co2Chart.update()
     }
   }
+
+  // 오늘 데이터 불러오기 (1시간 단위 평균)
+  // async function updateChartData() {
+  //   const realtimeData = await fetchRealtimeData()
+  //   const realtimeChartEl = document.getElementById("realtime-chart")
+  //   if (!realtimeChartEl) return
+
+  //   const ctx = realtimeChartEl.getContext("2d")
+  //   if (!window.realtimeChart) {
+  //     window.realtimeChart = new Chart(ctx, {
+  //       type: "line",
+  //       data: {
+  //         labels: realtimeData.map((item) => item.time),
+  //         datasets: [
+  //           {
+  //             label: "온도 (°C)",
+  //             data: realtimeData.map((item) => item.temperature),
+  //             borderColor: "rgb(249, 115, 22)",
+  //             backgroundColor: "rgba(249, 115, 22, 0.1)",
+  //             tension: 0.4,
+  //             pointRadius: 4,
+  //             pointHoverRadius: 6,
+  //             yAxisID: "y1",
+  //           },
+  //           {
+  //             label: "습도 (%)",
+  //             data: realtimeData.map((item) => item.humidity),
+  //             borderColor: "rgb(59, 130, 246)",
+  //             backgroundColor: "rgba(59, 130, 246, 0.1)",
+  //             tension: 0.4,
+  //             pointRadius: 4,
+  //             pointHoverRadius: 6,
+  //             yAxisID: "y1",
+  //           },
+  //           {
+  //             label: "토양 수분 (%)",
+  //             data: realtimeData.map((item) => item.soil),
+  //             borderColor: "rgb(255, 223, 0)",
+  //             backgroundColor: "rgba(255, 223, 0, 0.1)",
+  //             tension: 0.4,
+  //             pointRadius: 4,
+  //             pointHoverRadius: 6,
+  //             yAxisID: "y1",
+  //           },
+  //           {
+  //             label: "CO2 (ppm)",
+  //             data: realtimeData.map((item) => item.co2),
+  //             borderColor: "rgb(16, 185, 129)",
+  //             backgroundColor: "rgba(16, 185, 129, 0.1)",
+  //             tension: 0.4,
+  //             pointRadius: 4,
+  //             pointHoverRadius: 6,
+  //             yAxisID: "y2",
+  //           },
+  //         ],
+  //       },
+  //       options: {
+  //         responsive: true,
+  //         maintainAspectRatio: false,
+  //         plugins: {
+  //           legend: { position: "top", labels: { color: "#000000" } },
+  //           tooltip: { mode: "index", intersect: false },
+  //         },
+  //         scales: {
+  //           y1: { beginAtZero: false, position: "left", ticks: { max: 80, min: 0, color: "#000000" } },
+  //           y2: {
+  //             beginAtZero: false,
+  //             position: "right",
+  //             grid: { drawOnChartArea: false },
+  //             ticks: { max: 1000, min: 0, color: "#000000" },
+  //           },
+  //         },
+  //       },
+  //     })
+  //   } else {
+  //     window.realtimeChart.data.labels = realtimeData.map((item) => item.time)
+  //     window.realtimeChart.data.datasets[0].data = realtimeData.map((item) => item.temperature)
+  //     window.realtimeChart.data.datasets[1].data = realtimeData.map((item) => item.humidity)
+  //     window.realtimeChart.data.datasets[2].data = realtimeData.map((item) => item.soil)
+  //     window.realtimeChart.data.datasets[3].data = realtimeData.map((item) => item.co2)
+  //     window.realtimeChart.update()
+  //   }
+  // }
 
   function getCssVariable(variable) {
     return getComputedStyle(document.documentElement).getPropertyValue(variable).trim()
