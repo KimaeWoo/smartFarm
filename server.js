@@ -659,7 +659,7 @@ app.get('/realtime-data', async (req, res) => {
   const { farm_id } = req.query;
   const query = `
     SELECT 
-      s.created_at,
+      CONVERT_TZ(s.created_at, '+00:00', '+09:00') AS created_at,
       s.temperature,
       s.humidity,
       s.soil_moisture,
