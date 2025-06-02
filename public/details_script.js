@@ -949,32 +949,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       "rgb(16, 185, 129)",
       "rgba(16, 185, 129, 0.1)"
     )
-    // 툴팁 항상 표시 추가
-    showTooltipAtLastPoint(window["temp-chartInstance"]);
-    showTooltipAtLastPoint(window["humi-chartInstance"]);
-    showTooltipAtLastPoint(window["soil-chartInstance"]);
-    showTooltipAtLastPoint(window["co2-chartInstance"]);
   }
-
-  function showTooltipAtLastPoint(chart) {
-    const lastIndex = chart.data.labels.length - 1;
-    if (lastIndex >= 0) {
-      chart.setActiveElements([
-        {
-          datasetIndex: 0,
-          index: lastIndex
-        }
-      ]);
-      chart.tooltip.setActiveElements([
-        {
-          datasetIndex: 0,
-          index: lastIndex
-        }
-      ]);
-      chart.update();
-    }
-  }
-
+  
   // 오늘 데이터 불러오기 (1시간 단위 평균)
   // async function updateChartData() {
   //   const realtimeData = await fetchRealtimeData()
