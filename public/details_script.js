@@ -950,10 +950,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       "rgba(16, 185, 129, 0.1)"
     )
     // 툴팁 항상 표시 추가
-    if (window.tempChart) showTooltipAtLastPoint(window.tempChart);
-    if (window.humiChart) showTooltipAtLastPoint(window.humiChart);
-    if (window.soilChart) showTooltipAtLastPoint(window.soilChart);
-    if (window.co2Chart) showTooltipAtLastPoint(window.co2Chart);
+    showTooltipAtLastPoint(window["temp-chartInstance"]);
+    showTooltipAtLastPoint(window["humi-chartInstance"]);
+    showTooltipAtLastPoint(window["soil-chartInstance"]);
+    showTooltipAtLastPoint(window["co2-chartInstance"]);
   }
 
   function showTooltipAtLastPoint(chart) {
