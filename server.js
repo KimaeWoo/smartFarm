@@ -343,7 +343,6 @@ app.get('/getFarms', async(req, res) => {
 });
 
 // 농장 추가하기
-// 농장 추가하기
 app.post('/addFarm', authenticateToken, async (req, res) => {
   const user_id = req.user.user_id; // JWT에서 추출
   const { farm_name, farm_location, farm_type } = req.body;
@@ -517,7 +516,7 @@ app.get('/sensors/status', async (req, res) => {
       // console.log('[GET /sensors/status] 조회된 데이터 없음');
       return res.status(404).json({ message:'해당 조건에 맞는 데이터가 없습니다.' });
     }
-    // console.log('[GET /sensors/status] 센서 조회 성공');
+    console.log(`[GET /sensors/status] farm_id=${farm_id} 센서 조회`);
     return res.json(results[0]); 
   } catch (err) {
     console.error('[GET /sensors/status] DB 오류:', err);
@@ -679,7 +678,7 @@ app.get('/realtime-data', async (req, res) => {
     }
 
     // 로그 출력
-    // console.log(`[GET /realtime-data] farm_id=${farm_id}, 반환 데이터 ${results.length}개`);
+    console.log(`[GET /realtime-data] farm_id=${farm_id}, 실시간 데이터: ${results.length}개`);
     // console.table(results); // 콘솔에 표 형태로 출력 (Node.js 환경에서 가독성 좋음)
     
     return res.json(results);
@@ -738,7 +737,7 @@ app.get('/history-data', async (req, res) => {
       return res.status(404).json({ message:'해당 날짜에 기록된 데이터가 없습니다.' });
     }
 
-    console.log(`[GET /history-data] 기록 데이터: ${results.length}개 반환`);
+    console.log(`[GET /history-data] farm_id=${farm_id} 기록 데이터: ${results.length}개`);
     res.json(results);
   } catch (err) {
     console.error('[GET /history-data] DB 오류: ', err.stack);
