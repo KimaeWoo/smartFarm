@@ -975,7 +975,7 @@ app.get('/devices/status', async(req, res) => {
     conn = await db.getConnection();
     const results = await conn.query(query, [farm_id]);
 
-    // console.log('[GET /devices/status] 제어장치 조회 성공:');
+    console.log(`[GET /devices/status] farm_id=${farm_id} 제어장치 조회`);
     return res.json(results[0]);
   } catch (err) {
     console.error('[GET /devices/status] DB 오류:', err);
