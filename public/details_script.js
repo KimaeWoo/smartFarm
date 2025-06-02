@@ -1940,8 +1940,10 @@ ${report.aiAnalysis || "AI 분석 데이터가 없습니다."}
   fetchLatestPlantImage(); // 식물 사진
 
   setInterval(() => {
-  fetchSensorData();
-  fetchDevicesStatus();
-  fetchAlarm();
-}, 5000);
+    fetchSensorData();
+    fetchDevicesStatus();
+    updateHistoryChartData()
+    updateChartData()
+    // fetchAlarm();
+  }, 5000);
 })
