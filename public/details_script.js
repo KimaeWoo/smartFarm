@@ -238,6 +238,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       
       const result = await response.json();
       alert('이미지 저장 성공');
+      fetchAllImages(farmId);
     } catch (err) {
       console.error('외부 서버 요청 중 오류:', err);
       resultDiv.innerHTML = '요청 중 오류가 발생했습니다.';
@@ -750,7 +751,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       })
       if (!response.ok) throw new Error("네트워크 응답 오류: " + response.statusText)
       const data = await response.json()
-      updateSensorUI("temperature", data.temperature, "temp", 0, 40)
+      updateSensorUI("temperature", data.temperature, "temp", 15, 30)
       updateSensorUI("humidity", data.humidity, "humidity", 0, 100)
       updateSensorUI("soil_moisture", data.soil_moisture, "soil", 0, 100)
       updateSensorUI("co2", data.co2, "co2", 500, 1500)
@@ -1937,4 +1938,10 @@ ${report.aiAnalysis || "AI 분석 데이터가 없습니다."}
   fetchFarmOptimalValues() // 농장 최적 수치
   fetchReports() // 리포트 목록 조회
   fetchLatestPlantImage(); // 식물 사진
+
+  setInterval(() => {
+  fetchSensorData();
+  fetchDevicesStatus();
+  fetchAlarm();
+}, 5000);
 })
