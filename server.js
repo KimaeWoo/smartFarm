@@ -1101,7 +1101,7 @@ app.post("/chatbot", async (req, res) => {
         Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
       },
       body: JSON.stringify({
-        model: "gpt-3.5-turbo",
+        model: "gpt-4",
         messages: [{ role: "user", content: userMessage }]
       })
     });
@@ -1386,7 +1386,7 @@ app.post('/generate-report', async (req, res) => {
         { role: 'system', content: '당신은 스마트팜 데이터 분석 전문가입니다. 지정된 형식을 정확히 따르고, 간결하고 명확하게 요약하세요.' },
         { role: 'user', content: prompt },
       ],
-      max_tokens: 400,
+      max_tokens: 1000,
     });
 
     let aiAnalysis = response.choices[0].message.content.trim();
