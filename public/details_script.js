@@ -1939,11 +1939,11 @@ ${report.aiAnalysis || "AI 분석 데이터가 없습니다."}
   fetchReports() // 리포트 목록 조회
   fetchLatestPlantImage(); // 식물 사진
 
-  // setInterval(() => {
-  //   fetchSensorData();
-  //   fetchDevicesStatus();
-  //   updateHistoryChartData()
-  //   updateChartData()
-  //   // fetchAlarm();
-  // }, 5000);
+  setInterval(() => {
+    fetchSensorData();
+    fetchDevicesStatus();
+    updateHistoryChartData()
+    updateChartData()
+    // fetchAlarm();
+  }, 5000);
 })
