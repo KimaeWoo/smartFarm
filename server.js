@@ -606,67 +606,32 @@ app.post('/devices/force-status', async (req, res) => {
   }
 });
 
-// // 오늘 데이터 불러오기 (1시간 단위 평균)
-// app.get('/realtime-data', async (req, res) => {
-//   const { farm_id } = req.query;
-//   const query = `
-//     SELECT 
-//       time_slots.time_interval,
-//       AVG(s.temperature) AS avg_temperature,
-//       AVG(s.humidity) AS avg_humidity,
-//       AVG(s.soil_moisture) AS avg_soil_moisture,
-//       AVG(s.co2) AS avg_co2
-//     FROM (
-//       SELECT 
-//         DATE_FORMAT(CONCAT(CURDATE(), ' ', LPAD(hours.hour, 2, '0'), ':00:00'), '%Y-%m-%d %H:00:00') AS time_interval
-//       FROM (
-//         SELECT 0 AS hour UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION
-//         SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION
-//         SELECT 10 UNION SELECT 11 UNION SELECT 12 UNION SELECT 13 UNION SELECT 14 UNION
-//         SELECT 15 UNION SELECT 16 UNION SELECT 17 UNION SELECT 18 UNION SELECT 19 UNION
-//         SELECT 20 UNION SELECT 21 UNION SELECT 22 UNION SELECT 23
-//       ) AS hours
-//     ) AS time_slots
-//     LEFT JOIN sensors s ON 
-//       DATE_FORMAT(s.created_at, '%Y-%m-%d %H:00:00') = time_slots.time_interval
-//       AND s.farm_id = ?
-//     GROUP BY time_slots.time_interval
-//     ORDER BY time_slots.time_interval ASC;
-//   `;
-//   let conn;
-//   try {
-//     conn = await db.getConnection();
-//     const results = await conn.query(query, [farm_id]);
-
-//     if (results.length === 0) {
-//       // console.log('[GET /real-time-data] 조회된 데이터가 없습니다.');
-//       return res.status(404).json({ message:'데이터가 없습니다.' });
-//     }
-
-//     // console.log(`[GET /real-time-data] 실시간 데이터: ${results.length}개 반환`);
-//     return res.json(results);
-//   } catch (err) {
-//     console.error('[GET /realtime-data] DB 오류:', err);
-//     return res.status(500).json({ message: 'DB 오류' });
-//   } finally {
-//     if (conn) conn.release();
-//   }
-// });
-
-// 최근 센서 데이터 반환
+// 오늘 데이터 불러오기 (1시간 단위 평균)
 app.get('/realtime-data', async (req, res) => {
   const { farm_id } = req.query;
   const query = `
     SELECT 
-      s.created_at,
-      s.temperature,
-      s.humidity,
-      s.soil_moisture,
-      s.co2
-    FROM sensors s
-    WHERE s.farm_id = ?
-    ORDER BY s.created_at DESC
-    LIMIT 17;
+      time_slots.time_interval,
+      AVG(s.temperature) AS avg_temperature,
+      AVG(s.humidity) AS avg_humidity,
+      AVG(s.soil_moisture) AS avg_soil_moisture,
+      AVG(s.co2) AS avg_co2
+    FROM (
+      SELECT 
+        DATE_FORMAT(CONCAT(CURDATE(), ' ', LPAD(hours.hour, 2, '0'), ':00:00'), '%Y-%m-%d %H:00:00') AS time_interval
+      FROM (
+        SELECT 0 AS hour UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION
+        SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION
+        SELECT 10 UNION SELECT 11 UNION SELECT 12 UNION SELECT 13 UNION SELECT 14 UNION
+        SELECT 15 UNION SELECT 16 UNION SELECT 17 UNION SELECT 18 UNION SELECT 19 UNION
+        SELECT 20 UNION SELECT 21 UNION SELECT 22 UNION SELECT 23
+      ) AS hours
+    ) AS time_slots
+    LEFT JOIN sensors s ON 
+      DATE_FORMAT(s.created_at, '%Y-%m-%d %H:00:00') = time_slots.time_interval
+      AND s.farm_id = ?
+    GROUP BY time_slots.time_interval
+    ORDER BY time_slots.time_interval ASC;
   `;
   let conn;
   try {
@@ -674,13 +639,11 @@ app.get('/realtime-data', async (req, res) => {
     const results = await conn.query(query, [farm_id]);
 
     if (results.length === 0) {
-      return res.status(404).json({ message: '데이터가 없습니다.' });
+      // console.log('[GET /real-time-data] 조회된 데이터가 없습니다.');
+      return res.status(404).json({ message:'데이터가 없습니다.' });
     }
 
-    // 로그 출력
-    console.log(`[GET /realtime-data] farm_id=${farm_id}, 실시간 데이터: ${results.length}개`);
-    // console.table(results); // 콘솔에 표 형태로 출력 (Node.js 환경에서 가독성 좋음)
-    
+    // console.log(`[GET /real-time-data] 실시간 데이터: ${results.length}개 반환`);
     return res.json(results);
   } catch (err) {
     console.error('[GET /realtime-data] DB 오류:', err);
@@ -689,6 +652,43 @@ app.get('/realtime-data', async (req, res) => {
     if (conn) conn.release();
   }
 });
+
+// 최근 센서 데이터 반환
+// app.get('/realtime-data', async (req, res) => {
+//   const { farm_id } = req.query;
+//   const query = `
+//     SELECT 
+//       s.created_at,
+//       s.temperature,
+//       s.humidity,
+//       s.soil_moisture,
+//       s.co2
+//     FROM sensors s
+//     WHERE s.farm_id = ?
+//     ORDER BY s.created_at DESC
+//     LIMIT 17;
+//   `;
+//   let conn;
+//   try {
+//     conn = await db.getConnection();
+//     const results = await conn.query(query, [farm_id]);
+
+//     if (results.length === 0) {
+//       return res.status(404).json({ message: '데이터가 없습니다.' });
+//     }
+
+//     // 로그 출력
+//     console.log(`[GET /realtime-data] farm_id=${farm_id}, 실시간 데이터: ${results.length}개`);
+//     // console.table(results); // 콘솔에 표 형태로 출력 (Node.js 환경에서 가독성 좋음)
+    
+//     return res.json(results);
+//   } catch (err) {
+//     console.error('[GET /realtime-data] DB 오류:', err);
+//     return res.status(500).json({ message: 'DB 오류' });
+//   } finally {
+//     if (conn) conn.release();
+//   }
+// });
 
 // 기록 데이터 API (날짜별 센서 데이터)
 app.get('/history-data', async (req, res) => {
