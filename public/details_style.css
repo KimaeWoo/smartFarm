@@ -1015,7 +1015,7 @@ input:checked + .slider:before {
   grid-template-columns: repeat(1, 1fr);
   gap: 16px;
   margin-bottom: 20px;
-  height: 500px; /* 높이 추가 */
+  height: 300px; /* 높이 추가 */
 }
 
 @media (max-width: 768px) {
@@ -1029,7 +1029,7 @@ input:checked + .slider:before {
   border-radius: 8px;
   padding: 16px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  height: 400px; /* 150px에서 400px로 증가 */
+  height: 200px; /* 150px에서 400px로 증가 */
   position: relative;
 }
 
@@ -1721,6 +1721,12 @@ footer {
   animation: modalFadeIn 0.3s ease;
 }
 
+/* 새로운 리포트 모달 스타일 */
+.report-modal-wide {
+  max-width: 1600px;
+  width: 98%;
+}
+
 @keyframes modalFadeIn {
   from {
     opacity: 0;
@@ -1771,6 +1777,311 @@ footer {
   display: flex;
   justify-content: flex-end;
   gap: 1rem;
+}
+
+/* 리포트 모달 새로운 레이아웃 */
+.report-date-header {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.report-date-header h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.report-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr 1fr 0.8fr 1.5fr;
+  gap: 1.5rem;
+  min-height: 600px;
+}
+
+.report-column {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--secondary-color);
+  border-radius: var(--border-radius);
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+}
+
+.report-column-wide {
+  grid-column: span 1;
+}
+
+.report-column-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* 센서 평균 세로 레이아웃 */
+.sensor-summary-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.sensor-summary-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: var(--border-radius);
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+}
+
+.sensor-summary-item.temp i {
+  color: var(--temp-color);
+}
+
+.sensor-summary-item.humidity i {
+  color: var(--humidity-color);
+}
+
+.sensor-summary-item.soil i {
+  color: var(--soil-color);
+}
+
+.sensor-summary-item.co2 i {
+  color: var(--co2-color);
+}
+
+.sensor-summary-item i {
+  font-size: 1.25rem;
+  width: 24px;
+  text-align: center;
+}
+
+.sensor-summary-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.sensor-summary-label {
+  font-size: 0.8rem;
+  color: var(--muted-color);
+  font-weight: 500;
+}
+
+.sensor-summary-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+/* 센서 최고/최저 세로 레이아웃 */
+.sensor-changes-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.sensor-change-item-compact {
+  padding: 0.75rem;
+  border-radius: var(--border-radius);
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+}
+
+.sensor-change-item-compact h5 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-color);
+}
+
+.change-values-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.change-value-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+}
+
+.change-label {
+  color: var(--muted-color);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-weight: 500;
+}
+
+.change-value {
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.change-time {
+  font-size: 0.7rem;
+  color: var(--muted-color);
+}
+
+/* 장치 로그 세로 레이아웃 */
+.device-logs-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.device-log-item-compact {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: var(--border-radius);
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+}
+
+.device-log-icon {
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.device-log-icon.led {
+  background-color: rgba(250, 204, 21, 0.2);
+  color: var(--led-color);
+}
+
+.device-log-icon.fan {
+  background-color: rgba(59, 130, 246, 0.2);
+  color: var(--fan-color);
+}
+
+.device-log-icon.water {
+  background-color: rgba(6, 182, 212, 0.2);
+  color: var(--water-color);
+}
+
+.device-log-icon.heater {
+  background-color: rgba(239, 68, 68, 0.2);
+  color: var(--heater-color);
+}
+
+.device-log-icon.cooler {
+  background-color: rgba(99, 102, 241, 0.2);
+  color: var(--cooler-color);
+}
+
+.device-log-content-compact {
+  flex: 1;
+}
+
+.device-log-content-compact h5 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: var(--text-color);
+}
+
+.device-log-content-compact p {
+  font-size: 0.8rem;
+  color: var(--text-color);
+  line-height: 1.3;
+}
+
+/* 리포트 이미지 컨테이너 */
+.report-image-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  padding: 1rem;
+}
+
+.report-image-container img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: var(--border-radius);
+}
+
+/* AI 분석 컴팩트 */
+.ai-analysis-compact {
+  flex: 1;
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-left: 4px solid var(--primary-color);
+}
+
+.ai-analysis-content {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  white-space: pre-line;
+  color: var(--text-color);
+  overflow-y: auto;
+  max-height: 500px;
+}
+
+/* 버튼 스타일 */
+.download-btn,
+.close-btn {
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--border-radius);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: none;
+}
+
+.download-btn {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.download-btn:hover {
+  background-color: #2563eb;
+  transform: translateY(-2px);
+}
+
+.close-btn {
+  background-color: var(--secondary-color);
+  color: var(--text-color);
+}
+
+.close-btn:hover {
+  background-color: #d1d5db;
 }
 
 .modal-device {
@@ -1860,256 +2171,24 @@ footer {
   transform: translateY(-2px);
 }
 
-/* 리포트 섹션 스타일 */
-.report-section {
-  margin-bottom: 2rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.report-section:last-child {
-  border-bottom: none;
-  margin-bottom: 0;
-  padding-bottom: 0;
-}
-
-.report-section-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  color: var(--text-color);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.report-date {
-  font-size: 1.1rem;
-  font-weight: 500;
-  color: var(--primary-color);
-}
-
-/* 센서 요약 그리드 */
-.sensor-summary-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 1rem;
-}
-
-.sensor-summary-item {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem;
-  border-radius: var(--border-radius);
-  background-color: var(--secondary-color);
-}
-
-.sensor-summary-item.temp i {
-  color: var(--temp-color);
-}
-
-.sensor-summary-item.humidity i {
-  color: var(--humidity-color);
-}
-
-.sensor-summary-item.soil i {
-  color: var(--soil-color);
-}
-
-.sensor-summary-item.co2 i {
-  color: var(--co2-color);
-}
-
-.sensor-summary-item i {
-  font-size: 1.5rem;
-}
-
-.sensor-summary-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.sensor-summary-label {
-  font-size: 0.85rem;
-  color: var(--muted-color);
-}
-
-.sensor-summary-value {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--text-color);
-}
-
-/* 센서 변화 스타일 */
-.sensor-changes {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.25rem;
-}
-
-.sensor-change-item {
-  padding: 1rem;
-  border-radius: var(--border-radius);
-  background-color: var(--secondary-color);
-}
-
-.sensor-change-item h4 {
-  font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 0.75rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.sensor-change-values {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.max-value,
-.min-value {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.change-label {
-  font-size: 0.85rem;
-  color: var(--muted-color);
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.change-value {
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-.change-time {
-  font-size: 0.8rem;
-  color: var(--muted-color);
-}
-
-/* 장치 로그 스타일 */
-.device-logs {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem;
-}
-
-.device-log-item {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem;
-  border-radius: var(--border-radius);
-  background-color: var(--secondary-color);
-}
-
-.device-log-icon {
-  width: 3rem;
-  height: 3rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  font-size: 1.5rem;
-}
-
-.device-log-icon.led {
-  background-color: rgba(250, 204, 21, 0.2);
-  color: var(--led-color);
-}
-
-.device-log-icon.fan {
-  background-color: rgba(59, 130, 246, 0.2);
-  color: var(--fan-color);
-}
-
-.device-log-icon.water {
-  background-color: rgba(6, 182, 212, 0.2);
-  color: var(--water-color);
-}
-
-.device-log-icon.heater {
-  background-color: rgba(239, 68, 68, 0.2);
-  color: var(--heater-color);
-}
-
-.device-log-icon.cooler {
-  background-color: rgba(99, 102, 241, 0.2);
-  color: var(--cooler-color);
-}
-
-.device-log-content {
-  flex: 1;
-}
-
-.device-log-content h4 {
-  font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 0.25rem;
-}
-
-.device-log-content p {
-  font-size: 0.9rem;
-  color: var(--text-color);
-}
-
-/* AI 분석 스타일 */
-.ai-analysis {
-  padding: 1.25rem;
-  border-radius: var(--border-radius);
-  background-color: var(--secondary-color);
-  border-left: 4px solid var(--primary-color);
-}
-
-.ai-analysis-content {
-  font-size: 0.95rem;
-  line-height: 1.6;
-  white-space: pre-line;
-  color: var(--text-color);
-}
-
-/* 버튼 스타일 */
-.download-btn,
-.close-btn {
-  padding: 0.75rem 1.25rem;
-  border-radius: var(--border-radius);
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  border: none;
-}
-
-.download-btn {
-  background-color: var(--primary-color);
-  color: white;
-}
-
-.download-btn:hover {
-  background-color: #2563eb;
-  transform: translateY(-2px);
-}
-
-.close-btn {
-  background-color: var(--secondary-color);
-  color: var(--text-color);
-}
-
-.close-btn:hover {
-  background-color: #d1d5db;
-}
-
 /* Responsive Design */
+@media (max-width: 1400px) {
+  .report-main-grid {
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: auto auto;
+  }
+
+  .report-column:nth-child(4) {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .report-column:nth-child(5) {
+    grid-column: 2 / 4;
+    grid-row: 2;
+  }
+}
+
 @media (max-width: 768px) {
   .banner-container {
     flex-direction: column;
@@ -2141,10 +2220,13 @@ footer {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .sensor-summary-grid,
-  .sensor-changes,
-  .device-logs {
+  .report-main-grid {
     grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .report-column-wide {
+    grid-column: span 1;
   }
 
   .modal-content {
@@ -2202,8 +2284,10 @@ footer {
     height: 48px;
   }
 
-  .sensor-change-values {
+  .change-value-row {
     flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
   }
 
   .image-gallery {

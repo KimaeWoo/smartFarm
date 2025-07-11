@@ -1,11 +1,7 @@
+import { Chart } from "@/components/ui/chart"
 const API_BASE_URL = "https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app"
 
-const growthStages = [
-  {text: "씨앗" },
-  {text: "새싹" },
-  {text: "성장" },
-  {text: "열매" },
-]
+const growthStages = [{ text: "씨앗" }, { text: "새싹" }, { text: "성장" }, { text: "열매" }]
 
 function toggleMode() {
   const htmlElement = document.documentElement
@@ -55,47 +51,47 @@ document.addEventListener("DOMContentLoaded", async () => {
   const humidOptimal = document.getElementById("humid-optimal")
   const soilOptimal = document.getElementById("soil-optimal")
   const co2Optimal = document.getElementById("co2-optimal")
-  let pendingDevice = null;
+  let pendingDevice = null
 
   function showDurationModal(device) {
-    pendingDevice = device;
-    document.getElementById("durationModal").style.display = "flex";
+    pendingDevice = device
+    document.getElementById("durationModal").style.display = "flex"
   }
 
   document.querySelectorAll(".switch input[type='checkbox']").forEach((input) => {
     input.addEventListener("change", (e) => {
-      e.preventDefault();
-      e.target.checked = !e.target.checked; // 잠시 되돌림
-      const device = e.target.id.split("-")[0];
-      showDurationModal(device);
-    });
-  });
+      e.preventDefault()
+      e.target.checked = !e.target.checked // 잠시 되돌림
+      const device = e.target.id.split("-")[0]
+      showDurationModal(device)
+    })
+  })
 
   document.querySelectorAll(".time-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
-      document.getElementById("customDuration").value = btn.dataset.minutes;
-    });
-  });
+      document.getElementById("customDuration").value = btn.dataset.minutes
+    })
+  })
 
   document.getElementById("cancelDuration").addEventListener("click", () => {
-    document.getElementById("durationModal").style.display = "none";
-    pendingDevice = null;
-  });
+    document.getElementById("durationModal").style.display = "none"
+    pendingDevice = null
+  })
 
   document.getElementById("confirmDuration").addEventListener("click", () => {
-    const minutes = parseInt(document.getElementById("customDuration").value);
+    const minutes = Number.parseInt(document.getElementById("customDuration").value)
     if (!minutes || minutes <= 0) {
-      alert("유효한 시간을 입력하세요");
-      return;
+      alert("유효한 시간을 입력하세요")
+      return
     }
-    const seconds = minutes * 60;
-    toggleDeviceWithDuration(pendingDevice, seconds);
-    document.getElementById("durationModal").style.display = "none";
-  });
+    const seconds = minutes * 60
+    toggleDeviceWithDuration(pendingDevice, seconds)
+    document.getElementById("durationModal").style.display = "none"
+  })
 
   async function toggleDeviceWithDuration(device, duration) {
-    const switchElement = document.getElementById(`${device}-switch`);
-    const status = !switchElement.checked;
+    const switchElement = document.getElementById(`${device}-switch`)
+    const status = !switchElement.checked
     try {
       const response = await fetch(`${API_BASE_URL}/devices/force-status`, {
         method: "POST",
@@ -104,17 +100,17 @@ document.addEventListener("DOMContentLoaded", async () => {
           farm_id: sessionStorage.getItem("farm_id"),
           device,
           status,
-          duration
-        })
-      });
-      if (!response.ok) throw new Error("요청 실패");
-      switchElement.checked = status;
-      updateSwitchUI(device, status);
+          duration,
+        }),
+      })
+      if (!response.ok) throw new Error("요청 실패")
+      switchElement.checked = status
+      updateSwitchUI(device, status)
     } catch (err) {
-      alert("장치 제어 실패: " + err.message);
+      alert("장치 제어 실패: " + err.message)
     }
   }
-  
+
   const today = new Date()
   const currentDate = new Date()
 
@@ -166,11 +162,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (tabId === "history") {
         updateChartData()
         updateHistoryChartData()
-        // updateSummaryChart()
       } else if (tabId === "writeDiary") {
         fetchReports()
       } else if (tabId === "cctv") {
-        fetchAllImages(farmId);
+        fetchAllImages(farmId)
       }
     })
   })
@@ -225,25 +220,25 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     })
   }
-  
-  const captureButton = document.getElementById('capture-button');
 
-  captureButton.addEventListener('click', async () => {
-    const resultDiv = document.getElementById('capture-result');
+  const captureButton = document.getElementById("capture-button")
+
+  captureButton.addEventListener("click", async () => {
+    const resultDiv = document.getElementById("capture-result")
 
     try {
       const response = await fetch(`https://api.hotpotato.me/get-image?farmId=${farmId}`, {
-        method: 'GET',
-      });
-      
-      const result = await response.json();
-      alert('이미지 저장 성공');
-      fetchAllImages(farmId);
+        method: "GET",
+      })
+
+      const result = await response.json()
+      alert("이미지 저장 성공")
+      fetchAllImages(farmId)
     } catch (err) {
-      console.error('외부 서버 요청 중 오류:', err);
-      resultDiv.innerHTML = '요청 중 오류가 발생했습니다.';
+      console.error("외부 서버 요청 중 오류:", err)
+      resultDiv.innerHTML = "요청 중 오류가 발생했습니다."
     }
-  });
+  })
 
   let allImages = []
   let currentSort = "newest"
@@ -363,7 +358,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // Image modal functionality
-  function openImageModal(imageUrl, date, time) {
+  function openImageModal(imageUrl, date, timeStr) {
     const modal = document.getElementById("imageModal")
     const modalImage = document.getElementById("modal-image")
     const modalDate = document.getElementById("modal-image-date")
@@ -371,7 +366,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     modalImage.src = imageUrl
     modalDate.textContent = `촬영일: ${date}`
-    modalTime.textContent = time
+    modalTime.textContent = timeStr
 
     modal.style.display = "block"
     document.body.style.overflow = "hidden"
@@ -399,6 +394,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
+      URL.revokeObjectURL(link.href)
     })
   }
 
@@ -446,47 +442,47 @@ document.addEventListener("DOMContentLoaded", async () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ farmId }),
-      });
+      })
 
-      if (!response.ok) throw new Error("서버 오류");
+      if (!response.ok) throw new Error("서버 오류")
 
-      const data = await response.json();
+      const data = await response.json()
 
-      const { harvestDays, startDate } = data;
-      console.log("start-farm 응답:", data);
-      console.log("harvestDays:", harvestDays);
-      console.log("startDate:", startDate);
+      const { harvestDays, startDate } = data
+      console.log("start-farm 응답:", data)
+      console.log("harvestDays:", harvestDays)
+      console.log("startDate:", startDate)
       if (!harvestDays || !startDate) {
-        throw new Error("작물 정보 누락");
+        throw new Error("작물 정보 누락")
       }
 
       // 버튼 숨김, 작물 정보 표시
-      if (startButton) startButton.style.display = "none";
-      if (cropInfo) cropInfo.classList.add("visible");
+      if (startButton) startButton.style.display = "none"
+      if (cropInfo) cropInfo.classList.add("visible")
 
       // 성장률 계산 및 UI 갱신
-      const today = new Date();
-      const startDateObj = new Date(startDate);
-      const harvestDate = new Date(startDateObj);
-      harvestDate.setDate(harvestDate.getDate() + harvestDays);
-      const timeDiff = harvestDate - today;
-      const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
-      const growthRate = ((harvestDays - daysLeft) / harvestDays) * 100;
+      const today = new Date()
+      const startDateObj = new Date(startDate)
+      const harvestDate = new Date(startDateObj)
+      harvestDate.setDate(harvestDate.getDate() + harvestDays)
+      const timeDiff = harvestDate - today
+      const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24))
+      const growthRate = ((harvestDays - daysLeft) / harvestDays) * 100
 
-      updateGrowthStatus(growthRate, harvestDays, startDate);
+      updateGrowthStatus(growthRate, harvestDays, startDate)
 
       // 농장 상태 갱신
-      await fetchFarmStatus();
+      await fetchFarmStatus()
 
-      alert("농장이 성공적으로 시작되었습니다.");
+      alert("농장이 성공적으로 시작되었습니다.")
     } catch (error) {
-      console.error("농장 시작 실패:", error);
-      alert("농장 시작 중 오류 발생");
+      console.error("농장 시작 실패:", error)
+      alert("농장 시작 중 오류 발생")
     }
   }
 
   if (startButton) {
-    startButton.addEventListener("click", startFarm);
+    startButton.addEventListener("click", startFarm)
   }
 
   // 농장 정보 가져오기
@@ -511,43 +507,42 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function updateGrowthStatus(growthRate, harvestDays, startDate) {
-    growthRate = Math.max(0, Math.min(growthRate, 100)); // 0~100으로 보정
+    growthRate = Math.max(0, Math.min(growthRate, 100)) // 0~100으로 보정
 
-    const growthRateEl = document.getElementById("growth-rate");
+    const growthRateEl = document.getElementById("growth-rate")
     if (growthRateEl) {
-      growthRateEl.textContent = `${Math.round(growthRate)}%`;
+      growthRateEl.textContent = `${Math.round(growthRate)}%`
     }
 
     const growthCircle = document.getElementById("growth-circle")
     if (growthCircle) {
-      growthCircle.style.background = `conic-gradient(#ffffff 0deg ${growthRate * 3.6}deg, rgba(255,255,255,0.3) ${growthRate * 3.6}deg 360deg)`;
-
+      growthCircle.style.background = `conic-gradient(#ffffff 0deg ${growthRate * 3.6}deg, rgba(255,255,255,0.3) ${growthRate * 3.6}deg 360deg)`
     }
 
-    const formattedStartDate = formatDateYMD(new Date(startDate));
-    const startDateEl = document.getElementById("start-date");
+    const formattedStartDate = formatDateYMD(new Date(startDate))
+    const startDateEl = document.getElementById("start-date")
     if (startDateEl) {
-      startDateEl.textContent = `시작일: ${formattedStartDate}`;
+      startDateEl.textContent = `시작일: ${formattedStartDate}`
     }
 
-    const today = new Date();
-    const harvestDate = new Date(startDate);
-    harvestDate.setDate(harvestDate.getDate() + harvestDays);
-    const timeDiff = harvestDate - today;
-    const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24));
+    const today = new Date()
+    const harvestDate = new Date(startDate)
+    harvestDate.setDate(harvestDate.getDate() + harvestDays)
+    const timeDiff = harvestDate - today
+    const daysLeft = Math.ceil(timeDiff / (1000 * 3600 * 24))
 
-    const dDayEl = document.getElementById("d-day");
+    const dDayEl = document.getElementById("d-day")
     if (dDayEl) {
       if (daysLeft > 0) {
-        dDayEl.textContent = `D-Day: ${daysLeft}일 남음`;
+        dDayEl.textContent = `D-Day: ${daysLeft}일 남음`
       } else if (daysLeft === 0) {
-        dDayEl.textContent = `D-Day: 오늘 수확 가능`;
+        dDayEl.textContent = `D-Day: 오늘 수확 가능`
       } else {
-        dDayEl.textContent = `D-Day: 수확 완료`;
+        dDayEl.textContent = `D-Day: 수확 완료`
       }
     }
 
-    updateGrowthStageByRate(growthRate);
+    updateGrowthStageByRate(growthRate)
   }
 
   function updateGrowthStageByRate(growthRate) {
@@ -685,66 +680,56 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // 챗봇 기능
-  const chatInput = document.getElementById("chat-input-field");
-  const sendButton = document.getElementById("send-button");
+  const chatInput = document.getElementById("chat-input-field")
+  const sendButton = document.getElementById("send-button")
 
   // 메시지 전송 함수
   async function sendChatMessage() {
-    const input = chatInput.value.trim();
-    if (!input) return;
+    const input = chatInput.value.trim()
+    if (!input) return
 
-    addMessageToChat("user", input);
-    chatInput.value = "";
+    addMessageToChat("user", input)
+    chatInput.value = ""
 
     try {
       const response = await fetch(`${API_BASE_URL}/chatbot`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ message: input })
-      });
+        body: JSON.stringify({ message: input }),
+      })
 
-      const data = await response.json();
-      addMessageToChat("bot", data.reply || "답변 없음");
+      const data = await response.json()
+      addMessageToChat("bot", data.reply || "답변 없음")
     } catch (error) {
-      addMessageToChat("bot", "서버 오류 발생");
+      addMessageToChat("bot", "서버 오류 발생")
     }
   }
 
   // 전송 버튼 클릭
-  sendButton.addEventListener("click", sendChatMessage);
+  sendButton.addEventListener("click", sendChatMessage)
 
   // 🔹 엔터 키 입력 처리
   chatInput.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
-      event.preventDefault(); // form 제출 방지
-      sendChatMessage();
+      event.preventDefault() // form 제출 방지
+      sendChatMessage()
     }
-  });
+  })
 
   // 채팅 메시지 출력 함수
   function addMessageToChat(role, text) {
-    const container = document.querySelector(".chat-messages");
-    const message = document.createElement("div");
-    message.className = `message ${role}`;
-    message.innerHTML = `<div class="message-content">${text}</div>`;
-    container.appendChild(message);
-    container.scrollTop = container.scrollHeight;
+    const container = document.querySelector(".chat-messages")
+    const message = document.createElement("div")
+    message.className = `message ${role}`
+    message.innerHTML = `<div class="message-content">${text}</div>`
+    container.appendChild(message)
+    container.scrollTop = container.scrollHeight
   }
 
   async function fetchSensorData() {
     try {
-      // if (!userId) {
-      //   alert("사용자 정보를 확인할 수 없습니다. 로그인 후 다시 시도해주세요.")
-      //   window.location.href = "login.html"
-      //   return
-      // }
-      // if (!farmId) {
-      //   alert("스마트팜 정보를 확인할 수 없습니다. 스마트팜 추가가 후 다시 시도해주세요.")
-      //   window.location.href = "dashboard.html"
-      //   return
-      // }
       const response = await fetch(`${API_BASE_URL}/sensors/status?farm_id=${farmId}`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
@@ -830,127 +815,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  // 최근 센서 데이터 반환
-  // async function fetchRealtimeData() {
-  //   try {
-  //     const response = await fetch(`${API_BASE_URL}/realtime-data?farm_id=${farmId}`, {
-  //       method: "GET",
-  //       headers: { "Content-Type": "application/json" },
-  //     })
-
-  //     if (!response.ok) throw new Error("네트워크 응답 오류: " + response.statusText)
-  //     const data = await response.json()
-
-  //     const processedData = data
-  //       .reverse() // 오래된 순으로 그래프에 표시
-  //       .map((item) => {
-  //       // created_at에서 9시간 빼기
-  //       const date = new Date(item.created_at);
-  //       const correctedDate = new Date(date.getTime() - 9 * 60 * 60 * 1000); // 9시간 = 32,400,000ms 빼기
-  //       return {
-  //         time: correctedDate.toLocaleTimeString("en-GB", {
-  //           hour: "2-digit",
-  //           minute: "2-digit",
-  //           second: "2-digit",
-  //           hour12: false,
-  //         }),
-  //         temperature: Number.parseFloat(item.temperature) || 0,
-  //         humidity: Number.parseFloat(item.humidity) || 0,
-  //         soil: Number.parseFloat(item.soil_moisture) || 0,
-  //         co2: Number.parseInt(item.co2) || 0,
-  //       };
-  //     });
-      
-  //     return processedData
-  //   } catch (error) {
-  //     console.error("데이터 가져오기 오류:", error)
-  //     return []
-  //   }
-  // }
-
-  // 최근 센서 데이터 반환
-  // async function updateChartData() {
-  //   const realtimeData = await fetchRealtimeData()
-
-  //   const labels = realtimeData.map((item) => item.time)
-
-  //   const makeChart = (canvasId, label, data, borderColor, backgroundColor) => {
-  //     const ctx = document.getElementById(canvasId).getContext("2d")
-  //     const chartKey = `${canvasId}Instance`
-
-  //     if (!window[chartKey]) {
-  //       window[chartKey] = new Chart(ctx, {
-  //         type: "line",
-  //         data: {
-  //           labels,
-  //           datasets: [
-  //             {
-  //               label,
-  //               data,
-  //               borderColor,
-  //               backgroundColor,
-  //               tension: 0.4,
-  //               pointRadius: 3,
-  //               pointHoverRadius: 5,
-  //             },
-  //           ],
-  //         },
-  //         options: {
-  //           responsive: true,
-  //           maintainAspectRatio: false,
-  //           plugins: {
-  //             legend: { position: "left" },
-  //             tooltip: { mode: "index", intersect: false },
-  //           },
-  //           scales: {
-  //             y: {
-  //               beginAtZero: true,
-  //               ticks: { color: "#000" },
-  //             },
-  //           },
-  //         },
-  //       })
-  //     } else {
-  //       const chart = window[chartKey]
-  //       chart.data.labels = labels
-  //       chart.data.datasets[0].data = data
-  //       chart.update()
-  //     }
-  //   }
-
-  //   makeChart(
-  //     "temp-chart",
-  //     "온도 (°C)",
-  //     realtimeData.map((d) => d.temperature),
-  //     "rgb(249, 115, 22)",
-  //     "rgba(249, 115, 22, 0.1)"
-  //   )
-
-  //   makeChart(
-  //     "humi-chart",
-  //     "습도 (%)",
-  //     realtimeData.map((d) => d.humidity),
-  //     "rgb(59, 130, 246)",
-  //     "rgba(59, 130, 246, 0.1)"
-  //   )
-
-  //   makeChart(
-  //     "soil-chart",
-  //     "토양 수분 (%)",
-  //     realtimeData.map((d) => d.soil),
-  //     "rgb(255, 223, 0)",
-  //     "rgba(255, 223, 0, 0.1)"
-  //   )
-
-  //   makeChart(
-  //     "co2-chart",
-  //     "CO₂ (ppm)",
-  //     realtimeData.map((d) => d.co2),
-  //     "rgb(16, 185, 129)",
-  //     "rgba(16, 185, 129, 0.1)"
-  //   )
-  // }
-  
   // 오늘 데이터 불러오기 (1시간 단위 평균)
   async function updateChartData() {
     const realtimeData = await fetchRealtimeData()
@@ -1400,112 +1264,112 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   async function fetchAlarm() {
     try {
-      const response = await fetch(`${API_BASE_URL}/getAlarm?farm_id=${farmId}`);
-      if (!response.ok) throw new Error("네트워크 오류:" + response.statusText);
-      const data = await response.json();
-      allAlarms = data.sort((a, b) => a.type.localeCompare(b.type) || new Date(b.created_at) - new Date(a.created_at));
+      const response = await fetch(`${API_BASE_URL}/getAlarm?farm_id=${farmId}`)
+      if (!response.ok) throw new Error("네트워크 오류:" + response.statusText)
+      const data = await response.json()
+      allAlarms = data.sort((a, b) => a.type.localeCompare(b.type) || new Date(b.created_at) - new Date(a.created_at))
       const latestDanger = allAlarms.find((alarm) => alarm.type === "위험") || {
         content: "알림 없음",
         created_at: "시간",
-      };
+      }
       const latestWarning = allAlarms.find((alarm) => alarm.type === "경고") || {
         content: "알림 없음",
         created_at: "시간",
-      };
+      }
       const latestComplete = allAlarms.find((alarm) => alarm.type === "완료") || {
         content: "알림 없음",
         created_at: "시간",
-      };
+      }
 
-      const dangerHeadEl = document.querySelector(".danger-head");
-      const dangerTimeEl = document.querySelector(".danger-time");
-      const warningHeadEl = document.querySelector(".warning-head");
-      const warningTimeEl = document.querySelector(".warning-time");
-      const completeHeadEl = document.querySelector(".complete-head");
-      const completeTimeEl = document.querySelector(".complete-time");
+      const dangerHeadEl = document.querySelector(".danger-head")
+      const dangerTimeEl = document.querySelector(".danger-time")
+      const warningHeadEl = document.querySelector(".warning-head")
+      const warningTimeEl = document.querySelector(".warning-time")
+      const completeHeadEl = document.querySelector(".complete-head")
+      const completeTimeEl = document.querySelector(".complete-time")
 
       if (latestDanger.content !== "알림 없음" && dangerHeadEl && dangerTimeEl) {
-        dangerHeadEl.innerHTML = latestDanger.content;
-        dangerTimeEl.textContent = formatDateTime(latestDanger.created_at);
+        dangerHeadEl.innerHTML = latestDanger.content
+        dangerTimeEl.textContent = formatDateTime(latestDanger.created_at)
       } else if (dangerHeadEl && dangerTimeEl) {
-        dangerHeadEl.textContent = "알림 없음";
-        dangerTimeEl.textContent = "시간";
+        dangerHeadEl.textContent = "알림 없음"
+        dangerTimeEl.textContent = "시간"
       }
 
       if (latestWarning.content !== "알림 없음" && warningHeadEl && warningTimeEl) {
-        warningHeadEl.innerHTML =latestWarning.content;
-        warningTimeEl.textContent = formatDateTime(latestWarning.created_at);
+        warningHeadEl.innerHTML = latestWarning.content
+        warningTimeEl.textContent = formatDateTime(latestWarning.created_at)
       } else if (warningHeadEl && warningTimeEl) {
-        warningHeadEl.textContent = "알림 없음";
-        warningTimeEl.textContent = "시간";
+        warningHeadEl.textContent = "알림 없음"
+        warningTimeEl.textContent = "시간"
       }
 
       if (latestComplete.content !== "알림 없음" && completeHeadEl && completeTimeEl) {
-        completeHeadEl.innerHTML = latestComplete.content;
-        completeTimeEl.textContent = formatDateTime(latestComplete.created_at);
+        completeHeadEl.innerHTML = latestComplete.content
+        completeTimeEl.textContent = formatDateTime(latestComplete.created_at)
       } else if (completeHeadEl && completeTimeEl) {
-        completeHeadEl.textContent = "알림 없음";
-        completeTimeEl.textContent = "시간";
+        completeHeadEl.textContent = "알림 없음"
+        completeTimeEl.textContent = "시간"
       }
     } catch (error) {
-      console.error("알림 불러오기 실패:", error);
+      console.error("알림 불러오기 실패:", error)
     }
-    fetchAlarmList();
+    fetchAlarmList()
   }
 
   function fetchAlarmList() {
-    const alarmListTableBody = document.querySelector("#alarm-list-table tbody");
-    const alarmFilter = document.querySelector("#alarm-filter");
+    const alarmListTableBody = document.querySelector("#alarm-list-table tbody")
+    const alarmFilter = document.querySelector("#alarm-filter")
     if (!alarmListTableBody || !alarmFilter) {
-      console.error("필터 또는 테이블 요소를 찾을 수 없습니다.");
-      return;
+      console.error("필터 또는 테이블 요소를 찾을 수 없습니다.")
+      return
     }
 
-    const selectedType = alarmFilter.value;
-    alarmListTableBody.innerHTML = "";
+    const selectedType = alarmFilter.value
+    alarmListTableBody.innerHTML = ""
 
     if (allAlarms.length === 0) {
-      alarmListTableBody.innerHTML = '<tr><td colspan="4">알림이 없습니다.</td></tr>';
+      alarmListTableBody.innerHTML = '<tr><td colspan="4">알림이 없습니다.</td></tr>'
     } else {
-      const sortedAlarms = allAlarms.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-      const filteredAlarms = sortedAlarms.filter((alarm) => !selectedType || alarm.type === selectedType);
+      const sortedAlarms = allAlarms.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+      const filteredAlarms = sortedAlarms.filter((alarm) => !selectedType || alarm.type === selectedType)
 
       filteredAlarms.forEach((alarm) => {
-        const tr = document.createElement("tr");
-        const icon = getIconForType(alarm.type);
+        const tr = document.createElement("tr")
+        const icon = getIconForType(alarm.type)
 
-        const contentTd = document.createElement("td");
-        contentTd.textContent = alarm.content;
+        const contentTd = document.createElement("td")
+        contentTd.textContent = alarm.content
 
-        const createdAtTd = document.createElement("td");
-        createdAtTd.textContent = formatDateTime(alarm.created_at);
+        const createdAtTd = document.createElement("td")
+        createdAtTd.textContent = formatDateTime(alarm.created_at)
 
-        const deviceTd = document.createElement("td");
-        deviceTd.textContent = alarm.device || "장치 없음";
+        const deviceTd = document.createElement("td")
+        deviceTd.textContent = alarm.device || "장치 없음"
 
-        const typeTd = document.createElement("td");
-        typeTd.innerHTML = `${icon} ${alarm.type}`;
+        const typeTd = document.createElement("td")
+        typeTd.innerHTML = `${icon} ${alarm.type}`
 
-        tr.appendChild(contentTd);
-        tr.appendChild(createdAtTd);
-        tr.appendChild(deviceTd);
-        tr.appendChild(typeTd);
+        tr.appendChild(contentTd)
+        tr.appendChild(createdAtTd)
+        tr.appendChild(deviceTd)
+        tr.appendChild(typeTd)
 
-        alarmListTableBody.appendChild(tr);
-      });
+        alarmListTableBody.appendChild(tr)
+      })
     }
   }
 
   function getIconForType(type) {
     switch (type) {
       case "위험":
-        return '<span class="banner-icon danger"><i class="fas fa-exclamation-circle"></i></span>';
+        return '<span class="banner-icon danger"><i class="fas fa-exclamation-circle"></i></span>'
       case "경고":
-        return '<span class="banner-icon warning"><i class="fas fa-exclamation-triangle"></i></span>';
+        return '<span class="banner-icon warning"><i class="fas fa-exclamation-triangle"></i></span>'
       case "완료":
-        return '<span class="banner-icon success"><i class="fas fa-check-circle"></i></span>';
+        return '<span class="banner-icon success"><i class="fas fa-check-circle"></i></span>'
       default:
-        return '';
+        return ""
     }
   }
 
@@ -1527,99 +1391,96 @@ document.addEventListener("DOMContentLoaded", async () => {
     })
   }
 
-  const reportDatePicker = document.getElementById("reportDatePicker");
+  const reportDatePicker = document.getElementById("reportDatePicker")
   if (reportDatePicker) {
-    const today = new Date();
-    reportDatePicker.max = formatDateYMD(today);
+    const today = new Date()
+    reportDatePicker.max = formatDateYMD(today)
   }
 
   // 리포트 생성 함수
   async function generateReport() {
     try {
-      const selectedDate = reportDatePicker.value;
+      const selectedDate = reportDatePicker.value
       if (!selectedDate) {
-        alert("생성할 날짜를 선택해주세요.");
-        return;
+        alert("생성할 날짜를 선택해주세요.")
+        return
       }
-      // const today = new Date();
-      // const formattedDate = formatDateYMD(today);
-      
+
       // 리포트 생성 컨테이너 생성 또는 가져오기
-      let reportGenContainer = document.getElementById("reportGenerationContainer");
+      let reportGenContainer = document.getElementById("reportGenerationContainer")
       if (!reportGenContainer) {
-        reportGenContainer = document.createElement("div");
-        reportGenContainer.id = "reportGenerationContainer";
-        reportGenContainer.className = "report-generation-container";
-        document.querySelector(".diary-list").appendChild(reportGenContainer);
+        reportGenContainer = document.createElement("div")
+        reportGenContainer.id = "reportGenerationContainer"
+        reportGenContainer.className = "report-generation-container"
+        document.querySelector(".diary-list").appendChild(reportGenContainer)
       }
-      
+
       // 컨테이너를 표시하고 상태를 "데이터 수집 중"으로 업데이트
-      reportGenContainer.style.display = "block";
+      reportGenContainer.style.display = "block"
       reportGenContainer.innerHTML = `
         <div class="report-generation-status">
           <div class="report-generation-icon"><i class="fas fa-spinner fa-spin"></i></div>
           <div class="report-generation-text">데이터 수집 중...</div>
         </div>
         <div class="report-generation-content"></div>
-      `;
-      
+      `
+
       // API 호출하여 리포트 생성 시작
       const response = await fetch(`${API_BASE_URL}/generate-report`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           farmId,
           date: selectedDate,
         }),
-      });
-      
+      })
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || '리포트 생성 실패');
+        const errorData = await response.json()
+        throw new Error(errorData.error || "리포트 생성 실패")
       }
-      
+
       // 리포트 데이터 가져오기
-      const reportData = await response.json();
-      
+      const reportData = await response.json()
+
       // 상태를 "리포트 작성 중"으로 업데이트
-      const statusEl = reportGenContainer.querySelector(".report-generation-text");
-      statusEl.textContent = "리포트 작성 중...";
-      
+      const statusEl = reportGenContainer.querySelector(".report-generation-text")
+      statusEl.textContent = "리포트 작성 중..."
+
       // 타이핑 애니메이션을 위한 컨텐츠 컨테이너 가져오기
-      const contentEl = reportGenContainer.querySelector(".report-generation-content");
-      
+      const contentEl = reportGenContainer.querySelector(".report-generation-content")
+
       // AI 분석 텍스트에 대한 타이핑 애니메이션 시뮬레이션
-      const aiAnalysis = reportData.aiAnalysis || "AI 분석 데이터가 없습니다.";
-      let index = 0;
-      
+      const aiAnalysis = reportData.aiAnalysis || "AI 분석 데이터가 없습니다."
+      let index = 0
+
       function typeText() {
         if (index < aiAnalysis.length) {
-          contentEl.textContent += aiAnalysis.charAt(index);
-          index++;
-          setTimeout(typeText, 20); // 속도 조절 가능
+          contentEl.textContent += aiAnalysis.charAt(index)
+          index++
+          setTimeout(typeText, 20) // 속도 조절 가능
         } else {
           // 타이핑 완료 후 짧은 지연 시간 후 모달 표시
           setTimeout(() => {
-            reportGenContainer.style.display = "none";
-            showReportModal(reportData);
-          }, 1000);
+            reportGenContainer.style.display = "none"
+            showReportModal(reportData)
+          }, 1000)
         }
       }
-      
+
       // 타이핑 애니메이션 시작
-      typeText();
-      
+      typeText()
+
       // 리포트 목록 새로고침
-      fetchReports();
-      
+      fetchReports()
     } catch (error) {
-      console.error('리포트 생성 오류:', error);
-      alert(error.message || '리포트 생성 중 오류가 발생했습니다.');
-      
+      console.error("리포트 생성 오류:", error)
+      alert(error.message || "리포트 생성 중 오류가 발생했습니다.")
+
       // 오류 발생 시 생성 컨테이너 숨기기
-      const reportGenContainer = document.getElementById("reportGenerationContainer");
+      const reportGenContainer = document.getElementById("reportGenerationContainer")
       if (reportGenContainer) {
-        reportGenContainer.style.display = "none";
+        reportGenContainer.style.display = "none"
       }
     }
   }
@@ -1691,165 +1552,163 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   async function fetchLatestPlantImage() {
-    const imageElement = document.getElementById('latestPlantImage');
-    // console.log('[Client] 이미지 엘리먼트:', imageElement);
+    const imageElement = document.getElementById("latestPlantImage")
     if (!imageElement) {
-      console.warn('[Client] 이미지 엘리먼트가 없습니다.');
-      return;
+      console.warn("[Client] 이미지 엘리먼트가 없습니다.")
+      return
     }
 
     if (!farmId) {
-      console.warn('[Client] farmId가 없습니다.');
-      imageElement.src = "images/no-image.jpg";
-      return;
+      console.warn("[Client] farmId가 없습니다.")
+      imageElement.src = "images/no-image.jpg"
+      return
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/latest-image?farmId=${farmId}`);
-      
+      const response = await fetch(`${API_BASE_URL}/latest-image?farmId=${farmId}`)
+
       if (!response.ok) {
-        console.warn('[Client] API 응답 실패:', await response.text());
-        imageElement.src = "images/no-image.jpg";
-        return;
+        console.warn("[Client] API 응답 실패:", await response.text())
+        imageElement.src = "images/no-image.jpg"
+        return
       }
 
-      const data = await response.json();
-      // console.log('[Client] API 응답 데이터:', data);
+      const data = await response.json()
 
       if (data.url) {
-        imageElement.src = data.url;
+        imageElement.src = data.url
       } else {
-        console.warn('[Client] URL이 없습니다. 기본 이미지로 변경');
-        imageElement.src = "images/no-image.jpg";
+        console.warn("[Client] URL이 없습니다. 기본 이미지로 변경")
+        imageElement.src = "images/no-image.jpg"
       }
 
       imageElement.onerror = () => {
-        console.error('[Client] 이미지 로드 실패, 기본 이미지로 대체');
-        imageElement.src = "images/no-image.jpg";
-      };
+        console.error("[Client] 이미지 로드 실패, 기본 이미지로 대체")
+        imageElement.src = "images/no-image.jpg"
+      }
     } catch (err) {
-      console.error('[Client] 최근 작물 이미지 불러오기 오류:', err);
-      imageElement.src = "images/no-image.jpg";
+      console.error("[Client] 최근 작물 이미지 불러오기 오류:", err)
+      imageElement.src = "images/no-image.jpg"
     }
   }
 
   // 리포트 모달 표시 함수
   function showReportModal(report) {
-    const modal = document.getElementById("reportModal");
-    if (!modal) return;
+    const modal = document.getElementById("reportModal")
+    if (!modal) return
 
     // 날짜 정보 설정
-    const reportDateEl = document.getElementById("reportDate");
-    if (reportDateEl) reportDateEl.textContent = report.date;
+    const reportDateEl = document.getElementById("reportDate")
+    if (reportDateEl) reportDateEl.textContent = report.date
 
     // 센서 요약 정보 설정
-    const avgTempEl = document.getElementById("avgTemp");
-    const avgHumidityEl = document.getElementById("avgHumidity");
-    const avgSoilEl = document.getElementById("avgSoil");
-    const avgCo2El = document.getElementById("avgCo2");
+    const avgTempEl = document.getElementById("avgTemp")
+    const avgHumidityEl = document.getElementById("avgHumidity")
+    const avgSoilEl = document.getElementById("avgSoil")
+    const avgCo2El = document.getElementById("avgCo2")
 
-    if (avgTempEl) avgTempEl.textContent = `${report.sensorSummary.avg_temperature} °C`;
-    if (avgHumidityEl) avgHumidityEl.textContent = `${report.sensorSummary.avg_humidity} %`;
-    if (avgSoilEl) avgSoilEl.textContent = `${report.sensorSummary.avg_soil_moisture} %`;
-    if (avgCo2El) avgCo2El.textContent = `${report.sensorSummary.avg_co2} ppm`;
+    if (avgTempEl) avgTempEl.textContent = `${report.sensorSummary.avg_temperature} °C`
+    if (avgHumidityEl) avgHumidityEl.textContent = `${report.sensorSummary.avg_humidity} %`
+    if (avgSoilEl) avgSoilEl.textContent = `${report.sensorSummary.avg_soil_moisture} %`
+    if (avgCo2El) avgCo2El.textContent = `${report.sensorSummary.avg_co2} ppm`
 
     // 센서 변화 정보 설정
-    const maxTempEl = document.getElementById("maxTemp");
-    const maxTempTimeEl = document.getElementById("maxTempTime");
-    const minTempEl = document.getElementById("minTemp");
-    const minTempTimeEl = document.getElementById("minTempTime");
+    const maxTempEl = document.getElementById("maxTemp")
+    const maxTempTimeEl = document.getElementById("maxTempTime")
+    const minTempEl = document.getElementById("minTemp")
+    const minTempTimeEl = document.getElementById("minTempTime")
 
-    if (maxTempEl) maxTempEl.textContent = `${report.sensorChanges.max_temperature.value} °C`;
-    if (maxTempTimeEl) maxTempTimeEl.textContent = report.sensorChanges.max_temperature.time;
-    if (minTempEl) minTempEl.textContent = `${report.sensorChanges.min_temperature.value} °C`;
-    if (minTempTimeEl) minTempTimeEl.textContent = report.sensorChanges.min_temperature.time;
+    if (maxTempEl) maxTempEl.textContent = `${report.sensorChanges.max_temperature.value} °C`
+    if (maxTempTimeEl) maxTempTimeEl.textContent = report.sensorChanges.max_temperature.time
+    if (minTempEl) minTempEl.textContent = `${report.sensorChanges.min_temperature.value} °C`
+    if (minTempTimeEl) minTempTimeEl.textContent = report.sensorChanges.min_temperature.time
 
-    const maxHumidityEl = document.getElementById("maxHumidity");
-    const maxHumidityTimeEl = document.getElementById("maxHumidityTime");
-    const minHumidityEl = document.getElementById("minHumidity");
-    const minHumidityTimeEl = document.getElementById("minHumidityTime");
+    const maxHumidityEl = document.getElementById("maxHumidity")
+    const maxHumidityTimeEl = document.getElementById("maxHumidityTime")
+    const minHumidityEl = document.getElementById("minHumidity")
+    const minHumidityTimeEl = document.getElementById("minHumidityTime")
 
-    if (maxHumidityEl) maxHumidityEl.textContent = `${report.sensorChanges.max_humidity.value} %`;
-    if (maxHumidityTimeEl) maxHumidityTimeEl.textContent = report.sensorChanges.max_humidity.time;
-    if (minHumidityEl) minHumidityEl.textContent = `${report.sensorChanges.min_humidity.value} %`;
-    if (minHumidityTimeEl) minHumidityTimeEl.textContent = report.sensorChanges.min_humidity.time;
+    if (maxHumidityEl) maxHumidityEl.textContent = `${report.sensorChanges.max_humidity.value} %`
+    if (maxHumidityTimeEl) maxHumidityTimeEl.textContent = report.sensorChanges.max_humidity.time
+    if (minHumidityEl) minHumidityEl.textContent = `${report.sensorChanges.min_humidity.value} %`
+    if (minHumidityTimeEl) minHumidityTimeEl.textContent = report.sensorChanges.min_humidity.time
 
-    const maxSoilEl = document.getElementById("maxSoil");
-    const maxSoilTimeEl = document.getElementById("maxSoilTime");
-    const minSoilEl = document.getElementById("minSoil");
-    const minSoilTimeEl = document.getElementById("minSoilTime");
+    const maxSoilEl = document.getElementById("maxSoil")
+    const maxSoilTimeEl = document.getElementById("maxSoilTime")
+    const minSoilEl = document.getElementById("minSoil")
+    const minSoilTimeEl = document.getElementById("minSoilTime")
 
-    if (maxSoilEl) maxSoilEl.textContent = `${report.sensorChanges.max_soil_moisture.value} %`;
-    if (maxSoilTimeEl) maxSoilTimeEl.textContent = report.sensorChanges.max_soil_moisture.time;
-    if (minSoilEl) minSoilEl.textContent = `${report.sensorChanges.min_soil_moisture.value} %`;
-    if (minSoilTimeEl) minSoilTimeEl.textContent = report.sensorChanges.min_soil_moisture.time;
+    if (maxSoilEl) maxSoilEl.textContent = `${report.sensorChanges.max_soil_moisture.value} %`
+    if (maxSoilTimeEl) maxSoilTimeEl.textContent = report.sensorChanges.max_soil_moisture.time
+    if (minSoilEl) minSoilEl.textContent = `${report.sensorChanges.min_soil_moisture.value} %`
+    if (minSoilTimeEl) minSoilTimeEl.textContent = report.sensorChanges.min_soil_moisture.time
 
-    const maxCo2El = document.getElementById("maxCo2");
-    const maxCo2TimeEl = document.getElementById("maxCo2Time");
-    const minCo2El = document.getElementById("minCo2");
-    const minCo2TimeEl = document.getElementById("minCo2Time");
+    const maxCo2El = document.getElementById("maxCo2")
+    const maxCo2TimeEl = document.getElementById("maxCo2Time")
+    const minCo2El = document.getElementById("minCo2")
+    const minCo2TimeEl = document.getElementById("minCo2Time")
 
-    if (maxCo2El) maxCo2El.textContent = `${report.sensorChanges.max_co2.value} ppm`;
-    if (maxCo2TimeEl) maxCo2TimeEl.textContent = report.sensorChanges.max_co2.time;
-    if (minCo2El) minCo2El.textContent = `${report.sensorChanges.min_co2.value} ppm`;
-    if (minCo2TimeEl) minCo2TimeEl.textContent = report.sensorChanges.min_co2.time;
+    if (maxCo2El) maxCo2El.textContent = `${report.sensorChanges.max_co2.value} ppm`
+    if (maxCo2TimeEl) maxCo2TimeEl.textContent = report.sensorChanges.max_co2.time
+    if (minCo2El) minCo2El.textContent = `${report.sensorChanges.min_co2.value} ppm`
+    if (minCo2TimeEl) minCo2TimeEl.textContent = report.sensorChanges.min_co2.time
 
     // 장치 로그 정보 설정
-    const ledLogEl = document.getElementById("ledLog");
-    const fanLogEl = document.getElementById("fanLog");
-    const waterLogEl = document.getElementById("waterLog");
-    const heaterLogEl = document.getElementById("heaterLog");
-    const coolerLogEl = document.getElementById("coolerLog");
+    const ledLogEl = document.getElementById("ledLog")
+    const fanLogEl = document.getElementById("fanLog")
+    const waterLogEl = document.getElementById("waterLog")
+    const heaterLogEl = document.getElementById("heaterLog")
+    const coolerLogEl = document.getElementById("coolerLog")
 
     if (ledLogEl) {
       ledLogEl.textContent = report.deviceLogs.led.start
         ? `켜짐 (시작: ${report.deviceLogs.led.start}, 종료: ${report.deviceLogs.led.end})`
-        : "꺼짐";
+        : "꺼짐"
     }
 
     if (fanLogEl) {
-      fanLogEl.textContent = `작동 횟수 ${report.deviceLogs.fan.count}회, 총 작동 시간 ${report.deviceLogs.fan.total_time}분`;
+      fanLogEl.textContent = `작동 횟수 ${report.deviceLogs.fan.count}회, 총 작동 시간 ${report.deviceLogs.fan.total_time}분`
     }
 
     if (waterLogEl) {
-      waterLogEl.textContent = `급수 횟수 ${report.deviceLogs.water.count}회, 총 급수량 ${report.deviceLogs.water.total_amount} L`;
+      waterLogEl.textContent = `급수 횟수 ${report.deviceLogs.water.count}회, 총 급수량 ${report.deviceLogs.water.total_amount} L`
     }
 
     if (heaterLogEl) {
-      heaterLogEl.textContent = `작동 횟수 ${report.deviceLogs.heater.count}회, 총 작동 시간 ${report.deviceLogs.heater.total_time}분`;
+      heaterLogEl.textContent = `작동 횟수 ${report.deviceLogs.heater.count}회, 총 작동 시간 ${report.deviceLogs.heater.total_time}분`
     }
 
     if (coolerLogEl) {
-      coolerLogEl.textContent = `작동 횟수 ${report.deviceLogs.cooler.count}회, 총 작동 시간 ${report.deviceLogs.cooler.total_time}분`;
+      coolerLogEl.textContent = `작동 횟수 ${report.deviceLogs.cooler.count}회, 총 작동 시간 ${report.deviceLogs.cooler.total_time}분`
     }
 
     // 이미지 URL 설정
-    const reportImageEl = document.getElementById("reportImage");
+    const reportImageEl = document.getElementById("reportImage")
     if (reportImageEl) {
-      reportImageEl.src = report.imageUrl || "images/no-image.jpg";
+      reportImageEl.src = report.imageUrl || "images/no-image.jpg"
     }
 
     // AI 분석 정보 설정 (줄바꿈 처리)
-    const aiAnalysisEl = document.getElementById("aiAnalysis");
+    const aiAnalysisEl = document.getElementById("aiAnalysis")
     if (aiAnalysisEl) {
       aiAnalysisEl.innerHTML = report.aiAnalysis
-        ? report.aiAnalysis.replace(/\n/g, '<br>')
-        : "AI 분석 데이터가 없습니다.";
+        ? report.aiAnalysis.replace(/\n/g, "<br>")
+        : "AI 분석 데이터가 없습니다."
     }
 
     // 모달 표시
-    modal.style.display = "block";
+    modal.style.display = "block"
 
     // 다운로드 버튼 이벤트 설정
-    const downloadReportBtn = document.getElementById("downloadReportBtn");
+    const downloadReportBtn = document.getElementById("downloadReportBtn")
     if (downloadReportBtn) {
       // 이전 이벤트 리스너 제거
-      const newDownloadBtn = downloadReportBtn.cloneNode(true);
-      downloadReportBtn.parentNode.replaceChild(newDownloadBtn, downloadReportBtn);
+      const newDownloadBtn = downloadReportBtn.cloneNode(true)
+      downloadReportBtn.parentNode.replaceChild(newDownloadBtn, downloadReportBtn)
 
       newDownloadBtn.addEventListener("click", () => {
-        downloadReport(report);
-      });
+        downloadReport(report)
+      })
     }
   }
 
@@ -1931,19 +1790,18 @@ ${report.aiAnalysis || "AI 분석 데이터가 없습니다."}
   // 초기 데이터 로드
   fetchData() // 초기 값
   updateDateDisplay() // 날짜
-  fetchSensorData()// 센서
+  fetchSensorData() // 센서
   fetchDevicesStatus() // 제어 장치
   fetchAlarm() // 알람
   fetchFarmStatus() // 성장도
   fetchFarmOptimalValues() // 농장 최적 수치
   fetchReports() // 리포트 목록 조회
-  fetchLatestPlantImage(); // 식물 사진
+  fetchLatestPlantImage() // 식물 사진
 
   setInterval(() => {
-    fetchSensorData();
-    fetchDevicesStatus();
+    fetchSensorData()
+    fetchDevicesStatus()
     updateHistoryChartData()
     updateChartData()
-    // fetchAlarm();
-  }, 5000);
+  }, 5000)
 })
