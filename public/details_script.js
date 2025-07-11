@@ -1,4 +1,3 @@
-import { Chart } from "@/components/ui/chart"
 const API_BASE_URL = "https://port-0-server-m7tucm4sab201860.sel4.cloudtype.app"
 
 const growthStages = [{ text: "씨앗" }, { text: "새싹" }, { text: "성장" }, { text: "열매" }]
