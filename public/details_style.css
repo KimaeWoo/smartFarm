@@ -1785,8 +1785,8 @@ footer {
 
 /* 리포트 모달 새로운 레이아웃 */
 .report-date-header {
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
+  margin-bottom: 1rem; /* 변경: 1.5rem -> 1rem */
+  padding-bottom: 0.75rem; /* 변경: 1rem -> 0.75rem */
   border-bottom: 2px solid var(--border-color);
 }
 
@@ -1802,29 +1802,33 @@ footer {
 .report-main-grid {
   display: grid;
   grid-template-columns: 1fr; /* Default to single column for small screens */
-  gap: 1.5rem;
-  min-height: 600px;
+  gap: 1rem; /* 변경: 1.5rem -> 1rem */
+  /* min-height: 600px; */ /* 제거: 스크롤 없이 정보가 다 보이도록 높이 자동 조절 */
 }
 
 @media (min-width: 769px) {
   /* For tablets and larger */
   .report-main-grid {
-    grid-template-columns: 1fr 1fr; /* Two columns */
+    grid-template-columns: 1fr 1fr 1fr; /* 3열로 변경 */
   }
-  .sensor-data-summary {
+  .sensor-average-column {
     grid-column: 1 / 2;
+    grid-row: 1 / 2;
+  }
+  .sensor-minmax-column {
+    grid-column: 2 / 3;
     grid-row: 1 / 2;
   }
   .device-log-column {
-    grid-column: 2 / 3;
+    grid-column: 3 / 4;
     grid-row: 1 / 2;
   }
   .report-image-column {
-    grid-column: 1 / 2;
+    grid-column: 1 / 3; /* 1열과 2열에 걸쳐 배치 */
     grid-row: 2 / 3;
   }
   .ai-analysis-column {
-    grid-column: 2 / 3;
+    grid-column: 3 / 4; /* 3열에 배치 */
     grid-row: 2 / 3;
   }
 }
@@ -1832,7 +1836,27 @@ footer {
 @media (min-width: 1200px) {
   /* For larger desktops */
   .report-main-grid {
-    grid-template-columns: 1.5fr 1fr; /* Adjust column width ratio */
+    grid-template-columns: 1.2fr 1fr 1fr; /* 평균 수치에 더 많은 공간 할당 */
+  }
+  .sensor-average-column {
+    grid-column: 1 / 2;
+    grid-row: 1 / 2;
+  }
+  .sensor-minmax-column {
+    grid-column: 2 / 3;
+    grid-row: 1 / 2;
+  }
+  .device-log-column {
+    grid-column: 3 / 4;
+    grid-row: 1 / 2;
+  }
+  .report-image-column {
+    grid-column: 1 / 3;
+    grid-row: 2 / 3;
+  }
+  .ai-analysis-column {
+    grid-column: 3 / 4;
+    grid-row: 2 / 3;
   }
 }
 
@@ -1841,7 +1865,7 @@ footer {
   flex-direction: column;
   background-color: var(--secondary-color);
   border-radius: var(--border-radius);
-  padding: 1rem;
+  padding: 0.75rem; /* 변경: 1rem -> 0.75rem */
   border: 1px solid var(--border-color);
   overflow: hidden; /* Important for containing internal scrollable content */
 }
@@ -1850,7 +1874,7 @@ footer {
 .sensor-data-summary {
   display: flex;
   flex-direction: column;
-  gap: 1rem; /* Gap between sections within this column */
+  gap: 0.75rem; /* 변경: 1rem -> 0.75rem */
 }
 
 .sensor-summary-section,
@@ -1864,8 +1888,8 @@ footer {
 .section-subtitle {
   font-size: 0.95rem;
   font-weight: 600;
-  margin-top: 0.5rem;
-  margin-bottom: 0.5rem;
+  margin-top: 0.25rem; /* 변경: 0.5rem -> 0.25rem */
+  margin-bottom: 0.25rem; /* 변경: 0.5rem -> 0.25rem */
   color: var(--text-color);
   display: flex;
   align-items: center;
@@ -1882,7 +1906,7 @@ footer {
   flex: 1; /* Allow content to take available height */
   overflow-y: auto; /* Enable vertical scrolling */
   padding-right: 5px; /* Space for scrollbar */
-  max-height: 100%; /* Important: ensures content respects parent height and scrolls */
+  /* max-height: 100%; */ /* 제거: 스크롤 없이 정보가 다 보이도록 높이 자동 조절 */
 }
 
 /* Scrollbar styling for these sections */
@@ -1923,7 +1947,7 @@ footer {
   background-color: var(--card-bg); /* Use card-bg for inner items */
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
-  padding: 0.75rem;
+  padding: 0.6rem; /* 변경: 0.75rem -> 0.6rem */
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -1936,13 +1960,14 @@ footer {
 
 .ai-analysis-compact {
   flex: 1;
-  padding: 1rem;
+  padding: 0.75rem; /* 변경: 1rem -> 0.75rem */
   border-radius: var(--border-radius);
   background-color: var(--card-bg); /* Use card-bg for AI analysis content */
   border: 1px solid var(--border-color);
   border-left: 4px solid var(--primary-color);
   display: flex;
   flex-direction: column;
+  /* max-height: 500px; */ /* 제거: 스크롤 없이 정보가 다 보이도록 높이 자동 조절 */
 }
 
 .report-image-container {
@@ -1953,15 +1978,15 @@ footer {
   background-color: var(--card-bg);
   border-radius: var(--border-radius);
   border: 1px solid var(--border-color);
-  padding: 1rem;
-  min-height: 200px;
+  padding: 0.75rem; /* 변경: 1rem -> 0.75rem */
+  min-height: 150px; /* 변경: 200px -> 150px */
 }
 
 /* 센서 평균 세로 레이아웃 */
 .sensor-summary-vertical {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.5rem; /* 변경: 0.75rem -> 0.5rem */
   flex: 1;
 }
 
@@ -2020,7 +2045,7 @@ footer {
 .sensor-changes-vertical {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.5rem; /* 변경: 0.75rem -> 0.5rem */
   flex: 1;
 }
 
@@ -2076,7 +2101,7 @@ footer {
 .device-logs-vertical {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.5rem; /* 변경: 0.75rem -> 0.5rem */
   flex: 1;
 }
 
@@ -2152,20 +2177,14 @@ footer {
   background-color: var(--card-bg);
   border-radius: var(--border-radius);
   border: 1px solid var(--border-color);
-  padding: 1rem;
-}
-
-.report-image-container img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  border-radius: var(--border-radius);
+  padding: 0.75rem;
+  min-height: 150px;
 }
 
 /* AI 분석 컴팩트 */
 .ai-analysis-compact {
   flex: 1;
-  padding: 1rem;
+  padding: 0.75rem;
   border-radius: var(--border-radius);
   background-color: var(--card-bg);
   border: 1px solid var(--border-color);
@@ -2178,7 +2197,7 @@ footer {
   white-space: pre-line;
   color: var(--text-color);
   overflow-y: auto;
-  max-height: 500px;
+  /* max-height: 500px; */ /* 제거: 스크롤 없이 정보가 다 보이도록 높이 자동 조절 */
 }
 
 /* 버튼 스타일 */
@@ -2466,89 +2485,6 @@ footer {
   vertical-align: middle; /* 아이콘과 텍스트를 세로 중앙 정렬 */
 }
 
-/* `report-main-grid`의 `gap`을 줄여 전체 그리드 간격을 좁힙니다. */
-.report-main-grid {
-  display: grid;
-  grid-template-columns: 1fr; /* Default to single column for small screens */
-  gap: 1rem; /* 변경: 1.5rem -> 1rem */
-  min-height: 600px;
-}
-
-/* `report-column`의 내부 패딩을 줄여 각 섹션의 여백을 줄입니다. */
-.report-column {
-  display: flex;
-  flex-direction: column;
-  background-color: var(--secondary-color);
-  border-radius: var(--border-radius);
-  padding: 0.75rem; /* 변경: 1rem -> 0.75rem */
-  border: 1px solid var(--border-color);
-  overflow: hidden;
-}
-
-/* `sensor-data-summary` 내부 섹션 간의 `gap`을 줄입니다. */
-.sensor-data-summary {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem; /* 변경: 1rem -> 0.75rem */
-}
-
-/* `section-subtitle`의 상하 마진을 줄여 제목과 내용 사이의 여백을 줄입니다. */
-.section-subtitle {
-  font-size: 0.95rem;
-  font-weight: 600;
-  margin-top: 0.25rem; /* 변경: 0.5rem -> 0.25rem */
-  margin-bottom: 0.25rem; /* 변경: 0.5rem -> 0.25rem */
-  color: var(--text-color);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding-bottom: 0.25rem;
-  border-bottom: 1px dashed var(--border-color);
-}
-
-/* 센서 요약 및 변화 항목, 장치 로그 항목의 내부 패딩을 줄입니다. */
-.sensor-summary-item,
-.sensor-change-item-compact,
-.device-log-item-compact {
-  background-color: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
-  padding: 0.6rem; /* 변경: 0.75rem -> 0.6rem */
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-/* 사진 컨테이너의 최소 높이와 패딩을 줄여 사진 크기를 줄입니다. */
-.report-image-container {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: var(--card-bg);
-  border-radius: var(--border-radius);
-  border: 1px solid var(--border-color);
-  padding: 0.75rem; /* 변경: 1rem -> 0.75rem */
-  min-height: 150px; /* 변경: 200px -> 150px */
-}
-
-/* AI 분석 섹션의 내부 패딩을 줄입니다. */
-.ai-analysis-compact {
-  flex: 1;
-  padding: 0.75rem; /* 변경: 1rem -> 0.75rem */
-  border-radius: var(--border-radius);
-  background-color: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-left: 4px solid var(--primary-color);
-  display: flex;
-  flex-direction: column;
-}
-
-/* 리포트 날짜 헤더의 하단 마진과 패딩을 줄입니다. */
-.report-date-header {
-  margin-bottom: 1rem; /* 변경: 1.5rem -> 1rem */
-  padding-bottom: 0.75rem; /* 변경: 1rem -> 0.75rem */
-  border-bottom: 2px solid var(--border-color);
-}
-
 /* 리포트 컬럼 제목의 하단 마진과 패딩을 줄입니다. */
 .report-column-title {
   font-size: 1rem;
@@ -2560,14 +2496,4 @@ footer {
   gap: 0.5rem;
   padding-bottom: 0.25rem; /* 변경: 0.5rem -> 0.25rem */
   border-bottom: 1px solid var(--border-color);
-}
-
-/* 센서 요약, 변화, 장치 로그 섹션 내부 항목들의 간격을 줄입니다. */
-.sensor-summary-vertical,
-.sensor-changes-vertical,
-.device-logs-vertical {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem; /* 변경: 0.75rem -> 0.5rem */
-  flex: 1;
 }

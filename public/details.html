@@ -553,108 +553,105 @@
       
       <!-- 메인 리포트 그리드 -->
       <div class="report-main-grid">
-        <!-- 센서 데이터 요약 (평균 + 최고/최저) -->
-        <div class="report-column sensor-data-summary">
-          <h4 class="report-column-title"><i class="fas fa-chart-line"></i> 센서 데이터 요약</h4>
-          
-          <div class="sensor-summary-section">
-            <h5 class="section-subtitle"><i class="fas fa-chart-bar"></i> 평균 수치</h5>
-            <div class="sensor-summary-vertical">
-              <div class="sensor-summary-item temp">
-                <i class="fas fa-temperature-high"></i>
-                <div class="sensor-summary-content">
-                  <span class="sensor-summary-label">평균 온도</span>
-                  <span id="avgTemp" class="sensor-summary-value">null</span>
-                </div>
+        <!-- 센서 평균 수치 -->
+        <div class="report-column sensor-average-column">
+          <h4 class="report-column-title"><i class="fas fa-chart-bar"></i> 센서 평균 수치</h4>
+          <div class="sensor-summary-vertical">
+            <div class="sensor-summary-item temp">
+              <i class="fas fa-temperature-high"></i>
+              <div class="sensor-summary-content">
+                <span class="sensor-summary-label">평균 온도</span>
+                <span id="avgTemp" class="sensor-summary-value">null</span>
               </div>
-              <div class="sensor-summary-item humidity">
-                <i class="fas fa-tint"></i>
-                <div class="sensor-summary-content">
-                  <span class="sensor-summary-label">평균 습도</span>
-                  <span id="avgHumidity" class="sensor-summary-value">null</span>
-                </div>
+            </div>
+            <div class="sensor-summary-item humidity">
+              <i class="fas fa-tint"></i>
+              <div class="sensor-summary-content">
+                <span class="sensor-summary-label">평균 ���도</span>
+                <span id="avgHumidity" class="sensor-summary-value">null</span>
               </div>
-              <div class="sensor-summary-item soil">
-                <i class="fas fa-leaf"></i>
-                <div class="sensor-summary-content">
-                  <span class="sensor-summary-label">평균 토양 수분</span>
-                  <span id="avgSoil" class="sensor-summary-value">null</span>
-                </div>
+            </div>
+            <div class="sensor-summary-item soil">
+              <i class="fas fa-leaf"></i>
+              <div class="sensor-summary-content">
+                <span class="sensor-summary-label">평균 토양 수분</span>
+                <span id="avgSoil" class="sensor-summary-value">null</span>
               </div>
-              <div class="sensor-summary-item co2">
-                <i class="fas fa-wind"></i>
-                <div class="sensor-summary-content">
-                  <span class="sensor-summary-label">평균 CO₂ 농도</span>
-                  <span id="avgCo2" class="sensor-summary-value">null</span>
-                </div>
+            </div>
+            <div class="sensor-summary-item co2">
+              <i class="fas fa-wind"></i>
+              <div class="sensor-summary-content">
+                <span class="sensor-summary-label">평균 CO₂ 농도</span>
+                <span id="avgCo2" class="sensor-summary-value">null</span>
               </div>
             </div>
           </div>
+        </div>
 
-          <div class="sensor-changes-section">
-            <h5 class="section-subtitle"><i class="fas fa-exchange-alt"></i> 최고/최저 수치</h5>
-            <div class="sensor-changes-vertical">
-              <div class="sensor-change-item-compact">
-                <h5><i class="fas fa-temperature-high"></i> 온도</h5>
-                <div class="change-values-compact">
-                  <div class="change-value-row">
-                    <span class="change-label"><i class="fas fa-arrow-up"></i> 최고</span>
-                    <span id="maxTemp" class="change-value">null</span>
-                    <span id="maxTempTime" class="change-time">null</span>
-                  </div>
-                  <div class="change-value-row">
-                    <span class="change-label"><i class="fas fa-arrow-down"></i> 최저</span>
-                    <span id="minTemp" class="change-value">null</span>
-                    <span id="minTempTime" class="change-time">null</span>
-                  </div>
+        <!-- 센서 최고/최저 수치 -->
+        <div class="report-column sensor-minmax-column">
+          <h4 class="report-column-title"><i class="fas fa-exchange-alt"></i> 최고/최저 수치</h4>
+          <div class="sensor-changes-vertical">
+            <div class="sensor-change-item-compact">
+              <h5><i class="fas fa-temperature-high"></i> 온도</h5>
+              <div class="change-values-compact">
+                <div class="change-value-row">
+                  <span class="change-label"><i class="fas fa-arrow-up"></i> 최고</span>
+                  <span id="maxTemp" class="change-value">null</span>
+                  <span id="maxTempTime" class="change-time">null</span>
+                </div>
+                <div class="change-value-row">
+                  <span class="change-label"><i class="fas fa-arrow-down"></i> 최저</span>
+                  <span id="minTemp" class="change-value">null</span>
+                  <span id="minTempTime" class="change-time">null</span>
                 </div>
               </div>
-              
-              <div class="sensor-change-item-compact">
-                <h5><i class="fas fa-tint"></i> 습도</h5>
-                <div class="change-values-compact">
-                  <div class="change-value-row">
-                    <span class="change-label"><i class="fas fa-arrow-up"></i> 최고</span>
-                    <span id="maxHumidity" class="change-value">null</span>
-                    <span id="maxHumidityTime" class="change-time">null</span>
-                  </div>
-                  <div class="change-value-row">
-                    <span class="change-label"><i class="fas fa-arrow-down"></i> 최저</span>
-                    <span id="minHumidity" class="change-value">null</span>
-                    <span id="minHumidityTime" class="change-time">null</span>
-                  </div>
+            </div>
+            
+            <div class="sensor-change-item-compact">
+              <h5><i class="fas fa-tint"></i> 습도</h5>
+              <div class="change-values-compact">
+                <div class="change-value-row">
+                  <span class="change-label"><i class="fas fa-arrow-up"></i> 최고</span>
+                  <span id="maxHumidity" class="change-value">null</span>
+                  <span id="maxHumidityTime" class="change-time">null</span>
+                </div>
+                <div class="change-value-row">
+                  <span class="change-label"><i class="fas fa-arrow-down"></i> 최저</span>
+                  <span id="minHumidity" class="change-value">null</span>
+                  <span id="minHumidityTime" class="change-time">null</span>
                 </div>
               </div>
-              
-              <div class="sensor-change-item-compact">
-                <h5><i class="fas fa-leaf"></i> 토양 수분</h5>
-                <div class="change-values-compact">
-                  <div class="change-value-row">
-                    <span class="change-label"><i class="fas fa-arrow-up"></i> 최고</span>
-                    <span id="maxSoil" class="change-value">null</span>
-                    <span id="maxSoilTime" class="change-time">null</span>
-                  </div>
-                  <div class="change-value-row">
-                    <span class="change-label"><i class="fas fa-arrow-down"></i> 최저</span>
-                    <span id="minSoil" class="change-value">null</span>
-                    <span id="minSoilTime" class="change-time">null</span>
-                  </div>
+            </div>
+            
+            <div class="sensor-change-item-compact">
+              <h5><i class="fas fa-leaf"></i> 토양 수분</h5>
+              <div class="change-values-compact">
+                <div class="change-value-row">
+                  <span class="change-label"><i class="fas fa-arrow-up"></i> 최고</span>
+                  <span id="maxSoil" class="change-value">null</span>
+                  <span id="maxSoilTime" class="change-time">null</span>
+                </div>
+                <div class="change-value-row">
+                  <span class="change-label"><i class="fas fa-arrow-down"></i> 최저</span>
+                  <span id="minSoil" class="change-value">null</span>
+                  <span id="minSoilTime" class="change-time">null</span>
                 </div>
               </div>
-              
-              <div class="sensor-change-item-compact">
-                <h5><i class="fas fa-wind"></i> CO₂ 농도</h5>
-                <div class="change-values-compact">
-                  <div class="change-value-row">
-                    <span class="change-label"><i class="fas fa-arrow-up"></i> 최고</span>
-                    <span id="maxCo2" class="change-value">null</span>
-                    <span id="maxCo2Time" class="change-time">null</span>
-                  </div>
-                  <div class="change-value-row">
-                    <span class="change-label"><i class="fas fa-arrow-down"></i> 최저</span>
-                    <span id="minCo2" class="change-value">null</span>
-                    <span id="minCo2Time" class="change-time">null</span>
-                  </div>
+            </div>
+            
+            <div class="sensor-change-item-compact">
+              <h5><i class="fas fa-wind"></i> CO₂ 농도</h5>
+              <div class="change-values-compact">
+                <div class="change-value-row">
+                  <span class="change-label"><i class="fas fa-arrow-up"></i> 최고</span>
+                  <span id="maxCo2" class="change-value">null</span>
+                  <span id="maxCo2Time" class="change-time">null</span>
+                </div>
+                <div class="change-value-row">
+                  <span class="change-label"><i class="fas fa-arrow-down"></i> 최저</span>
+                  <span id="minCo2" class="change-value">null</span>
+                  <span id="minCo2Time" class="change-time">null</span>
                 </div>
               </div>
             </div>
