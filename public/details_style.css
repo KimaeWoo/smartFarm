@@ -1835,7 +1835,7 @@ footer {
 @media (min-width: 1200px) {
   /* For larger desktops */
   .report-main-grid {
-    grid-template-columns: 1fr 1fr 1fr 1fr; /* 4열 유지, 필요시 비율 조정 */
+    grid-template-columns: 1fr 1fr 1fr 1.5fr; /* 4열 유지, 필요시 비율 조정 */
   }
   .sensor-average-column {
     grid-column: 1 / 2;
