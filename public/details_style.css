@@ -1826,10 +1826,7 @@ footer {
     grid-column: 4 / 5; /* 4열에 배치 */
     grid-row: 1 / 2;
   }
-  .report-image-column {
-    grid-column: 1 / 5; /* 1열부터 4열까지 걸쳐 배치 */
-    grid-row: 2 / 3;
-  }
+  /* .report-image-column rule removed */
 }
 
 @media (min-width: 1200px) {
@@ -1853,10 +1850,7 @@ footer {
     grid-column: 4 / 5;
     grid-row: 1 / 2;
   }
-  .report-image-column {
-    grid-column: 1 / 5;
-    grid-row: 2 / 3;
-  }
+  /* .report-image-column rule removed */
 }
 
 .report-column {
@@ -1968,22 +1962,11 @@ footer {
   flex-direction: column;
 }
 
-.report-image-container {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: var(--card-bg);
-  border-radius: var(--border-radius);
-  border: 1px solid var(--border-color);
-  padding: 0.75rem;
-  min-height: 150px;
-}
-
 /* 센서 평균 세로 레이아웃 */
-.sensor-summary-vertical {
-  display: flex;
-  flex-direction: column;
+.sensor-summary-grid {
+  /* Renamed from sensor-summary-vertical */
+  display: grid; /* Changed from flex */
+  grid-template-columns: repeat(2, 1fr); /* Added for 2x2 layout */
   gap: 0.5rem; /* 변경: 0.75rem -> 0.5rem */
   flex: 1;
 }
@@ -2495,4 +2478,8 @@ footer {
   gap: 0.5rem;
   padding-bottom: 0.25rem; /* 변경: 0.5rem -> 0.25rem */
   border-bottom: 1px solid var(--border-color);
+}
+
+.mt-4 {
+  margin-top: 1rem;
 }
