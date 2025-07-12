@@ -1808,7 +1808,7 @@ footer {
 @media (min-width: 769px) {
   /* For tablets and larger */
   .report-main-grid {
-    grid-template-columns: 1fr 1fr 1fr 1fr; /* 4열로 변경 */
+    grid-template-columns: 1fr 1fr 1fr 1.5fr; /* 4열로 변경 */
   }
   .sensor-average-column {
     grid-column: 1 / 2;
