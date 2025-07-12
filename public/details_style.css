@@ -1808,7 +1808,7 @@ footer {
 @media (min-width: 769px) {
   /* For tablets and larger */
   .report-main-grid {
-    grid-template-columns: 1fr 1fr 1fr 1.5fr; /* 4열로 변경 */
+    grid-template-columns: 1fr 1fr 1fr 1.5fr; /* 4열로 변경, 비율 조정 */
   }
   .sensor-average-column {
     grid-column: 1 / 2;
@@ -1947,6 +1947,7 @@ footer {
   border-radius: var(--border-radius);
   padding: 0.6rem; /* 변경: 0.75rem -> 0.6rem */
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  flex: 1; /* Added to make items expand vertically */
 }
 
 .sensor-summary-item:hover,
@@ -2186,6 +2187,8 @@ footer {
   background-color: var(--card-bg);
   border: 1px solid var(--border-color);
   border-left: 4px solid var(--primary-color);
+  display: flex;
+  flex-direction: column;
 }
 
 .ai-analysis-content {
