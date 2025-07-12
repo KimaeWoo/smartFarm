@@ -1871,7 +1871,7 @@ footer {
   align-items: center;
   gap: 0.5rem;
   padding-bottom: 0.25rem;
-  border-bottom: 1px dashed var(--border-color); /* Dotted line for sub-sections */
+  border-bottom: 1px dashed var(--border-color);
 }
 
 /* Ensure scrollability for content areas */
@@ -2464,4 +2464,110 @@ footer {
 /* 테이블 내 아이콘과 텍스트 정렬 보정 */
 #alarm-list-table td {
   vertical-align: middle; /* 아이콘과 텍스트를 세로 중앙 정렬 */
+}
+
+/* `report-main-grid`의 `gap`을 줄여 전체 그리드 간격을 좁힙니다. */
+.report-main-grid {
+  display: grid;
+  grid-template-columns: 1fr; /* Default to single column for small screens */
+  gap: 1rem; /* 변경: 1.5rem -> 1rem */
+  min-height: 600px;
+}
+
+/* `report-column`의 내부 패딩을 줄여 각 섹션의 여백을 줄입니다. */
+.report-column {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--secondary-color);
+  border-radius: var(--border-radius);
+  padding: 0.75rem; /* 변경: 1rem -> 0.75rem */
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+}
+
+/* `sensor-data-summary` 내부 섹션 간의 `gap`을 줄입니다. */
+.sensor-data-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem; /* 변경: 1rem -> 0.75rem */
+}
+
+/* `section-subtitle`의 상하 마진을 줄여 제목과 내용 사이의 여백을 줄입니다. */
+.section-subtitle {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-top: 0.25rem; /* 변경: 0.5rem -> 0.25rem */
+  margin-bottom: 0.25rem; /* 변경: 0.5rem -> 0.25rem */
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px dashed var(--border-color);
+}
+
+/* 센서 요약 및 변화 항목, 장치 로그 항목의 내부 패딩을 줄입니다. */
+.sensor-summary-item,
+.sensor-change-item-compact,
+.device-log-item-compact {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 0.6rem; /* 변경: 0.75rem -> 0.6rem */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* 사진 컨테이너의 최소 높이와 패딩을 줄여 사진 크기를 줄입니다. */
+.report-image-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  padding: 0.75rem; /* 변경: 1rem -> 0.75rem */
+  min-height: 150px; /* 변경: 200px -> 150px */
+}
+
+/* AI 분석 섹션의 내부 패딩을 줄입니다. */
+.ai-analysis-compact {
+  flex: 1;
+  padding: 0.75rem; /* 변경: 1rem -> 0.75rem */
+  border-radius: var(--border-radius);
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-left: 4px solid var(--primary-color);
+  display: flex;
+  flex-direction: column;
+}
+
+/* 리포트 날짜 헤더의 하단 마진과 패딩을 줄입니다. */
+.report-date-header {
+  margin-bottom: 1rem; /* 변경: 1.5rem -> 1rem */
+  padding-bottom: 0.75rem; /* 변경: 1rem -> 0.75rem */
+  border-bottom: 2px solid var(--border-color);
+}
+
+/* 리포트 컬럼 제목의 하단 마진과 패딩을 줄입니다. */
+.report-column-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem; /* 변경: 1rem -> 0.75rem */
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.25rem; /* 변경: 0.5rem -> 0.25rem */
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* 센서 요약, 변화, 장치 로그 섹션 내부 항목들의 간격을 줄입니다. */
+.sensor-summary-vertical,
+.sensor-changes-vertical,
+.device-logs-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem; /* 변경: 0.75rem -> 0.5rem */
+  flex: 1;
 }
