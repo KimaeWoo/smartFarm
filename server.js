@@ -588,7 +588,13 @@ app.post('/devices/force-status', async (req, res) => {
     const status_val = status ? 1 : 0;
 
     // H/W 서버로 상태 + 지속시간 전송
-    await axios.post('https://api.hotpotato.me/update', {
+    // await axios.post('https://api.hotpotato.me/update', {
+    //   farm_id,
+    //   devices: device,
+    //   status: status_val,
+    //   duration  // 지속 시간 (초 단위)
+    // });
+    await axios.post('https://cottages-provided-slim-wishing.trycloudflare.com', {
       farm_id,
       devices: device,
       status: status_val,
