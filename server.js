@@ -18,7 +18,10 @@ const JWT_SECRET = process.env.JWT_SECRET
 // OpenAI 모듈 추가
 const OpenAI = require("openai");
 
-const serviceAccount = require('./firebase-key.json');
+//const serviceAccount = require('./firebase-key.json');
+
+// 환경변수에서 서비스 계정 키 로드
+const serviceAccount = JSON.parse(process.env.FIREBASE_KEY);
 
 // 서버 만들기 + 실행할 포트 번호 설정
 const app = express(); // 서버를 만든다 (이 변수에 서버 기능을 저장)
