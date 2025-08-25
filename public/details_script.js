@@ -233,40 +233,27 @@ document.addEventListener("DOMContentLoaded", async () => {
     const resultDiv = document.getElementById('capture-result');
 
     try {
-      // 1. 외부 H/W 서버에서 이미지 가져오기
+      // 1. H/W 서버 호출 (촬영 + 업로드까지 자동 처리됨)
       const hwResponse = await fetch(`https://api.hotpotato.me/get-image?farmId=${farmId}`, {
         method: 'GET',
       });
-      if (!hwResponse.ok) throw new Error("H/W 서버에서 이미지 가져오기 실패");
 
-      // Blob 변환
-      const blob = await hwResponse.blob();
+      if (!hwResponse.ok) throw new Error("H/W 서버 요청 실패");
 
-      // 2. FormData 구성 (내 서버 업로드용)
-      const formData = new FormData();
-      formData.append("file", blob, `capture_${Date.now()}.jpg`);
+      const result = await hwResponse.json();
+      console.log("H/W 응답:", result);
 
-      // 3. 내 서버 /upload-image 호출
-      const uploadResponse = await fetch(`${API_BASE_URL}/upload-image?farmId=${farmId}`, {
-        method: "POST",
-        body: formData
-      });
-
-      if (!uploadResponse.ok) {
-        const err = await uploadResponse.json();
-        throw new Error(err.error || "이미지 업로드 실패");
+      if (result.status === "uploaded") {
+        alert("이미지 저장 성공");
+        // 2. 갤러리 새로고침
+        fetchAllImages(farmId);
+      } else {
+        throw new Error(result.error || "업로드 실패");
       }
 
-      const result = await uploadResponse.json();
-      alert('이미지 저장 성공');
-      console.log("업로드 결과:", result);
-
-      // 4. 갤러리 새로고침
-      fetchAllImages(farmId);
-
     } catch (err) {
-      console.error('이미지 캡쳐/업로드 중 오류:', err);
-      resultDiv.innerHTML = '이미지 저장 중 오류가 발생했습니다.';
+      console.error('이미지 캡쳐 중 오류:', err);
+      if (resultDiv) resultDiv.innerHTML = '이미지 저장 중 오류가 발생했습니다.';
     }
   });
 
