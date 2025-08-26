@@ -382,7 +382,7 @@ function renderFarmCards(filteredFarms = allFarms) {
       });
     }
     
-    const lastUpdated = sensors ? new Date(sensors.created_at).toLocaleString() : '데이터 없음';
+    const lastUpdated = sensors ? sensors.created_at : '데이터 없음';
     
     cardContent.innerHTML = `
       <div class="farm-header">
