@@ -26,16 +26,9 @@ function getStatusClass(status) {
 }
 
 function formatDateTime(datetime) {
-  const date = new Date(datetime);
-  const yyyy = date.getFullYear();
-  const mm = String(date.getMonth() + 1).padStart(2, '0'); // 월은 0부터 시작
-  const dd = String(date.getDate()).padStart(2, '0');
-  const hh = String(date.getHours()).padStart(2, '0');
-  const mi = String(date.getMinutes()).padStart(2, '0');
-  const ss = String(date.getSeconds()).padStart(2, '0');
-
-  return `${yyyy}-${mm}-${dd} ${hh}:${mi}:${ss}`;
+  return datetime.replace("T", " ").replace("Z", "");
 }
+
 
 // 센서 상태 판단 (최적 조건 기반)
 function getSensorStatus(type, value, farm_id) {
