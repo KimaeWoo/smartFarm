@@ -1293,7 +1293,7 @@ app.post('/generate-report', async (req, res) => {
     // 센서 변화 계산
     const extremes = await fetchExtremeSensorDataFromDB(farmId, date);
     const formatDateTime = (datetime) => {
-      return datetime ? moment(datetime).tz("Asia/Seoul").format("YYYY-MM-DD HH:mm:ss") : null;
+      datetime ? moment.tz(datetime, "Asia/Seoul").format("YYYY-MM-DD HH:mm:ss") : null;
     };
 
     const sensorChanges = {
