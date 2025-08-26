@@ -1626,8 +1626,8 @@ async function fetchDeviceLogs(farmId, date) {
         deviceLogs.led.count = row.operation_count;
         deviceLogs.led.total_time = row.total_duration || 0;
         // LED의 경우 시작/종료 시간은 임의로 설정 (필요 시 별도 로직 추가)
-        deviceLogs.led.start = row.operation_count > 0 ? '08:00' : null;
-        deviceLogs.led.end = row.operation_count > 0 ? '18:00' : null;
+        deviceLogs.led.start = row.operation_count > 0 ? '06:00' : null;
+        deviceLogs.led.end = row.operation_count > 0 ? '20:00' : null;
       } else if (row.device_type === 'fan') {
         deviceLogs.fan.count = row.operation_count;
         deviceLogs.fan.total_time = row.total_duration || 0;

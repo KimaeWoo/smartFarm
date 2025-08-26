@@ -25,6 +25,18 @@ function getStatusClass(status) {
   }[status];
 }
 
+function formatDateTime(datetime) {
+  const date = new Date(datetime);
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, '0'); // 월은 0부터 시작
+  const dd = String(date.getDate()).padStart(2, '0');
+  const hh = String(date.getHours()).padStart(2, '0');
+  const mi = String(date.getMinutes()).padStart(2, '0');
+  const ss = String(date.getSeconds()).padStart(2, '0');
+
+  return `${yyyy}-${mm}-${dd} ${hh}:${mi}:${ss}`;
+}
+
 // 센서 상태 판단 (최적 조건 기반)
 function getSensorStatus(type, value, farm_id) {
   if (value === null || value === undefined) return '';
@@ -382,7 +394,7 @@ function renderFarmCards(filteredFarms = allFarms) {
       });
     }
     
-    const lastUpdated = sensors ? sensors.created_at : '데이터 없음';
+    const lastUpdated = sensors ? formatDateTime(sensors.created_at) : '데이터 없음';
     
     cardContent.innerHTML = `
       <div class="farm-header">

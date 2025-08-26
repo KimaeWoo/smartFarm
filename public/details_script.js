@@ -1815,24 +1815,24 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (ledLogEl) {
       ledLogEl.textContent = report.deviceLogs.led.start
-        ? `켜짐 (시작: ${report.deviceLogs.led.start}, 종료: ${report.deviceLogs.led.end})`
+        ? `시작: ${report.deviceLogs.led.start}, 종료: ${report.deviceLogs.led.end}`
         : "꺼짐";
     }
 
     if (fanLogEl) {
-      fanLogEl.textContent = `작동 횟수 ${report.deviceLogs.fan.count}회, 총 작동 시간 ${report.deviceLogs.fan.total_time}분`;
+      fanLogEl.textContent = `작동 횟수 ${report.deviceLogs.fan.count}회`;
     }
 
     if (waterLogEl) {
-      waterLogEl.textContent = `급수 횟수 ${report.deviceLogs.water.count}회, 총 급수량 ${report.deviceLogs.water.total_amount} L`;
+      waterLogEl.textContent = `급수 횟수 ${report.deviceLogs.water.count}회`;
     }
 
     if (heaterLogEl) {
-      heaterLogEl.textContent = `작동 횟수 ${report.deviceLogs.heater.count}회, 총 작동 시간 ${report.deviceLogs.heater.total_time}분`;
+      heaterLogEl.textContent = `작동 횟수 ${report.deviceLogs.heater.count}회`;
     }
 
     if (coolerLogEl) {
-      coolerLogEl.textContent = `작동 횟수 ${report.deviceLogs.cooler.count}회, 총 작동 시간 ${report.deviceLogs.cooler.total_time}분`;
+      coolerLogEl.textContent = `작동 횟수 ${report.deviceLogs.cooler.count}회`;
     }
 
     // 이미지 URL 설정
