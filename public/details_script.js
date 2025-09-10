@@ -1124,7 +1124,7 @@ document.addEventListener("DOMContentLoaded", async () => {
               tooltip: { mode: "index", intersect: false },
             },
             scales: {
-              y: { min: 10, max: 30, title: { display: true, text: "온도 (°C)" }, ticks: { color: "#000000" } },
+              y: { min: 0, max: 50, title: { display: true, text: "온도 (°C)" }, ticks: { color: "#000000" } },
             },
           },
         })
@@ -1247,7 +1247,7 @@ document.addEventListener("DOMContentLoaded", async () => {
               tooltip: { mode: "index", intersect: false },
             },
             scales: {
-              y: { min: 500, max: 1500, title: { display: true, text: "CO2 (ppm)" }, ticks: { color: "#000000" } },
+              y: { min: 0, max: 1500, title: { display: true, text: "CO2 (ppm)" }, ticks: { color: "#000000" } },
             },
           },
         })
