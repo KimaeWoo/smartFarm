@@ -590,13 +590,13 @@ app.post('/devices/force-status', async (req, res) => {
 
     const status_val = status ? 1 : 0;
 
-    // H/W 서버로 상태 + 지속시간 전송
-    await axios.post('https://api.hotpotato.me/update', {
-      farm_id,
-      devices: device,
-      status: status_val,
-      duration  // 지속 시간 (초 단위)
-    });
+    // // H/W 서버로 상태 + 지속시간 전송
+    // await axios.post('https://api.hotpotato.me/update', {
+    //   farm_id,
+    //   devices: device,
+    //   status: status_val,
+    //   duration  // 지속 시간 (초 단위)
+    // });
 
     console.log('[/devices/force-status] H/W 서버에 상태 및 지속시간 전달 성공');
     return res.json({ message: '제어장치 상태 강제 변경 성공' });
