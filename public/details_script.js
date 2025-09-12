@@ -766,7 +766,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       updateSensorUI("temperature", data.temperature, "temp", 15, 30)
       updateSensorUI("humidity", data.humidity, "humidity", 0, 100)
       updateSensorUI("soil_moisture", data.soil_moisture, "soil", 0, 100)
-      updateSensorUI("co2", data.co2, "co2", 200, 800)
+      updateSensorUI("co2", data.co2, "co2", 0, 800)
     } catch (error) {
       console.error("데이터 가져오기 실패:", error)
     }
