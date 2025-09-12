@@ -2484,6 +2484,20 @@ footer {
   vertical-align: middle; /* 아이콘과 텍스트를 세로 중앙 정렬 */
 }
 
+.alarm-list-container {
+  max-height: 400px; /* 높이는 필요에 따라 조정 */
+  overflow-y: auto;
+}
+
+.alarm-list-container::-webkit-scrollbar-thumb {
+  background-color: var(--border-color);
+  border-radius: 4px;
+}
+
+.alarm-list-container::-webkit-scrollbar-thumb:hover {
+  background-color: var(--muted-color);
+}
+
 /* 리포트 컬럼 제목의 하단 마진과 패딩을 줄입니다. */
 .report-column-title {
   font-size: 1rem;
