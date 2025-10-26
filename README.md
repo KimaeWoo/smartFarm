@@ -10,6 +10,12 @@
 - 팀 규모: 3인 (백엔드/DB/웹, 하드웨어, 모바일 앱)  
 - 역할: 백엔드, 데이터베이스, 웹 프론트엔드 개발  
 - 주요 기술: Node.js (Express), MariaDB, ReactNative, Raspberry Pi, Python, FastAPI, Firebase, OpenAI API
+- 
+### 시스템 아키텍처
+<img width="70%" alt="시스템 아키텍처" src="https://github.com/user-attachments/assets/32af06c9-514e-415d-8e10-e6ea024327cc" />
+
+### 기술 스택
+<img width="70%" alt="기술 스택" src="https://github.com/user-attachments/assets/205b6957-9643-4953-8624-b70a91c4ac42" />
 
 ## 나의 역할 및 기여
 
