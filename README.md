@@ -11,25 +11,6 @@
 - 역할: 백엔드, 데이터베이스, 웹 프론트엔드 개발  
 - 주요 기술: Node.js (Express), MariaDB, ReactNative, Raspberry Pi, Python, FastAPI, Firebase, OpenAI API
 
-<div align="center">
-
-<table>
-<tr>
-<td><img src="https://github.com/user-attachments/assets/29026134-d854-409b-ad56-c4b5f07421c0" width="100%"/></td>
-<td><img src="https://github.com/user-attachments/assets/13016754-26d4-4e0d-8119-f2f03687ea55" width="100%"/></td>
-</tr>
-<tr>
-<td><img src="https://github.com/user-attachments/assets/a912a355-8d24-4767-b536-af37da0900b1" width="100%"/></td>
-<td><img src="https://github.com/user-attachments/assets/d499ace4-49f0-4214-8243-166f226c8245" width="100%"/></td>
-</tr>
-<tr>
-<td><img src="https://github.com/user-attachments/assets/a2490fcc-8648-4b42-9847-e97f82959ccf" width="100%"/></td>
-<td><img src="https://github.com/user-attachments/assets/1404c16e-df1e-41c6-9a5e-733aecd40255" width="100%"/></td>
-</tr>
-</table>
-
-</div>
-
 ## 나의 역할 및 기여
 
 - **백엔드**
@@ -75,6 +56,55 @@
 
 - 수동 제어: 웹 대시보드에서 펌프, 환풍기 등의 장치를 관리자가 즉시 ON/OFF하거나 지속 시간을 설정하여 제어 가능.
 - 자동 제어 로직: (옵션: 센서 값에 따른 자동 작동 로직도 구현되었다면 추가 설명 가능)
+
+### 데모 영상
+
+<div align="center">
+
+<table>
+<tr>
+<td>
+    <img src="https://github.com/user-attachments/assets/df3e6d50-c793-46c7-bab9-4e907226afa6" width="100%" />
+    <p align="center">로그인 및 사용자 인증</p>
+</td>
+<td>
+    <img src="https://github.com/user-attachments/assets/b589c4ab-27f0-4cd5-b200-84af12fc457e" width="100%" />
+    <p align="center">농장 목록</p>
+</td>
+</tr>
+    
+<tr>
+<td>
+    <img src="https://github.com/user-attachments/assets/a4761200-3387-4731-8fee-e59104673765" width="100%" />
+    <p align="center">센서 데이터 및 제어장치</p>
+</td>
+<td>
+    <img src="https://github.com/user-attachments/assets/125741e6-6608-4eec-a13f-2ab629fad741" width="100%" />
+    <p align="center">통계 데이터</p>
+</td>
+</tr>
+
+<tr>
+<td>
+    <img src="https://github.com/user-attachments/assets/4c5047bc-b3a1-46e1-a21e-895c87c49aa9" width="100%" />
+    <p align="center">CCTV 및 캡쳐</p>
+</td>
+<td>
+    <img src="https://github.com/user-attachments/assets/8a9ae81c-9c59-42b0-a202-63cb25ae3dd0" width="100%" />
+    <p align="center">리포트 생성</p>
+</td>
+</tr>
+
+<tr>
+<td>
+    <img src="https://github.com/user-attachments/assets/d505eaec-46f5-4e13-9ebc-0cb6d11db128" width="100%" />
+    <p align="center">챗봇</p>
+</td>
+
+</tr>
+</table>
+
+</div>
 
 ---
 
